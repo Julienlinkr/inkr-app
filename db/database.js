@@ -2,7 +2,8 @@
 const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 
-const db = new DatabaseSync(path.join(__dirname, 'inkr.db'));
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'inkr.db');
+const db = new DatabaseSync(DB_PATH);
 
 // Activation WAL pour meilleures performances
 db.exec('PRAGMA journal_mode = WAL');
