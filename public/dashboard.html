@@ -278,8 +278,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
 /* ===== RESPONSIVE IPHONE ===== */
 #mobile-nav{display:none;}
 @media(max-width:820px){
-  html,body{overflow-x:hidden !important;}
-  body{overflow-y:auto !important;}
+  html,body{height:auto !important;overflow-x:hidden !important;}
+  body{overflow-y:auto !important;min-height:100vh;}
   nav{padding:0 12px;gap:8px;}
   .nav-badge,.nav-switch{display:none;}
   .dash-layout{display:block !important;height:auto !important;overflow-x:hidden;}
