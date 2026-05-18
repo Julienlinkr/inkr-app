@@ -252,58 +252,61 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
 .notif.success{border-color:var(--green);color:var(--green);}
 .notif.error{border-color:var(--red);color:var(--red);}
 
+/* ===== COMPOSE MODAL (tous écrans) ===== */
+.compose-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;display:none;align-items:flex-end;justify-content:center;}
+.compose-modal.open{display:flex;}
+.compose-sheet{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;}
+.compose-hdr{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.compose-search{padding:10px 14px;border-bottom:1px solid var(--border);}
+.compose-search input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;color:var(--txt);font-size:14px;outline:none;}
+.compose-search input:focus{border-color:var(--accent);}
+.compose-client-list{flex:1;overflow-y:auto;max-height:320px;}
+.compose-client-row{display:flex;align-items:center;gap:10px;padding:12px 16px;cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s;}
+.compose-client-row:hover,.compose-client-row.selected{background:var(--acl);}
+.compose-client-av{width:38px;height:38px;border-radius:50%;background:var(--acl);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--accent);flex-shrink:0;}
+.compose-client-info{flex:1;min-width:0;}
+.compose-client-name{font-size:13px;font-weight:700;}
+.compose-client-sub{font-size:11px;color:var(--muted);}
+.compose-channels{padding:14px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;}
+.compose-ch-btn{flex:1;min-width:80px;padding:10px 8px;border-radius:var(--r);border:1px solid var(--border);background:var(--card);color:var(--txt);font-size:12px;font-weight:600;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;transition:all .15s;}
+.compose-ch-btn:hover{border-color:var(--accent);background:var(--acl);}
+.compose-ch-btn .ch-icon{font-size:22px;}
+.compose-write{padding:14px;display:flex;flex-direction:column;gap:10px;}
+.compose-write textarea{width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;color:var(--txt);font-size:13px;resize:none;outline:none;min-height:100px;font-family:inherit;}
+.compose-write textarea:focus{border-color:var(--accent);}
+
 /* ===== RESPONSIVE IPHONE ===== */
-@media(max-width:768px){
-  body{overflow:auto;}
+#mobile-nav{display:none;}
+@media(max-width:820px){
+  html,body{overflow-x:hidden !important;}
+  body{overflow-y:auto !important;}
   nav{padding:0 12px;gap:8px;}
-  .nav-badge{display:none;}
-  .dash-layout{grid-template-columns:1fr;height:auto;margin-top:56px;}
-  .dash-sidebar{display:none;}
-
-  /* Bottom nav mobile */
-  #mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(11,11,11,.97);backdrop-filter:blur(16px);border-top:1px solid var(--border);padding:6px 0 env(safe-area-inset-bottom);justify-content:space-around;}
-  .mob-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 6px;cursor:pointer;color:var(--muted);font-size:9px;font-weight:600;min-width:44px;border-radius:var(--r);transition:color .15s;}
-  .mob-nav-item.active{color:var(--accent);}
-  .mob-nav-icon{font-size:20px;}
-
-  /* Panels */
-  .dash-panel{height:auto;min-height:calc(100vh - 56px - 60px);padding-bottom:80px;}
-  .dash-panel.msg-panel.active{grid-template-columns:1fr;display:flex;flex-direction:column;}
-  .dash-panel.clients-panel.active{grid-template-columns:1fr;display:flex;flex-direction:column;}
-  .dp-inner{padding:14px;}
-
-  /* Messages mobile */
-  .msg-sidebar-col{height:auto;border-right:none;border-bottom:1px solid var(--border);}
-  .msg-list{max-height:260px;}
-  .chat-area{height:auto;flex:1;}
-  .chat-msgs{min-height:200px;max-height:340px;}
-
-  /* Clients mobile */
-  .clients-sidebar-col{height:auto;border-right:none;border-bottom:1px solid var(--border);}
-  .cl-list{max-height:220px;}
-  .client-detail-col{padding:14px;}
-
-  /* Stats grid */
+  .nav-badge,.nav-switch{display:none;}
+  .dash-layout{display:block !important;height:auto !important;overflow-x:hidden;}
+  .dash-sidebar{display:none !important;}
+  .dash-panel{display:none;height:auto !important;min-height:calc(100svh - 56px - 62px);overflow-y:auto;overflow-x:hidden;padding-bottom:70px;}
+  .dash-panel.active{display:block !important;}
+  .dash-panel.msg-panel.active{display:flex !important;flex-direction:column;overflow:visible;}
+  .dash-panel.clients-panel.active{display:flex !important;flex-direction:column;overflow:visible;}
+  .dp-inner{padding:14px 12px;}
+  .msg-sidebar-col{height:auto !important;border-right:none;border-bottom:1px solid var(--border);max-height:none;}
+  .msg-list{max-height:300px;overflow-y:auto;}
+  .chat-area{height:auto;flex:1;display:flex;flex-direction:column;}
+  .chat-msgs{min-height:180px;max-height:35vh;}
+  .clients-sidebar-col{height:auto !important;border-right:none;border-bottom:1px solid var(--border);}
+  .cl-list{max-height:240px;overflow-y:auto;}
+  .client-detail-col{padding:12px;}
   .stats-grid{grid-template-columns:repeat(2,1fr);}
-
-  /* Grids */
-  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
-
-  /* Buttons */
-  .btn{min-height:42px;}
-  .btn-sm{min-height:36px;}
-
-  /* Camp grid */
-  .camp-grid{grid-template-columns:1fr;}
-
-  /* Auth box */
-  .auth-box{padding:22px 18px;}
-
-  /* Notif */
-  .notif{bottom:74px;right:10px;left:10px;max-width:100%;}
-}
-@media(min-width:769px){
-  #mobile-nav{display:none;}
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr !important;}
+  .btn{min-height:44px;}
+  .btn-sm{min-height:38px;font-size:13px;}
+  .auth-box{padding:20px 16px;}
+  .notif{bottom:72px;right:10px;left:10px;max-width:100%;}
+  .ci-stats{flex-wrap:wrap;}
+  #mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:500;background:rgba(11,11,11,.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:4px 0 env(safe-area-inset-bottom,8px);justify-content:space-around;}
+  .mob-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 8px;cursor:pointer;color:var(--muted);font-size:9px;font-weight:600;min-width:48px;border-radius:var(--r);transition:color .15s;-webkit-tap-highlight-color:transparent;}
+  .mob-nav-item.active{color:var(--accent);}
+  .mob-nav-icon{font-size:22px;line-height:1;}
 }
 </style>
 </head>
@@ -525,7 +528,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
   <div class="dash-panel msg-panel" id="dp-messages">
     <div class="msg-sidebar-col">
       <div class="msg-top">
-        <div style="font-size:13px;font-weight:700;margin-bottom:8px;">Messages</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-size:13px;font-weight:700;">Messages</div>
+          <button class="btn btn-primary btn-sm" onclick="openCompose()" style="font-size:11px;padding:5px 10px;">✏️ Nouveau</button>
+        </div>
         <input class="msg-search" id="msg-search" placeholder="🔍 Rechercher un client…" oninput="searchMessages(this.value)">
         <div style="display:flex;gap:4px;flex-wrap:wrap;" id="msg-filters">
           <div class="msg-filter-btn active-filter" style="border-color:var(--muted);color:var(--muted);--active-ch:var(--dim);" data-ch="all" data-color="var(--dim)" onclick="filterMessages('all',this)">Tous</div>
@@ -803,6 +809,57 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
 </div>
 
 <div class="notif" id="notif"></div>
+
+<!-- COMPOSE MODAL -->
+<div class="compose-modal" id="compose-modal" onclick="if(event.target===this)closeCompose()">
+  <div class="compose-sheet">
+    <div class="compose-hdr">
+      <div style="font-size:15px;font-weight:800;" id="compose-title">✉️ Nouveau message</div>
+      <button onclick="closeCompose()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0 4px;">✕</button>
+    </div>
+    <!-- STEP 1: Choisir client -->
+    <div id="compose-step1">
+      <div class="compose-search">
+        <input id="compose-search-input" placeholder="🔍 Rechercher un client…" oninput="filterComposeClients(this.value)" autocomplete="off">
+      </div>
+      <div class="compose-client-list" id="compose-client-list"></div>
+    </div>
+    <!-- STEP 2: Choisir canal -->
+    <div id="compose-step2" style="display:none;">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">Envoyer à</div>
+        <div id="compose-selected-client" style="font-size:14px;font-weight:700;"></div>
+      </div>
+      <div class="compose-channels">
+        <button class="compose-ch-btn" onclick="selectComposeChannel('email')" id="btn-ch-email">
+          <span class="ch-icon">✉️</span>Email
+        </button>
+        <button class="compose-ch-btn" onclick="selectComposeChannel('whatsapp')" id="btn-ch-wa">
+          <span class="ch-icon">💬</span>WhatsApp
+        </button>
+        <button class="compose-ch-btn" onclick="selectComposeChannel('sms')" id="btn-ch-sms">
+          <span class="ch-icon">📱</span>SMS
+        </button>
+      </div>
+    </div>
+    <!-- STEP 3: Écrire -->
+    <div id="compose-step3" style="display:none;">
+      <div style="padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">
+        <button onclick="goComposeStep(2)" style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;">← Retour</button>
+        <div style="font-size:12px;color:var(--muted);" id="compose-ch-label"></div>
+      </div>
+      <div class="compose-write">
+        <div id="compose-subject-wrap" style="display:none;">
+          <input class="form-control" id="compose-subject" placeholder="Sujet de l'email" style="margin-bottom:8px;">
+        </div>
+        <textarea id="compose-body" placeholder="Votre message…"></textarea>
+        <div style="font-size:11px;color:var(--muted);">Variables : <code>{{prénom}}</code> <code>{{studio}}</code></div>
+        <button class="btn btn-primary" onclick="sendCompose()" style="justify-content:center;">📨 Envoyer</button>
+        <div id="compose-result" style="font-size:12px;display:none;margin-top:4px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- MOBILE NAV -->
 <div id="mobile-nav">
@@ -1366,6 +1423,93 @@ function openComposeWhatsApp(){
   if(!currentChatClientPhone){showNotif('Pas de numéro WhatsApp pour ce contact','error');return;}
   window.open('https://wa.me/'+currentChatClientPhone.replace(/\D/g,''),'_blank');
 }
+// ======== COMPOSE MODAL (à la Instagram) ========
+let composeSelectedClient=null;
+let composeSelectedChannel=null;
+
+function openCompose(){
+  composeSelectedClient=null;composeSelectedChannel=null;
+  goComposeStep(1);
+  document.getElementById('compose-search-input').value='';
+  renderComposeClients(clients);
+  document.getElementById('compose-modal').classList.add('open');
+}
+function closeCompose(){document.getElementById('compose-modal').classList.remove('open');}
+function goComposeStep(n){
+  [1,2,3].forEach(i=>{const el=document.getElementById('compose-step'+i);if(el)el.style.display=i===n?'block':'none';});
+  const titles={1:'✉️ Nouveau message',2:'Choisir le canal',3:'Écrire le message'};
+  document.getElementById('compose-title').textContent=titles[n]||'';
+}
+function renderComposeClients(list){
+  const el=document.getElementById('compose-client-list');
+  if(!list.length){el.innerHTML='<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px;">Aucun client trouvé</div>';return;}
+  el.innerHTML=list.map(c=>`
+    <div class="compose-client-row" onclick="selectComposeClient(${c.id})">
+      <div class="compose-client-av">${(c.prenom||c.name||'?').charAt(0).toUpperCase()}</div>
+      <div class="compose-client-info">
+        <div class="compose-client-name">${c.prenom?c.prenom+' ':''} ${c.name||''}</div>
+        <div class="compose-client-sub">${[c.email,c.phone].filter(Boolean).join(' · ')||'Pas de contact'}</div>
+      </div>
+      <div style="font-size:16px;color:var(--accent);">›</div>
+    </div>`).join('');
+}
+function filterComposeClients(q){
+  const filtered=clients.filter(c=>{
+    const str=(c.name+' '+(c.prenom||'')+' '+(c.email||'')).toLowerCase();
+    return str.includes(q.toLowerCase());
+  });
+  renderComposeClients(filtered);
+}
+function selectComposeClient(id){
+  composeSelectedClient=clients.find(c=>c.id===id);
+  if(!composeSelectedClient)return;
+  document.getElementById('compose-selected-client').textContent=(composeSelectedClient.prenom||'')+' '+(composeSelectedClient.name||'');
+  // Activer/désactiver canaux selon dispo
+  document.getElementById('btn-ch-email').style.opacity=composeSelectedClient.email?'1':'0.35';
+  document.getElementById('btn-ch-wa').style.opacity=composeSelectedClient.phone?'1':'0.35';
+  document.getElementById('btn-ch-sms').style.opacity=composeSelectedClient.phone?'1':'0.35';
+  goComposeStep(2);
+}
+function selectComposeChannel(ch){
+  const c=composeSelectedClient;
+  if(ch==='email'&&!c.email){showNotif('Ce client n\'a pas d\'email','error');return;}
+  if((ch==='whatsapp'||ch==='sms')&&!c.phone){showNotif('Ce client n\'a pas de téléphone','error');return;}
+  composeSelectedChannel=ch;
+  const labels={email:'✉️ Email → '+c.email,whatsapp:'💬 WhatsApp → '+c.phone,sms:'📱 SMS → '+c.phone};
+  document.getElementById('compose-ch-label').textContent=labels[ch]||ch;
+  document.getElementById('compose-subject-wrap').style.display=ch==='email'?'block':'none';
+  document.getElementById('compose-subject').value='';
+  document.getElementById('compose-body').value='';
+  document.getElementById('compose-result').style.display='none';
+  goComposeStep(3);
+}
+async function sendCompose(){
+  const c=composeSelectedClient;const ch=composeSelectedChannel;
+  const body=document.getElementById('compose-body').value.trim();
+  const subject=document.getElementById('compose-subject').value.trim();
+  const result=document.getElementById('compose-result');
+  if(!body){result.style.display='block';result.style.color='var(--accent)';result.textContent='⚠️ Message vide';return;}
+  if(ch==='email'&&!subject){result.style.display='block';result.style.color='var(--accent)';result.textContent='⚠️ Sujet obligatoire';return;}
+  if(ch==='whatsapp'){
+    window.open('https://wa.me/'+c.phone.replace(/\D/g,'')+'?text='+encodeURIComponent(body),'_blank');
+    closeCompose();showNotif('💬 WhatsApp ouvert !','success');return;
+  }
+  if(ch==='sms'){
+    window.open('sms:'+c.phone+'?body='+encodeURIComponent(body),'_blank');
+    closeCompose();showNotif('📱 SMS ouvert !','success');return;
+  }
+  // Email via API
+  const btn=document.querySelector('#compose-step3 .btn-primary');btn.disabled=true;btn.textContent='Envoi…';
+  try{
+    const res=await fetch('/api/clients/'+c.id+'/email',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject,message:body})});
+    const data=await res.json();
+    result.style.display='block';
+    if(res.ok){result.style.color='var(--green)';result.textContent='✅ Email envoyé !';showNotif('✅ Email envoyé à '+c.email,'success');setTimeout(closeCompose,1800);}
+    else{result.style.color='var(--accent)';result.textContent='❌ '+(data.error||'Erreur');}
+  }catch(e){result.style.display='block';result.style.color='var(--accent)';result.textContent='❌ Erreur réseau';}
+  btn.disabled=false;btn.textContent='📨 Envoyer';
+}
+
 function mobNav(panelId,navId){
   document.querySelectorAll('.mob-nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById(navId).classList.add('active');
