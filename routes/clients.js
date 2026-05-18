@@ -54,4 +54,34 @@ router.put('/automations/:id', requireAuth, (req, res) => {
   res.json({ success: true });
 });
 
+// ============ ENVOYER EMAIL À UN CLIENT ============
+router.post('/:id/email', requireAuth, async (req, res) => {
+  const client = db.prepare('SELECT * FROM clients WHERE id = ? AND user_id = ?').get(req.params.id, req.user.userId);
+  if (!client) return res.status(404).json({ error: 'Client introuvable' });
+  if (!client.email) return res.status(400).json({ error: 'Ce client n\'a pas d\'email' });
+
+  const { subject, message } = req.body;
+  if (!subject || !message) return res.status(400).json({ error: 'Sujet et message obligatoires' });
+
+  const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.userId);
+  const prenom = client.name.split(' ')[0];
+  const msg = message
+    .replace(/\{\{prénom\}\}/g, prenom)
+    .replace(/\{\{nom\}\}/g, client.name)
+    .replace(/\{\{studio\}\}/g, user.studio_name || 'notre studio');
+
+  try {
+    const { sendEmail } = require('./campaigns');
+    await sendEmail(client.email, subject, msg);
+
+    // Logger dans messages
+    db.prepare('INSERT INTO messages (user_id, client_name, client_seed, channel, direction, content) VALUES (?, ?, ?, ?, ?, ?)')
+      .run(req.user.userId, client.name, client.name.toLowerCase().replace(/\s/g,''), 'email', 'out', `[${subject}] ${msg}`);
+
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
