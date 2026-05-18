@@ -18,19 +18,23 @@ function requireAuth(req, res, next) {
   }
 }
 
+// ============ LISTE DES CAMPAGNES ============
 router.get('/', requireAuth, (req, res) => {
   const campaigns = db.prepare('SELECT * FROM campaigns WHERE user_id = ? ORDER BY created_at DESC').all(req.user.userId);
   res.json({ campaigns });
 });
 
+// ============ CRÉER UNE CAMPAGNE ============
 router.post('/', requireAuth, (req, res) => {
   const { name, template, message, channels, audience, scheduled_at } = req.body;
   const result = db.prepare(
     'INSERT INTO campaigns (user_id, name, template, message, channels, audience, status, scheduled_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
   ).run(req.user.userId, name, template || 'libre', message, JSON.stringify(channels || []), audience || 'all', 'draft', scheduled_at || null);
+
   res.json({ success: true, id: result.lastInsertRowid });
 });
 
+// ============ ENVOYER UNE CAMPAGNE ============
 router.post('/:id/send', requireAuth, async (req, res) => {
   const campaign = db.prepare('SELECT * FROM campaigns WHERE id = ? AND user_id = ?').get(req.params.id, req.user.userId);
   if (!campaign) return res.status(404).json({ error: 'Campagne introuvable' });
@@ -38,6 +42,7 @@ router.post('/:id/send', requireAuth, async (req, res) => {
   const channels = JSON.parse(campaign.channels || '[]');
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.userId);
   const clients = db.prepare('SELECT * FROM clients WHERE user_id = ?').all(req.user.userId);
+
   const results = { email: 0, sms: 0, errors: [] };
 
   for (const client of clients) {
@@ -45,8 +50,9 @@ router.post('/:id/send', requireAuth, async (req, res) => {
       .replace(/\{\{prénom\}\}/g, client.name.split(' ')[0])
       .replace(/\{\{nom\}\}/g, client.name)
       .replace(/\{\{studio\}\}/g, user.studio_name || 'notre studio')
-      .replace(/\{\{lien_résa\}\}/g, `https://inkr.club`);
+      .replace(/\{\{lien_résa\}\}/g, `http://localhost:3000`);
 
+    // EMAIL
     if (channels.includes('email') && client.email) {
       try {
         await sendEmail(client.email, `Message de ${user.studio_name || user.name}`, msg);
@@ -55,6 +61,8 @@ router.post('/:id/send', requireAuth, async (req, res) => {
         results.errors.push(`Email ${client.email}: ${e.message}`);
       }
     }
+
+    // SMS via Twilio
     if (channels.includes('sms') && client.phone) {
       try {
         await sendSMS(client.phone, msg);
@@ -65,11 +73,22 @@ router.post('/:id/send', requireAuth, async (req, res) => {
     }
   }
 
+  // Mettre à jour la campagne
   db.prepare('UPDATE campaigns SET status = ?, sent_count = ?, sent_at = CURRENT_TIMESTAMP WHERE id = ?')
     .run('sent', results.email + results.sms, campaign.id);
+
   res.json({ success: true, results });
 });
 
+// ============ SUPPRIMER UNE CAMPAGNE ============
+router.delete('/:id', requireAuth, (req, res) => {
+  const campaign = db.prepare('SELECT * FROM campaigns WHERE id = ? AND user_id = ?').get(req.params.id, req.user.userId);
+  if (!campaign) return res.status(404).json({ error: 'Campagne introuvable' });
+  db.prepare('DELETE FROM campaigns WHERE id = ?').run(req.params.id);
+  res.json({ success: true });
+});
+
+// ============ TEST EMAIL (sans campagne) ============
 router.post('/test/email', requireAuth, async (req, res) => {
   const { to, subject, message } = req.body;
   try {
@@ -80,6 +99,7 @@ router.post('/test/email', requireAuth, async (req, res) => {
   }
 });
 
+// ============ TEST SMS ============
 router.post('/test/sms', requireAuth, async (req, res) => {
   const { to, message } = req.body;
   try {
@@ -90,6 +110,7 @@ router.post('/test/sms', requireAuth, async (req, res) => {
   }
 });
 
+// ============ HELPERS ============
 async function sendEmail(to, subject, text) {
   if (!process.env.RESEND_API_KEY) {
     console.log(`[EMAIL SIMULÉ] À: ${to} | Sujet: ${subject} | Message: ${text}`);
@@ -97,8 +118,10 @@ async function sendEmail(to, subject, text) {
   }
   const resend = new Resend(process.env.RESEND_API_KEY);
   return resend.emails.send({
-    from: process.env.EMAIL_FROM || 'inkr <noreply@inkr.club>',
-    to, subject, text,
+    from: process.env.EMAIL_FROM || 'inkr <onboarding@resend.dev>',
+    to,
+    subject,
+    text,
     html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
       <div style="background:#FF5C35;padding:20px;text-align:center;">
         <h1 style="color:white;margin:0;font-size:28px;">inkr</h1>

@@ -145,8 +145,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
 .toggle input:checked+.toggle-slider:before{transform:translateX(16px);}
 
 /* MESSAGES */
-.msg-filter-btn{background:var(--card);border-radius:20px;padding:3px 8px;font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid;}
-.msg-filter-btn.active-filter{color:#fff !important;}
+.msg-filter-btn{background:var(--card);border-radius:20px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid;}
+.msg-filter-btn.active-filter{color:#fff !important;background:var(--active-ch, var(--dim)) !important;}
+.msg-search{width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:6px 10px;color:var(--txt);font-size:12px;outline:none;margin-bottom:7px;}
+.msg-search:focus{border-color:var(--accent);}
+.compose-bar{padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px;flex-shrink:0;background:var(--surface);}
+.compose-btn{flex:1;padding:7px;border-radius:var(--r);font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--txt);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;}
+.compose-btn:hover{border-color:var(--accent);color:var(--accent);}
 
 /* CLIENTS */
 .clients-sidebar-col{border-right:1px solid var(--border);display:flex;flex-direction:column;height:calc(100vh - 56px);overflow:hidden;}
@@ -162,13 +167,19 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
 .client-detail-col{overflow-y:auto;padding:18px;}
 
 /* CAMPAIGNS */
-.camp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:11px;margin-bottom:18px;}
-.camp-item{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:13px;}
-.ci-name{font-size:13px;font-weight:700;margin-bottom:3px;}
-.ci-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:9px;}
-.ci-stat{text-align:center;}
-.ci-stat-val{font-size:15px;font-weight:800;}
+.camp-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:18px;}
+.camp-item{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:16px;display:flex;flex-direction:column;gap:10px;}
+.ci-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.ci-name{font-size:15px;font-weight:800;line-height:1.2;}
+.ci-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.ci-preview{font-size:12px;color:var(--muted);background:var(--surface);border-radius:var(--r);padding:8px 10px;line-height:1.5;border-left:2px solid var(--accent);}
+.ci-stats{display:flex;gap:12px;align-items:center;}
+.ci-stat{display:flex;flex-direction:column;align-items:center;}
+.ci-stat-val{font-size:18px;font-weight:800;}
 .ci-stat-lbl{font-size:10px;color:var(--muted);}
+.ci-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.ci-channels{display:flex;gap:4px;align-items:center;}
+.ci-ch-tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;}
 .badge{display:inline-flex;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:600;}
 .badge-green{background:rgba(46,204,113,.15);color:var(--green);}
 .badge-gold{background:rgba(240,180,41,.15);color:var(--gold);}
@@ -240,6 +251,60 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
 .notif.show{transform:translateY(0);}
 .notif.success{border-color:var(--green);color:var(--green);}
 .notif.error{border-color:var(--red);color:var(--red);}
+
+/* ===== RESPONSIVE IPHONE ===== */
+@media(max-width:768px){
+  body{overflow:auto;}
+  nav{padding:0 12px;gap:8px;}
+  .nav-badge{display:none;}
+  .dash-layout{grid-template-columns:1fr;height:auto;margin-top:56px;}
+  .dash-sidebar{display:none;}
+
+  /* Bottom nav mobile */
+  #mobile-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(11,11,11,.97);backdrop-filter:blur(16px);border-top:1px solid var(--border);padding:6px 0 env(safe-area-inset-bottom);justify-content:space-around;}
+  .mob-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 6px;cursor:pointer;color:var(--muted);font-size:9px;font-weight:600;min-width:44px;border-radius:var(--r);transition:color .15s;}
+  .mob-nav-item.active{color:var(--accent);}
+  .mob-nav-icon{font-size:20px;}
+
+  /* Panels */
+  .dash-panel{height:auto;min-height:calc(100vh - 56px - 60px);padding-bottom:80px;}
+  .dash-panel.msg-panel.active{grid-template-columns:1fr;display:flex;flex-direction:column;}
+  .dash-panel.clients-panel.active{grid-template-columns:1fr;display:flex;flex-direction:column;}
+  .dp-inner{padding:14px;}
+
+  /* Messages mobile */
+  .msg-sidebar-col{height:auto;border-right:none;border-bottom:1px solid var(--border);}
+  .msg-list{max-height:260px;}
+  .chat-area{height:auto;flex:1;}
+  .chat-msgs{min-height:200px;max-height:340px;}
+
+  /* Clients mobile */
+  .clients-sidebar-col{height:auto;border-right:none;border-bottom:1px solid var(--border);}
+  .cl-list{max-height:220px;}
+  .client-detail-col{padding:14px;}
+
+  /* Stats grid */
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+
+  /* Grids */
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
+
+  /* Buttons */
+  .btn{min-height:42px;}
+  .btn-sm{min-height:36px;}
+
+  /* Camp grid */
+  .camp-grid{grid-template-columns:1fr;}
+
+  /* Auth box */
+  .auth-box{padding:22px 18px;}
+
+  /* Notif */
+  .notif{bottom:74px;right:10px;left:10px;max-width:100%;}
+}
+@media(min-width:769px){
+  #mobile-nav{display:none;}
+}
 </style>
 </head>
 <body>
@@ -461,31 +526,33 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
     <div class="msg-sidebar-col">
       <div class="msg-top">
         <div style="font-size:13px;font-weight:700;margin-bottom:8px;">Messages</div>
+        <input class="msg-search" id="msg-search" placeholder="🔍 Rechercher un client…" oninput="searchMessages(this.value)">
         <div style="display:flex;gap:4px;flex-wrap:wrap;" id="msg-filters">
-          <div class="msg-filter-btn" style="border-color:var(--muted);color:var(--muted);" data-ch="all" onclick="filterMessages('all',this)">Tous</div>
-          <div class="msg-filter-btn" style="border-color:#E1306C;color:#E1306C;" data-ch="instagram" onclick="filterMessages('instagram',this)">Instagram</div>
-          <div class="msg-filter-btn" style="border-color:#25D366;color:#25D366;" data-ch="whatsapp" onclick="filterMessages('whatsapp',this)">WhatsApp</div>
-          <div class="msg-filter-btn" style="border-color:#1877F2;color:#1877F2;" data-ch="facebook" onclick="filterMessages('facebook',this)">Facebook</div>
+          <div class="msg-filter-btn active-filter" style="border-color:var(--muted);color:var(--muted);--active-ch:var(--dim);" data-ch="all" data-color="var(--dim)" onclick="filterMessages('all',this)">Tous</div>
+          <div class="msg-filter-btn" style="border-color:#E1306C;color:#E1306C;" data-ch="instagram" data-color="#E1306C" onclick="filterMessages('instagram',this)">📸 Insta</div>
+          <div class="msg-filter-btn" style="border-color:#25D366;color:#25D366;" data-ch="whatsapp" data-color="#25D366" onclick="filterMessages('whatsapp',this)">💬 WA</div>
+          <div class="msg-filter-btn" style="border-color:#1877F2;color:#1877F2;" data-ch="facebook" data-color="#1877F2" onclick="filterMessages('facebook',this)">Facebook</div>
+          <div class="msg-filter-btn" style="border-color:#4A9EFF;color:#4A9EFF;" data-ch="email" data-color="#4A9EFF" onclick="filterMessages('email',this)">✉️ Email</div>
         </div>
       </div>
       <div class="msg-list" id="msg-list">
-        <div class="msg-thread active" data-channel="instagram" onclick="openThread(this,'Chloé T.','Instagram DM')">
+        <div class="msg-thread active" data-channel="instagram" data-name="chloé t." onclick="openThread(this,'Chloé T.','Instagram DM','chloe@example.com',null)">
           <div class="mt-av">C</div>
           <div class="mt-body">
             <div class="mt-name">Chloé T. <span class="mt-time">10:55</span></div>
             <div class="mt-prev">Envoyez vos refs 👌</div>
-            <div class="ch-tag" style="background:rgba(225,48,108,.15);color:#E1306C;">Instagram</div>
+            <div class="ch-tag" style="background:rgba(225,48,108,.15);color:#E1306C;">📸 Instagram</div>
           </div>
         </div>
-        <div class="msg-thread" data-channel="whatsapp" onclick="openThread(this,'Lucas M.','WhatsApp')">
+        <div class="msg-thread" data-channel="whatsapp" data-name="lucas m." onclick="openThread(this,'Lucas M.','WhatsApp',null,'+33612345678')">
           <div class="mt-av">L</div>
           <div class="mt-body">
             <div class="mt-name">Lucas M. <span class="mt-time">hier</span></div>
             <div class="mt-prev">Ok super je te fais confiance 🎨</div>
-            <div class="ch-tag" style="background:rgba(37,211,102,.15);color:#25D366;">WhatsApp</div>
+            <div class="ch-tag" style="background:rgba(37,211,102,.15);color:#25D366;">💬 WhatsApp</div>
           </div>
         </div>
-        <div class="msg-thread" data-channel="facebook" onclick="openThread(this,'Sophie R.','Facebook Messenger')">
+        <div class="msg-thread" data-channel="facebook" data-name="sophie r." onclick="openThread(this,'Sophie R.','Facebook Messenger','sophie@example.com',null)">
           <div class="mt-av">S</div>
           <div class="mt-body">
             <div class="mt-name">Sophie R. <span class="mt-time">jeu.</span></div>
@@ -493,20 +560,20 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
             <div class="ch-tag" style="background:rgba(24,119,242,.15);color:#1877F2;">Facebook</div>
           </div>
         </div>
-        <div class="msg-thread" data-channel="instagram" onclick="openThread(this,'Théo B.','Instagram DM')">
+        <div class="msg-thread" data-channel="instagram" data-name="théo b." onclick="openThread(this,'Théo B.','Instagram DM',null,null)">
           <div class="mt-av">T</div>
           <div class="mt-body">
             <div class="mt-name">Théo B. <span class="mt-time">mar.</span></div>
             <div class="mt-prev">Combien pour un sleeve ?</div>
-            <div class="ch-tag" style="background:rgba(225,48,108,.15);color:#E1306C;">Instagram</div>
+            <div class="ch-tag" style="background:rgba(225,48,108,.15);color:#E1306C;">📸 Instagram</div>
           </div>
         </div>
-        <div class="msg-thread" data-channel="whatsapp" onclick="openThread(this,'Camille V.','WhatsApp')">
+        <div class="msg-thread" data-channel="whatsapp" data-name="camille v." onclick="openThread(this,'Camille V.','WhatsApp',null,'+33698765432')">
           <div class="mt-av">C</div>
           <div class="mt-body">
             <div class="mt-name">Camille V. <span class="mt-time">lun.</span></div>
             <div class="mt-prev">Tu fais des retouches ?</div>
-            <div class="ch-tag" style="background:rgba(37,211,102,.15);color:#25D366;">WhatsApp</div>
+            <div class="ch-tag" style="background:rgba(37,211,102,.15);color:#25D366;">💬 WhatsApp</div>
           </div>
         </div>
       </div>
@@ -538,6 +605,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
       <div class="chat-input-row">
         <textarea id="chat-input" placeholder="Écrire un message…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg();}"></textarea>
         <button class="chat-send" onclick="sendMsg()">➤</button>
+      </div>
+      <div class="compose-bar">
+        <button class="compose-btn" onclick="openComposeEmail()">✉️ Envoyer un email</button>
+        <button class="compose-btn" style="border-color:#25D366;color:#25D366;" onclick="openComposeWhatsApp()">💬 WhatsApp</button>
       </div>
     </div>
   </div>
@@ -732,6 +803,15 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
 </div>
 
 <div class="notif" id="notif"></div>
+
+<!-- MOBILE NAV -->
+<div id="mobile-nav">
+  <div class="mob-nav-item active" id="mob-overview" onclick="mobNav('dp-overview','mob-overview')"><div class="mob-nav-icon">🏠</div>Accueil</div>
+  <div class="mob-nav-item" id="mob-agenda" onclick="mobNav('dp-agenda','mob-agenda')"><div class="mob-nav-icon">📅</div>Agenda</div>
+  <div class="mob-nav-item" id="mob-messages" onclick="mobNav('dp-messages','mob-messages')"><div class="mob-nav-icon">💬</div>Messages</div>
+  <div class="mob-nav-item" id="mob-clients" onclick="mobNav('dp-clients','mob-clients')"><div class="mob-nav-icon">👥</div>Clients</div>
+  <div class="mob-nav-item" id="mob-campaigns" onclick="mobNav('dp-campaigns','mob-campaigns')"><div class="mob-nav-icon">📣</div>Camps.</div>
+</div>
 
 <script>
 let currentUser=null,clients=[],campaigns=[],appointments=[],tournees=[],automations=[];
@@ -1126,18 +1206,52 @@ async function loadCampaigns(){
 }
 function renderCampaigns(){
   const el=document.getElementById('camp-list');
-  if(!campaigns.length){el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:14px 0;">Aucune campagne.</div>';return;}
-  el.innerHTML=campaigns.map(c=>`<div class="camp-item">
-    <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><div class="ci-name">${c.name}</div>
-      <div class="badge badge-${c.status==='sent'?'green':c.status==='draft'?'blue':'gold'}">${c.status==='sent'?'Envoyée':c.status==='draft'?'Brouillon':'Prog.'}</div></div>
-    <div style="font-size:10px;color:var(--muted);">${c.sent_at?new Date(c.sent_at).toLocaleDateString('fr-FR'):'Non envoyée'}</div>
-    <div class="ci-stats">
-      <div class="ci-stat"><div class="ci-stat-val" style="color:var(--accent)">${c.sent_count}</div><div class="ci-stat-lbl">Envois</div></div>
-      <div class="ci-stat"><div class="ci-stat-val" style="color:var(--green)">${c.open_count}</div><div class="ci-stat-lbl">Ouverts</div></div>
-      <div class="ci-stat"><div class="ci-stat-val" style="color:var(--blue)">—</div><div class="ci-stat-lbl">RDV</div></div>
-    </div>
-    ${c.status==='draft'?`<button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;margin-top:8px;" onclick="sendCampId(${c.id})">🚀 Envoyer</button>`:''}
-  </div>`).join('');
+  if(!campaigns.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center;">Aucune campagne. Créez-en une !</div>';return;}
+  const chIcons={'email':'✉️','sms':'📱','instagram':'📸','whatsapp':'💬'};
+  const chColors={'email':'#4A9EFF','sms':'var(--green)','instagram':'#E1306C','whatsapp':'#25D366'};
+  el.innerHTML=campaigns.map(c=>{
+    const channels=JSON.parse(c.channels||'[]');
+    const sentDate=c.sent_at?new Date(c.sent_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'}):'—';
+    const preview=c.message?c.message.replace(/\{\{[^}]+\}\}/g,'…').substring(0,120)+(c.message.length>120?'…':''):'';
+    return`<div class="camp-item">
+      <div class="ci-top">
+        <div>
+          <div class="ci-name">${c.name}</div>
+          <div class="ci-meta">${c.sent_at?'Envoyée le '+sentDate:'Non encore envoyée'}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <div class="badge badge-${c.status==='sent'?'green':c.status==='draft'?'blue':'gold'}">${c.status==='sent'?'✅ Envoyée':c.status==='draft'?'Brouillon':'Prog.'}</div>
+        </div>
+      </div>
+      ${preview?`<div class="ci-preview">${preview}</div>`:''}
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div class="ci-channels">
+          ${channels.map(ch=>`<span class="ci-ch-tag" style="background:${chColors[ch]||'var(--dim)'}22;color:${chColors[ch]||'var(--muted)'};border:1px solid ${chColors[ch]||'var(--dim)'}44;">${chIcons[ch]||'📢'} ${ch}</span>`).join('')}
+        </div>
+        <div class="ci-stats">
+          <div class="ci-stat"><div class="ci-stat-val" style="color:var(--accent)">${c.sent_count||0}</div><div class="ci-stat-lbl">Envois</div></div>
+          <div class="ci-stat"><div class="ci-stat-val" style="color:var(--green)">${c.open_count||0}</div><div class="ci-stat-lbl">Ouverts</div></div>
+        </div>
+      </div>
+      <div class="ci-actions">
+        ${c.status==='draft'?`<button class="btn btn-primary btn-sm" onclick="sendCampId(${c.id})">🚀 Envoyer</button>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="duplicateCamp(${c.id})">📋 Dupliquer</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCamp(${c.id})">🗑 Supprimer</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+async function deleteCamp(id){
+  if(!confirm('Supprimer cette campagne ?'))return;
+  await fetch('/api/campaigns/'+id,{method:'DELETE',credentials:'include'});
+  showNotif('🗑 Campagne supprimée','success');loadCampaigns();
+}
+function duplicateCamp(id){
+  const c=campaigns.find(x=>x.id===id);if(!c)return;
+  document.getElementById('c-name').value=c.name+' (copie)';
+  document.getElementById('c-msg').value=c.message||'';
+  showNewCamp();
+  showNotif('📋 Campagne dupliquée — modifiez et envoyez !','success');
 }
 function showNewCamp(){document.getElementById('new-camp-form').style.display='block';document.getElementById('camp-list').style.display='none';}
 function cancelCamp(){document.getElementById('new-camp-form').style.display='none';document.getElementById('camp-list').style.display='grid';}
@@ -1201,25 +1315,78 @@ async function saveProfil(){
 }
 
 // ======== MESSAGES ========
+let currentMsgFilter='all';
+let currentMsgSearch='';
+let currentChatClientEmail=null;
+let currentChatClientPhone=null;
+let currentChatClientName=null;
+
 function filterMessages(ch,btn){
-  document.querySelectorAll('#msg-filters .msg-filter-btn').forEach(b=>b.classList.remove('active-filter'));
-  btn.classList.add('active-filter');
-  const style=btn.style;
-  btn.style.background=ch==='all'?'var(--dim)':style.borderColor;
-  document.querySelectorAll('.msg-thread').forEach(t=>{
-    t.style.display=(ch==='all'||t.dataset.channel===ch)?'flex':'none';
+  currentMsgFilter=ch;
+  document.querySelectorAll('#msg-filters .msg-filter-btn').forEach(b=>{
+    b.classList.remove('active-filter');
+    b.style.background='var(--card)';
+    b.style.color=b.dataset.color||'var(--muted)';
   });
+  btn.classList.add('active-filter');
+  btn.style.background=btn.dataset.color||'var(--dim)';
+  btn.style.color='#fff';
+  applyMsgFilter();
+}
+function searchMessages(val){
+  currentMsgSearch=val.toLowerCase().trim();
+  applyMsgFilter();
+}
+function applyMsgFilter(){
+  document.querySelectorAll('.msg-thread').forEach(t=>{
+    const chMatch=currentMsgFilter==='all'||t.dataset.channel===currentMsgFilter;
+    const name=t.dataset.name||'';
+    const nameMatch=!currentMsgSearch||name.toLowerCase().includes(currentMsgSearch);
+    t.style.display=(chMatch&&nameMatch)?'flex':'none';
+  });
+}
+function openComposeEmail(){
+  if(!currentChatClientEmail){
+    showNotif('Sélectionnez un client dans la liste','error');return;
+  }
+  // Trouver le client dans la liste CRM
+  const client=clients.find(c=>c.name===currentChatClientName||c.email===currentChatClientEmail);
+  if(client){
+    openEmailModal(client.id,client.email,client.name);
+  } else {
+    // Ouvrir directement avec l'email du thread
+    document.getElementById('email-to-display').textContent=currentChatClientEmail||currentChatClientName;
+    document.getElementById('email-subject').value='';
+    document.getElementById('email-body').value='';
+    document.getElementById('email-result').style.display='none';
+    document.getElementById('email-modal').classList.add('open');
+  }
+}
+function openComposeWhatsApp(){
+  if(!currentChatClientPhone){showNotif('Pas de numéro WhatsApp pour ce contact','error');return;}
+  window.open('https://wa.me/'+currentChatClientPhone.replace(/\D/g,''),'_blank');
+}
+function mobNav(panelId,navId){
+  document.querySelectorAll('.mob-nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(navId).classList.add('active');
+  // Simuler le clic sur le nav desktop correspondant
+  const navMap={'dp-overview':'nav-overview','dp-agenda':'nav-agenda','dp-messages':'nav-messages','dp-clients':'nav-clients','dp-campaigns':'nav-campaigns'};
+  const desktopNav=document.getElementById(navMap[panelId]);
+  if(desktopNav) dashGo(panelId,desktopNav);
 }
 function toggleAbsent(){
   const chk=document.getElementById('absent-toggle');const cfg=document.getElementById('absent-config');
   cfg.style.display=chk.checked?'block':'none';
   if(chk.checked){const msgs=document.getElementById('chat-msgs');const d=document.createElement('div');d.className='msg ai';d.innerHTML='🤖 <strong>Mode absent activé.</strong><div class="msg-meta">Système · maintenant</div>';msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;}
 }
-function openThread(el,name,ch){
+function openThread(el,name,ch,email,phone){
   document.querySelectorAll('.msg-thread').forEach(t=>t.classList.remove('active'));el.classList.add('active');
   document.getElementById('chat-name').textContent=name;
   document.getElementById('chat-ch').textContent=ch;
   document.getElementById('chat-av').textContent=name.charAt(0);
+  currentChatClientName=name;
+  currentChatClientEmail=email||null;
+  currentChatClientPhone=phone||null;
 }
 function sendMsg(){
   const ta=document.getElementById('chat-input');const txt=ta.value.trim();if(!txt)return;
