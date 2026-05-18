@@ -38,7 +38,7 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log('\n🎨 ========================================');
   console.log(`   inkr — Serveur démarré avec succès !`);
   console.log(`   👉 http://localhost:${PORT}`);
