@@ -23,8 +23,8 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none;}
 .nav{position:fixed;top:0;left:0;right:0;z-index:999;height:var(--nav);background:rgba(10,10,10,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.08);transition:all .3s;}
 .nav.light{background:rgba(255,255,255,.92);border-bottom-color:rgba(0,0,0,.08);}
 .nav-i{max-width:1280px;margin:0 auto;padding:0 24px;height:100%;display:flex;align-items:center;gap:2px;}
-.logo{font-size:19px;font-weight:700;letter-spacing:-.6px;color:white;flex-shrink:0;margin-right:16px;cursor:pointer;}
-.nav.light .logo{color:var(--black);}
+.logo{font-size:22px;font-weight:900;letter-spacing:-1px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex-shrink:0;margin-right:16px;cursor:pointer;}
+.nav.light .logo{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .nav-tab{padding:8px 14px;border-radius:8px;font-size:13.5px;font-weight:500;color:rgba(255,255,255,.5);background:transparent;border:none;transition:all .2s;cursor:pointer;white-space:nowrap;position:relative;}
 .nav-tab:hover{color:white;background:rgba(255,255,255,.07);}
 .nav-tab.active{color:white;}
@@ -508,8 +508,13 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 
   /* TOURNEE VIEW */
   .tr-hero{padding:36px 18px 20px;}
-  .tr-city-bar{padding:0 18px 20px;}
-  .tournee-grid{grid-template-columns:1fr;padding:0 18px 60px;gap:14px;}
+  .tr-city-bar{padding:0 18px 16px;}
+  .tournee-grid{display:flex;flex-direction:row;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:14px;padding:0 18px 60px;scrollbar-width:none;grid-template-columns:unset;}
+  .tournee-grid::-webkit-scrollbar{display:none;}
+  .tournee-grid .tr-card{min-width:82vw;scroll-snap-align:start;flex-shrink:0;}
+  .swipe-hint{display:flex;align-items:center;gap:8px;padding:0 18px 12px;font-size:12px;font-weight:600;color:var(--g3);letter-spacing:.3px;}
+  .swipe-hint-arrow{animation:swipeAnim 1.4s ease-in-out infinite;}
+  @keyframes swipeAnim{0%,100%{transform:translateX(0);}50%{transform:translateX(7px);}}
 
   /* BLOG VIEW */
   .bv-hero{padding:36px 18px 24px;}
@@ -643,7 +648,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
     </div>
   </section>
 
-  <section class="feat dk rev">
+  <section class="feat dk rev" id="sect-tournee-feat">
     <div class="feat-i">
       <div>
         <div class="feat-tag r">Artistes en tournée</div>
@@ -668,7 +673,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   </section>
 
   <!-- BLOG PREVIEW -->
-  <section class="blog-section">
+  <section class="blog-section" id="sect-blog">
     <div class="blog-section-i">
       <div class="blog-head r">
         <div><span class="stag">Blog &amp; SEO</span><h2 class="sh2" style="margin-bottom:0">Tout savoir sur le tatouage.</h2></div>
@@ -752,6 +757,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
       <p>Abonne-toi. Quand ils passent dans ta ville — notification push immédiate.</p>
     </div>
     <div class="tr-city-bar city-bar" id="trCityBar"></div>
+    <div class="swipe-hint" id="swipeHint" style="display:none">Glisse pour explorer <span class="swipe-hint-arrow">→</span></div>
     <div class="tournee-grid" id="tourneeGrid"></div>
   </div>
 </div>
@@ -934,6 +940,7 @@ function showView(id){
   nav.classList.toggle('dark',!light.includes(id));
   if(id==='map'&&!mapInited){setTimeout(initMap,120);mapInited=true;}
   if(id==='blog')renderBlogFull();
+  if(id==='tournee')showSwipeHint();
   observe();
 }
 function goFlash(){showView('home');setTimeout(()=>document.getElementById('flash').scrollIntoView({behavior:'smooth'}),100);}
@@ -1310,6 +1317,36 @@ function observe(){
 // ═══════════════════ COUNTERS ═══════════════════
 const cio=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting&&x.target.dataset.target){const t=parseInt(x.target.dataset.target);let v=0;const s=t/90;const ti=setInterval(()=>{v=Math.min(v+s,t);x.target.textContent=(t>=1000?Math.floor(v).toLocaleString('fr-FR'):Math.floor(v))+'+';if(v>=t)clearInterval(ti);},16);cio.unobserve(x.target);}});},{threshold:.5});
 document.querySelectorAll('[data-target]').forEach(el=>cio.observe(el));
+
+// ═══════════════════ AUTO-TAB ON SCROLL ═══════════════════
+const sectionTabMap = [
+  { id: 'sect-tournee-feat', tab: 'tournee' },
+  { id: 'flash',             tab: 'flash'   },
+  { id: 'sect-blog',         tab: 'blog'    },
+  { id: 'discover',          tab: 'home'    },
+];
+const navIO = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting) return;
+    if (!document.getElementById('view-home').classList.contains('active')) return;
+    const map = sectionTabMap.find(m => m.id === entry.target.id);
+    if (!map) return;
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    const tab = document.getElementById('tab-' + map.tab);
+    if (tab) tab.classList.add('active');
+  });
+}, { threshold: 0, rootMargin: '-25% 0px -55% 0px' });
+sectionTabMap.forEach(m => {
+  const el = document.getElementById(m.id);
+  if (el) navIO.observe(el);
+});
+
+// ═══════════════════ SWIPE HINT (mobile only) ═══════════════════
+function showSwipeHint() {
+  if (window.innerWidth <= 820) {
+    document.getElementById('swipeHint').style.display = 'flex';
+  }
+}
 
 // ═══════════════════ INIT ═══════════════════
 renderArtists();
