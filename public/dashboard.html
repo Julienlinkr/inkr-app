@@ -162,6 +162,43 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
 .client-row.active{background:var(--acl);}
 .cr-photo{width:30px;height:30px;border-radius:50%;background:var(--acl);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;color:var(--accent);overflow:hidden;}
 .cr-photo img{width:100%;height:100%;object-fit:cover;}
+
+/* CRM CARD - AIRBNB STYLE */
+.client-detail-col{overflow-y:auto;padding:0;}
+.crm-card{max-width:620px;margin:0 auto;padding:28px 28px 40px;}
+.crm-hero{display:flex;align-items:center;gap:16px;margin-bottom:0;padding-bottom:22px;border-bottom:1px solid var(--border);}
+.crm-avatar-wrap{flex-shrink:0;}
+.crm-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#667eea22,#a855f722);border:2px solid rgba(139,92,246,.3);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:var(--accent);overflow:hidden;letter-spacing:-1px;}
+.crm-avatar img{width:100%;height:100%;object-fit:cover;}
+.crm-hero-meta{flex:1;min-width:0;}
+.crm-hero-name{font-size:20px;font-weight:800;letter-spacing:-.4px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.crm-hero-sub{font-size:12px;color:var(--muted);}
+.crm-edit-btn{flex-shrink:0;display:flex;align-items:center;gap:5px;padding:7px 14px;background:transparent;border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:600;color:var(--txt);cursor:pointer;transition:all .2s;}
+.crm-edit-btn:hover{border-color:var(--accent);color:var(--accent);}
+.crm-stats-row{display:flex;align-items:center;padding:18px 0;border-bottom:1px solid var(--border);}
+.crm-stat{flex:1;text-align:center;}
+.crm-stat-val{font-size:18px;font-weight:800;margin-bottom:2px;}
+.crm-stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.crm-stat-sep{width:1px;height:32px;background:var(--border);}
+.crm-body{padding:6px 0;}
+.crm-info-row{display:flex;align-items:flex-start;gap:13px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.crm-info-icon{font-size:15px;width:22px;flex-shrink:0;margin-top:1px;opacity:.7;}
+.crm-info-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.crm-info-val{font-size:14px;color:var(--txt);font-weight:500;}
+.crm-divider{height:1px;background:var(--border);margin:8px 0;}
+.crm-notes-block{padding:10px 0;}
+.crm-notes-text{font-size:14px;color:var(--txt);line-height:1.7;white-space:pre-wrap;}
+.crm-tags-wrap{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0;}
+.crm-tag{padding:4px 11px;background:var(--acl);border:1px solid rgba(139,92,246,.25);border-radius:20px;font-size:11px;font-weight:600;color:var(--accent);}
+.crm-actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:20px;border-top:1px solid var(--border);margin-top:8px;}
+.crm-action-btn{flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-weight:600;color:var(--txt);cursor:pointer;transition:all .2s;}
+.crm-action-btn:hover{border-color:var(--accent);color:var(--accent);}
+.crm-action-btn.crm-action-danger:hover{border-color:var(--red);color:var(--red);}
+.crm-edit-body{padding-top:20px;}
+.crm-edit-section{margin-bottom:18px;}
+.crm-edit-section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;}
+.crm-edit-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.crm-edit-field label{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
 .cr-name{font-size:12px;font-weight:600;}
 .cr-last{font-size:10px;color:var(--muted);}
 .client-detail-col{overflow-y:auto;padding:18px;}
@@ -1241,50 +1278,105 @@ async function saveClient(){
   document.getElementById('add-client-form').style.display='none';
   loadClients();
 }
+function renderClientCard(id, editMode=false){
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  const fullname=[c.prenom,c.name].filter(Boolean).join(' ');
+  const initials=fullname.split(' ').filter(Boolean).map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  const clientRDV=appointments.filter(a=>a.client_email===c.email||a.client_name===fullname||a.client_name===c.name);
+  const age=c.date_naissance?Math.floor((new Date()-new Date(c.date_naissance))/31557600000):(c.age||0);
+  const ageStr=age>0?`${age} ans`:'';
+  const anniv=c.date_naissance?new Date(c.date_naissance).toLocaleDateString('fr-FR',{day:'numeric',month:'long'}):'';
+  const tags=JSON.parse(c.tags||'[]');
+  const clientSince=new Date(c.created_at||Date.now()).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  const info=document.getElementById('client-info');
+  if(editMode){
+    info.innerHTML=`
+    <div class="crm-card">
+      <div class="crm-hero">
+        <div class="crm-avatar-wrap">
+          <div class="crm-avatar">${c.photo_url?`<img src="${c.photo_url}" alt="">`:(initials||'?')}</div>
+        </div>
+        <div class="crm-hero-meta">
+          <div class="crm-hero-name">${fullname||'Nouveau client'}</div>
+          <div class="crm-hero-sub">${[c.city,ageStr].filter(Boolean).join(' · ')||'Aucune info'}</div>
+        </div>
+        <div style="display:flex;gap:6px;margin-left:auto;">
+          <button class="btn btn-ghost btn-sm" onclick="renderClientCard(${id},false)" style="font-size:11px;">✕ Annuler</button>
+          <button class="btn btn-primary btn-sm" onclick="updateClient(${id})" style="font-size:11px;">💾 Sauvegarder</button>
+        </div>
+      </div>
+      <div class="crm-edit-body">
+        <div class="crm-edit-section">
+          <div class="crm-edit-section-title">Identité</div>
+          <div class="crm-edit-row">
+            <div class="crm-edit-field"><label>Prénom</label><input class="form-control" id="ce-prenom" value="${(c.prenom||'').replace(/"/g,'&quot;')}" placeholder="Sophie"></div>
+            <div class="crm-edit-field"><label>Nom</label><input class="form-control" id="ce-name" value="${(c.name||'').replace(/"/g,'&quot;')}" placeholder="Martin"></div>
+          </div>
+          <div class="crm-edit-row">
+            <div class="crm-edit-field"><label>Date de naissance</label><input class="form-control" id="ce-dob" type="date" value="${c.date_naissance||''}"></div>
+            <div class="crm-edit-field"><label>Ville</label><input class="form-control" id="ce-city" value="${(c.city||'').replace(/"/g,'&quot;')}" placeholder="Bordeaux"></div>
+          </div>
+        </div>
+        <div class="crm-divider"></div>
+        <div class="crm-edit-section">
+          <div class="crm-edit-section-title">Contact</div>
+          <div class="crm-edit-row">
+            <div class="crm-edit-field"><label>Email</label><input class="form-control" id="ce-email" type="email" value="${(c.email||'').replace(/"/g,'&quot;')}" placeholder="sophie@email.com"></div>
+            <div class="crm-edit-field"><label>Téléphone</label><input class="form-control" id="ce-phone" type="tel" value="${(c.phone||'').replace(/"/g,'&quot;')}" placeholder="06 xx xx xx xx"></div>
+          </div>
+        </div>
+        <div class="crm-divider"></div>
+        <div class="crm-edit-section">
+          <div class="crm-edit-section-title">Notes & préférences</div>
+          <textarea class="form-control" id="ce-notes" style="min-height:90px;width:100%;">${c.notes||''}</textarea>
+        </div>
+        <div id="ce-save-msg" style="margin-top:10px;font-size:12px;color:var(--green);display:none;">✅ Fiche mise à jour !</div>
+      </div>
+    </div>`;
+  } else {
+    info.innerHTML=`
+    <div class="crm-card">
+      <div class="crm-hero">
+        <div class="crm-avatar-wrap">
+          <div class="crm-avatar">${c.photo_url?`<img src="${c.photo_url}" alt="">`:(initials||'?')}</div>
+        </div>
+        <div class="crm-hero-meta">
+          <div class="crm-hero-name">${fullname||'—'}</div>
+          <div class="crm-hero-sub">${[c.city,ageStr].filter(Boolean).join(' · ')||'&nbsp;'}</div>
+        </div>
+        <button class="crm-edit-btn" onclick="renderClientCard(${id},true)" title="Modifier">✏️ Modifier</button>
+      </div>
+      <div class="crm-stats-row">
+        <div class="crm-stat"><div class="crm-stat-val">${clientRDV.length}</div><div class="crm-stat-lbl">Séances</div></div>
+        <div class="crm-stat-sep"></div>
+        <div class="crm-stat"><div class="crm-stat-val">${ageStr||'—'}</div><div class="crm-stat-lbl">Âge</div></div>
+        <div class="crm-stat-sep"></div>
+        <div class="crm-stat"><div class="crm-stat-val" style="font-size:12px;">${clientSince}</div><div class="crm-stat-lbl">Client depuis</div></div>
+      </div>
+      <div class="crm-body">
+        ${anniv?`<div class="crm-info-row"><span class="crm-info-icon">🎂</span><div><div class="crm-info-label">Anniversaire</div><div class="crm-info-val">${anniv}</div></div></div>`:''}
+        ${c.email?`<div class="crm-info-row"><span class="crm-info-icon">✉️</span><div><div class="crm-info-label">Email</div><div class="crm-info-val">${c.email}</div></div></div>`:''}
+        ${c.phone?`<div class="crm-info-row"><span class="crm-info-icon">📞</span><div><div class="crm-info-label">Téléphone</div><div class="crm-info-val">${c.phone}</div></div></div>`:''}
+        ${c.city?`<div class="crm-info-row"><span class="crm-info-icon">📍</span><div><div class="crm-info-label">Ville</div><div class="crm-info-val">${c.city}</div></div></div>`:''}
+        ${c.notes?`<div class="crm-divider"></div><div class="crm-notes-block"><div class="crm-info-label" style="margin-bottom:6px;">Notes</div><div class="crm-notes-text">${c.notes.replace(/\n/g,'<br>')}</div></div>`:''}
+        ${tags.length?`<div class="crm-divider"></div><div class="crm-tags-wrap">${tags.map(t=>`<span class="crm-tag">${t}</span>`).join('')}</div>`:''}
+      </div>
+      <div class="crm-actions">
+        <button class="crm-action-btn" onclick="dashGo('dp-campaigns',document.getElementById('nav-campaigns'));showNewCamp();">📣<span>Campagne</span></button>
+        ${c.email?`<button class="crm-action-btn" onclick="openEmailModal(${c.id},'${c.email}','${c.name}')">✉️<span>Envoyer un email</span></button>`:''}
+        <button class="crm-action-btn crm-action-danger" onclick="deleteClient(${c.id})">🗑<span>Supprimer</span></button>
+      </div>
+    </div>`;
+  }
+}
 async function openClient(id){
   const c=clients.find(x=>x.id===id);if(!c)return;
   document.querySelectorAll('.client-row').forEach(r=>r.classList.remove('active'));
   document.getElementById('cr-'+id)?.classList.add('active');
   document.getElementById('add-client-form').style.display='none';
   document.getElementById('client-placeholder').style.display='none';
-  const info=document.getElementById('client-info');info.style.display='block';
-  const fullname=[c.prenom,c.name].filter(Boolean).join(' ');
-  const initials=fullname.split(' ').filter(Boolean).map(n=>n[0]).join('').slice(0,2).toUpperCase();
-  const clientRDV=appointments.filter(a=>a.client_email===c.email||a.client_name===fullname||a.client_name===c.name);
-  const ageDisplay=c.date_naissance?`${Math.floor((new Date()-new Date(c.date_naissance))/31557600000)} ans`:(c.age&&c.age>0?`${c.age} ans`:'—');
-  info.innerHTML=`
-    <div style="display:flex;align-items:center;gap:11px;margin-bottom:16px;">
-      <div style="width:46px;height:46px;border-radius:50%;background:var(--acl);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--accent);flex-shrink:0;overflow:hidden;">
-        ${c.photo_url?`<img src="${c.photo_url}" style="width:100%;height:100%;object-fit:cover;">`:''}${!c.photo_url?initials:''}
-      </div>
-      <div style="flex:1;">
-        <div style="font-size:16px;font-weight:800;">${fullname||'—'}</div>
-        <div style="font-size:11px;color:var(--muted);">${[c.city,ageDisplay!=='—'?ageDisplay:null].filter(Boolean).join(' · ')} · ${clientRDV.length} RDV</div>
-      </div>
-      <button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">Supprimer</button>
-    </div>
-    <div class="grid-2" style="margin-bottom:0;">
-      <div class="form-group"><label>Prénom</label><input class="form-control" id="ce-prenom" value="${(c.prenom||'').replace(/"/g,'&quot;')}"></div>
-      <div class="form-group"><label>Nom</label><input class="form-control" id="ce-name" value="${(c.name||'').replace(/"/g,'&quot;')}"></div>
-    </div>
-    <div class="grid-2">
-      <div class="form-group"><label>Email</label><input class="form-control" id="ce-email" type="email" value="${(c.email||'').replace(/"/g,'&quot;')}"></div>
-      <div class="form-group"><label>Téléphone</label><input class="form-control" id="ce-phone" type="tel" value="${(c.phone||'').replace(/"/g,'&quot;')}"></div>
-    </div>
-    <div class="grid-2">
-      <div class="form-group"><label>Ville</label><input class="form-control" id="ce-city" value="${(c.city||'').replace(/"/g,'&quot;')}"></div>
-      <div class="form-group"><label>Date de naissance</label><input class="form-control" id="ce-dob" type="date" value="${c.date_naissance||''}"></div>
-    </div>
-    <div class="form-group"><label>Notes (style préféré, allergies, infos importantes…)</label>
-      <textarea class="form-control" id="ce-notes" style="min-height:80px;">${c.notes||''}</textarea>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-      <button class="btn btn-primary btn-sm" onclick="updateClient(${c.id})">💾 Sauvegarder</button>
-      <button class="btn btn-ghost btn-sm" onclick="dashGo('dp-campaigns',document.getElementById('nav-campaigns'));showNewCamp();">📣 Campagne</button>
-      ${c.email?`<button class="btn btn-ghost btn-sm" onclick="openEmailModal(${c.id},'${c.email}','${c.name}')">✉️ Email</button>`:''}
-    </div>
-    <div id="ce-save-msg" style="margin-top:8px;font-size:12px;color:var(--green);display:none;">✅ Fiche mise à jour !</div>
-  `;
+  document.getElementById('client-info').style.display='block';
+  renderClientCard(id,false);
 }
 async function updateClient(id){
   const c=clients.find(x=>x.id===id);if(!c)return;
@@ -1298,18 +1390,15 @@ async function updateClient(id){
     city:document.getElementById('ce-city').value.trim(),
     notes:document.getElementById('ce-notes').value,
     tags:c.tags?JSON.parse(c.tags||'[]'):[],
-    age,
-    date_naissance:dob,
-    photo_url:c.photo_url||''
+    age,date_naissance:dob,photo_url:c.photo_url||''
   };
   const res=await fetch(`/api/clients/${id}`,{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(res.ok){
     Object.assign(c,body,{tags:JSON.stringify(body.tags)});
-    const msg=document.getElementById('ce-save-msg');
-    msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);
-    showNotif('✅ Fiche client mise à jour !','success');
+    showNotif('✅ Fiche mise à jour !','success');
     renderClients(clients);
     document.getElementById('cr-'+id)?.classList.add('active');
+    renderClientCard(id,false);
   } else {
     showNotif('❌ Erreur lors de la sauvegarde','error');
   }
