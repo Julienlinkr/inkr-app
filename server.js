@@ -40,13 +40,19 @@ app.get('/api/status', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('\n🎨 ========================================');
-  console.log(`   inkr — Serveur démarré avec succès !`);
-  console.log(`   👉 http://localhost:${PORT}`);
+  console.log(`   inkr — Serveur démarré sur le port ${PORT}`);
+  console.log(`   Node.js ${process.version}`);
   console.log('==========================================');
-  console.log('\n📋 Services configurés :');
-  console.log(`   Email  : ${process.env.EMAIL_USER && process.env.EMAIL_USER !== 'ton.email@gmail.com' ? '✅ Prêt' : '⚠️  Mode simulation (voir .env)'}`);
-  console.log(`   SMS    : ${process.env.TWILIO_ACCOUNT_SID && !process.env.TWILIO_ACCOUNT_SID.startsWith('ACxx') ? '✅ Prêt' : '⚠️  Mode simulation (voir .env)'}`);
-  console.log(`   Meta   : ${process.env.META_APP_ID ? '✅ Configuré' : '⚠️  Non configuré (voir .env)'}`);
-  console.log('\n💡 Tous les envois non configurés sont simulés dans le terminal.');
-  console.log('   Ouvre http://localhost:3000 dans ton navigateur !\n');
+  console.log('\n📋 Services :');
+  const hasResend = !!process.env.RESEND_API_KEY;
+  const emailFrom = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+  console.log(`   EMAIL  : ${hasResend ? `✅ Resend actif (from: ${emailFrom})` : '⚠️  RESEND_API_KEY manquant — mode simulation'}`);
+  if (hasResend && emailFrom.includes('onboarding@resend.dev')) {
+    console.log(`   EMAIL  : ⚠️  Domaine non vérifié — envoi limité à votre email Resend`);
+    console.log(`             → Vérifiez inkr.club sur resend.com/domains`);
+    console.log(`             → Puis ajoutez EMAIL_FROM=inkr <noreply@inkr.club> dans Railway`);
+  }
+  console.log(`   SMS    : ${process.env.TWILIO_ACCOUNT_SID && !process.env.TWILIO_ACCOUNT_SID.startsWith('ACxx') ? '✅ Twilio actif' : '⚠️  Mode simulation'}`);
+  console.log(`   DB     : ${process.env.DB_PATH || 'db/inkr.db (local)'}`);
+  console.log('\n');
 });

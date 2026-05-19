@@ -191,6 +191,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
 .tpl-lbl{font-size:10px;font-weight:600;}
 .ch-picker{display:flex;gap:6px;margin-bottom:13px;flex-wrap:wrap;}
 .ch-pick{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border:2px solid transparent;transition:all .15s;opacity:.35;}
+.aud-pick{padding:5px 12px;border-radius:980px;font-size:12px;font-weight:600;border:1.5px solid var(--border);color:var(--muted);cursor:pointer;transition:all .2s;background:transparent;white-space:nowrap;}
+.aud-pick:hover{border-color:var(--accent);color:var(--txt);}
+.aud-pick.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
 .ch-pick.sel{opacity:1;border-color:#fff;}
 .var-chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:11px;}
 .var-chip{background:var(--surface);border:1px solid var(--blue);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--blue);cursor:pointer;}
@@ -688,6 +691,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
           <div class="var-chip" onclick="insertV('{{studio}}')">{{studio}}</div>
           <div class="var-chip" onclick="insertV('{{lien_résa}}')">{{lien_résa}}</div>
         </div>
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Destinataires</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
+          <div class="aud-pick sel" data-aud="all" onclick="selectAud(this,'all')">👥 Tous les clients</div>
+          <div id="aud-tag-picks" style="display:contents;"></div>
+        </div>
+        <div id="aud-count" style="font-size:11px;color:var(--muted);margin-bottom:12px;"></div>
         <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Canaux</div>
         <div class="ch-picker">
           <div class="ch-pick sel" style="background:#4A9EFF;" title="Email" onclick="this.classList.toggle('sel')" data-ch="email">@</div>
@@ -1311,7 +1320,43 @@ function duplicateCamp(id){
   showNewCamp();
   showNotif('📋 Campagne dupliquée — modifiez et envoyez !','success');
 }
-function showNewCamp(){document.getElementById('new-camp-form').style.display='block';document.getElementById('camp-list').style.display='none';}
+let selectedAudience = 'all';
+function selectAud(el, aud) {
+  document.querySelectorAll('.aud-pick').forEach(a => a.classList.remove('sel'));
+  el.classList.add('sel');
+  selectedAudience = aud;
+  updateAudCount();
+}
+function updateAudCount() {
+  const el = document.getElementById('aud-count');
+  if (!el) return;
+  if (selectedAudience === 'all') {
+    el.textContent = `${clients.length} client(s) ciblé(s)`;
+  } else {
+    const tag = selectedAudience.replace('tag:', '').toLowerCase();
+    const count = clients.filter(c => { try { return JSON.parse(c.tags||'[]').some(t => t.toLowerCase() === tag); } catch { return false; } }).length;
+    el.textContent = `${count} client(s) avec le tag "${selectedAudience.replace('tag:','')}"`;
+  }
+}
+function renderAudPicks() {
+  const allTags = new Set();
+  clients.forEach(c => { try { JSON.parse(c.tags||'[]').forEach(t => { if(t) allTags.add(t); }); } catch {} });
+  const el = document.getElementById('aud-tag-picks');
+  if (!el) return;
+  el.innerHTML = [...allTags].map(tag =>
+    `<div class="aud-pick" data-aud="tag:${tag}" onclick="selectAud(this,'tag:${tag}')"># ${tag}</div>`
+  ).join('');
+  updateAudCount();
+}
+function showNewCamp(){
+  selectedAudience='all';
+  document.querySelectorAll('.aud-pick').forEach(a=>a.classList.remove('sel'));
+  const allBtn=document.querySelector('.aud-pick[data-aud="all"]');
+  if(allBtn) allBtn.classList.add('sel');
+  renderAudPicks();
+  document.getElementById('new-camp-form').style.display='block';
+  document.getElementById('camp-list').style.display='none';
+}
 function cancelCamp(){document.getElementById('new-camp-form').style.display='none';document.getElementById('camp-list').style.display='grid';}
 const TPLS=["Bonjour {{prénom}} ! 🔥 3 flashs disponibles à 100€. Places limitées ! Réservez : {{lien_résa}}","Bonjour {{prénom}} ! 😊 Ça fait un moment... De nouveaux designs vous attendent. Envie d'en parler ?","Joyeux anniversaire {{prénom}} ! 🎂 -15% sur votre prochain tatouage. À très vite !","🆕 Nouveau flash disponible ! Réservez : {{lien_résa}}","Bonjour {{prénom}}, message de {{studio}}..."];
 function selTpl(el,idx){document.querySelectorAll('.tpl-card').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');document.getElementById('c-msg').value=TPLS[idx];}
@@ -1320,14 +1365,20 @@ async function sendCamp(){
   const name=document.getElementById('c-name').value.trim()||'Campagne';
   const message=document.getElementById('c-msg').value.trim();
   const channels=[...document.querySelectorAll('.ch-pick.sel')].map(el=>el.dataset.ch);
+  const audience=selectedAudience||'all';
   if(!message){showNotif('Le message est vide','error');return;}
-  const res=await fetch('/api/campaigns',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,message,channels})});
+  const res=await fetch('/api/campaigns',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,message,channels,audience})});
   const{id}=await res.json();
   const r2=await fetch(`/api/campaigns/${id}/send`,{method:'POST',credentials:'include'});
   const result=await r2.json();
   const el=document.getElementById('camp-result');el.style.display='block';
-  if(result.success){el.style.background='rgba(46,204,113,.15)';el.style.color='var(--green)';el.textContent=`✅ Envoyé ! ${result.results.email} email(s) · ${result.results.sms} SMS.`;showNotif('✅ Campagne envoyée !','success');setTimeout(()=>{cancelCamp();loadCampaigns();},2000);}
-  else{el.style.background='rgba(231,76,60,.15)';el.style.color='var(--red)';el.textContent='❌ '+result.error;}
+  if(result.success){
+    const r=result.results;
+    el.style.background='rgba(46,204,113,.15)';el.style.color='var(--green)';
+    el.textContent=`✅ Envoyé à ${r.audience_count} client(s) · ${r.email} email(s) · ${r.sms} SMS.`;
+    showNotif('✅ Campagne envoyée !','success');
+    setTimeout(()=>{cancelCamp();loadCampaigns();},2500);
+  } else{el.style.background='rgba(231,76,60,.15)';el.style.color='var(--red)';el.textContent='❌ '+result.error;}
 }
 async function sendCampId(id){
   const r=await fetch(`/api/campaigns/${id}/send`,{method:'POST',credentials:'include'});

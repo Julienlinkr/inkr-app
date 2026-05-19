@@ -41,21 +41,38 @@ router.post('/:id/send', requireAuth, async (req, res) => {
 
   const channels = JSON.parse(campaign.channels || '[]');
   const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.user.userId);
-  const clients = db.prepare('SELECT * FROM clients WHERE user_id = ?').all(req.user.userId);
+  const appUrl = process.env.APP_URL || 'https://inkr-app-production.up.railway.app';
 
-  const results = { email: 0, sms: 0, errors: [] };
+  // ── Ciblage par audience ──
+  const audience = campaign.audience || 'all';
+  let clients;
+  if (audience === 'all') {
+    clients = db.prepare('SELECT * FROM clients WHERE user_id = ?').all(req.user.userId);
+  } else if (audience.startsWith('tag:')) {
+    const tag = audience.replace('tag:', '').toLowerCase();
+    const all = db.prepare('SELECT * FROM clients WHERE user_id = ?').all(req.user.userId);
+    clients = all.filter(c => {
+      try { return JSON.parse(c.tags || '[]').some(t => t.toLowerCase() === tag); }
+      catch { return false; }
+    });
+  } else {
+    clients = db.prepare('SELECT * FROM clients WHERE user_id = ?').all(req.user.userId);
+  }
+
+  const results = { email: 0, sms: 0, errors: [], audience_count: clients.length };
 
   for (const client of clients) {
+    const prenom = (client.prenom || client.name.split(' ')[0]);
     const msg = campaign.message
-      .replace(/\{\{prénom\}\}/g, client.name.split(' ')[0])
+      .replace(/\{\{prénom\}\}/g, prenom)
       .replace(/\{\{nom\}\}/g, client.name)
       .replace(/\{\{studio\}\}/g, user.studio_name || 'notre studio')
-      .replace(/\{\{lien_résa\}\}/g, `http://localhost:3000`);
+      .replace(/\{\{lien_résa\}\}/g, appUrl);
 
     // EMAIL
     if (channels.includes('email') && client.email) {
       try {
-        await sendEmail(client.email, `Message de ${user.studio_name || user.name}`, msg);
+        await sendEmail(client.email, `Message de ${user.studio_name || user.name}`, msg, user, appUrl, campaign.id);
         results.email++;
       } catch (e) {
         results.errors.push(`Email ${client.email}: ${e.message}`);
@@ -78,6 +95,21 @@ router.post('/:id/send', requireAuth, async (req, res) => {
     .run('sent', results.email + results.sms, campaign.id);
 
   res.json({ success: true, results });
+});
+
+// ============ TRACKING OUVERTURE (pixel 1x1, pas d'auth) ============
+router.get('/:id/track/open', (req, res) => {
+  try {
+    db.prepare('UPDATE campaigns SET open_count = open_count + 1 WHERE id = ?').run(req.params.id);
+  } catch(e) {}
+  const pixel = Buffer.from('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', 'base64');
+  res.writeHead(200, {
+    'Content-Type': 'image/gif',
+    'Content-Length': pixel.length,
+    'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+    'Pragma': 'no-cache'
+  });
+  res.end(pixel);
 });
 
 // ============ SUPPRIMER UNE CAMPAGNE ============
@@ -110,30 +142,85 @@ router.post('/test/sms', requireAuth, async (req, res) => {
   }
 });
 
+// ============ DIAGNOSTIC EMAIL ============
+router.get('/email/status', requireAuth, async (req, res) => {
+  const key = process.env.RESEND_API_KEY;
+  const from = process.env.EMAIL_FROM || 'inkr <onboarding@resend.dev>';
+  if (!key) return res.json({ ok: false, reason: 'RESEND_API_KEY manquant dans les variables Railway' });
+  try {
+    const resend = new Resend(key);
+    const domains = await resend.domains.list();
+    const verified = domains?.data?.filter(d => d.status === 'verified').map(d => d.name) || [];
+    const usingDefault = from.includes('onboarding@resend.dev');
+    res.json({
+      ok: true,
+      from,
+      apiKey: key.slice(0,8) + '...',
+      verifiedDomains: verified,
+      warning: usingDefault
+        ? 'Vous utilisez onboarding@resend.dev — envoi limité à votre propre email Resend. Vérifiez inkr.club pour envoyer à tous.'
+        : null
+    });
+  } catch(e) {
+    res.json({ ok: false, reason: e.message });
+  }
+});
+
 // ============ HELPERS ============
-async function sendEmail(to, subject, text) {
+async function sendEmail(to, subject, text, user = {}, appUrl = 'https://inkr-app-production.up.railway.app', campaignId = null) {
   if (!process.env.RESEND_API_KEY) {
-    console.log(`[EMAIL SIMULÉ] À: ${to} | Sujet: ${subject} | Message: ${text}`);
+    console.log(`⚠️  [EMAIL] Pas de RESEND_API_KEY — email simulé vers ${to}`);
     return { simulated: true };
   }
+  const from = process.env.EMAIL_FROM || 'inkr <onboarding@resend.dev>';
+  console.log(`📧 [EMAIL] Envoi depuis "${from}" vers ${to} | Sujet: ${subject}`);
+
+  const studioName = user.studio_name || user.name || '';
+  const replyTo = user.email || undefined;
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
+<body style="margin:0;padding:0;background:#f0f0f0;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f0f0;padding:32px 16px;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+  <tr><td style="background:#0A0A0A;border-radius:16px 16px 0 0;padding:28px 36px;text-align:center;">
+    <div style="font-size:38px;font-weight:900;letter-spacing:-1.5px;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">inkr</div>
+    ${studioName ? `<div style="font-size:12px;color:rgba(255,255,255,0.35);margin-top:5px;letter-spacing:1px;text-transform:uppercase;">${studioName}</div>` : ''}
+  </td></tr>
+  <tr><td style="background:#ffffff;padding:40px 36px;">
+    <p style="font-size:16px;line-height:1.85;color:#1a1a1a;margin:0 0 0 0;">${text.replace(/\n/g, '<br/>')}</p>
+  </td></tr>
+  <tr><td style="background:#ffffff;padding:0 36px 32px;text-align:center;">
+    <a href="${appUrl}/dashboard" style="display:inline-block;padding:13px 30px;background:linear-gradient(135deg,#667eea,#a855f7);color:#ffffff;border-radius:980px;font-size:14px;font-weight:700;text-decoration:none;">💬 Répondre via inkr</a>
+  </td></tr>
+  <tr><td style="background:#0A0A0A;border-radius:0 0 16px 16px;padding:28px 36px;">
+    ${studioName ? `<div style="font-size:14px;font-weight:700;color:#ffffff;margin-bottom:10px;">${studioName}</div>` : ''}
+    ${user.city ? `<div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:4px;">📍 &nbsp;${user.city}</div>` : ''}
+    ${user.phone ? `<div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:4px;">📞 &nbsp;${user.phone}</div>` : ''}
+    ${user.email ? `<div style="font-size:13px;margin-bottom:4px;"><a href="mailto:${user.email}" style="color:rgba(255,255,255,0.4);text-decoration:none;">✉️ &nbsp;${user.email}</a></div>` : ''}
+    <div style="margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07);font-size:11px;color:rgba(255,255,255,0.2);">
+      Envoyé via <a href="https://inkr.club" style="color:rgba(255,255,255,0.3);text-decoration:none;">inkr</a> · La plateforme des tatoueurs
+    </div>
+  </td></tr>
+</table>
+${campaignId ? `<img src="${appUrl}/api/campaigns/${campaignId}/track/open" width="1" height="1" style="display:none;border:0;" alt=""/>` : ''}
+</td></tr>
+</table>
+</body></html>`;
+
   const resend = new Resend(process.env.RESEND_API_KEY);
-  return resend.emails.send({
-    from: process.env.EMAIL_FROM || 'inkr <onboarding@resend.dev>',
-    to,
-    subject,
-    text,
-    html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;">
-      <div style="background:#FF5C35;padding:20px;text-align:center;">
-        <h1 style="color:white;margin:0;font-size:28px;">inkr</h1>
-      </div>
-      <div style="padding:30px;background:#f9f9f9;">
-        <p style="font-size:16px;line-height:1.6;">${text.replace(/\n/g, '<br>')}</p>
-      </div>
-      <div style="padding:16px;text-align:center;color:#888;font-size:12px;">
-        Envoyé via inkr · La plateforme des tatoueurs
-      </div>
-    </div>`
-  });
+  const payload = { from, to, subject, text, html };
+  if (replyTo) payload.replyTo = replyTo;
+
+  const result = await resend.emails.send(payload);
+  if (result.error) {
+    console.error(`❌ [EMAIL] Erreur Resend:`, result.error);
+    throw new Error(result.error.message || 'Erreur Resend inconnue');
+  }
+  console.log(`✅ [EMAIL] Envoyé avec succès. ID: ${result.data?.id}`);
+  return result;
 }
 
 async function sendSMS(to, message) {

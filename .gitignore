@@ -1,4 +1,6 @@
 node_modules/
 .env
-db/inkr.db
 *.db
+*.db-wal
+*.db-shm
+.DS_Store

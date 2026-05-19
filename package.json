@@ -7,16 +7,18 @@
     "start": "node server.js",
     "dev": "node server.js"
   },
+  "engines": {
+    "node": ">=22.5.0"
+  },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.1",
     "express": "^4.18.2",
+    "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.4.1",
+    "cors": "^2.8.5",
+    "resend": "^3.0.0",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.9",
-    "resend": "^6.12.3",
-    "twilio": "^4.23.0"
+    "twilio": "^4.23.0",
+    "cookie-parser": "^1.4.6"
   }
 }
