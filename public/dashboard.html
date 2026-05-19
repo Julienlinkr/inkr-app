@@ -1037,7 +1037,10 @@ async function doRegister(){
 async function checkAuth(){
   const res=await fetch('/api/auth/me',{credentials:'include'});
   if(res.ok){const{user}=await res.json();currentUser=user;showApp();}
-  else{window.location.href='/';}
+  else{
+    document.getElementById('auth-screen').style.display='flex';
+    document.getElementById('app').style.display='none';
+  }
 }
 function showApp(){
   document.getElementById('auth-screen').style.display='none';
