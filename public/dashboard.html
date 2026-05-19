@@ -1898,6 +1898,19 @@ function renderClientCard(id, editMode=false){
           </div>`;
         }).join('')}
       </div>`:''}
+      <div style="padding:18px 36px;border-top:1px solid #2a2a2a;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#666;margin-bottom:10px;">Automations</div>
+        ${Object.entries(AUTO_LABELS).map(([key,lbl])=>{
+          const on=getClientAutoState(id,key);
+          return`<div style="display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a;">
+            <div style="flex:1;">
+              <div style="font-size:12px;font-weight:600;color:${on?'#d0d0d0':'#666'}">${lbl.icon} ${lbl.title}</div>
+              <div style="font-size:10px;color:#666;margin-top:1px;">${lbl.desc}</div>
+            </div>
+            <label class="toggle" style="margin:0;flex-shrink:0;margin-top:2px;"><input type="checkbox" ${on?'checked':''} onchange="toggleClientAuto(${id},'${key}',this.checked)"><span class="toggle-slider"></span></label>
+          </div>`;
+        }).join('')}
+      </div>
       ${clientDocuments[id]&&clientDocuments[id].length?`<div style="padding:18px 36px;border-top:1px solid #2a2a2a;">
         <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#666;margin-bottom:10px;">Documents signés</div>
         ${clientDocuments[id].map(d=>`<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a;">
@@ -2497,6 +2510,23 @@ function toggleClientLoyalty(clientId,programId,enrolled){
   else if(!enrolled)p.clients=p.clients.filter(id=>id!==clientId);
   showNotif(enrolled?`✅ Client inscrit au programme "${p.name}" !`:`Programme "${p.name}" désactivé`,'success');
 }
+
+// ======== AUTOMATIONS PAR CLIENT ========
+const clientAutomations={}; // { clientId: { autoType: true/false } }
+function getClientAutoState(clientId,autoType){
+  // Client-specific override
+  if(clientAutomations[clientId]&&clientAutomations[clientId].hasOwnProperty(autoType))
+    return clientAutomations[clientId][autoType];
+  // Fall back to global automation state
+  const g=automations.find(a=>a.type===autoType);
+  return g?!!g.enabled:true; // default ON if no global setting loaded yet
+}
+function toggleClientAuto(clientId,autoType,enabled){
+  if(!clientAutomations[clientId])clientAutomations[clientId]={};
+  clientAutomations[clientId][autoType]=enabled;
+  const lbl=AUTO_LABELS[autoType];
+  showNotif(enabled?`✅ "${lbl?.title||autoType}" activée pour ce client`:`"${lbl?.title||autoType}" désactivée pour ce client`,'success');
+}
 function prefillDocFromClient(clientId){
   const c=clients.find(x=>x.id===clientId);if(!c)return;
   const age=c.date_naissance?Math.floor((new Date()-new Date(c.date_naissance))/31557600000):0;
@@ -2619,28 +2649,73 @@ let sigDrawing=false,sigLastX=0,sigLastY=0,currentSigDocClientId=null;
 function openSignatureModal(){
   const clientId=document.getElementById('doc-client-select')?.value||null;
   currentSigDocClientId=clientId;
-  document.getElementById('sig-modal-title').textContent=currentDocType==='minor'?'📋 Décharge pour mineur — Signature':'✍️ Consentement adulte — Signature';
+  const c=clientId?clients.find(x=>String(x.id)===String(clientId)):null;
+  const cName=c?[c.prenom,c.name].filter(Boolean).join(' '):'';
+  const docLabel=currentDocType==='minor'?'Décharge mineur':'Consentement adulte';
+  document.getElementById('sig-modal-title').textContent=(currentDocType==='minor'?'📋 ':'✍️ ')+docLabel+(cName?' — '+cName:'');
   document.getElementById('sig-doc-preview').innerHTML=buildDocPreviewHtml();
   const now=new Date();
-  document.getElementById('sig-timestamp').textContent='Signé le '+now.toLocaleDateString('fr-FR')+' à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('sig-timestamp').textContent='📅 Signé le '+now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
   document.getElementById('sig-result').style.display='none';
   document.getElementById('sig-modal').classList.add('open');
   setTimeout(initSigCanvas,80);
 }
 function buildDocPreviewHtml(){
-  const artistName=currentUser?.name||'[Artiste]';
-  const studio=currentUser?.studio_name||'[Studio]';
-  const name=document.getElementById('doc-minor-name')?.value||'[Nom]';
+  const artistName=currentUser?.name||'—';
+  const studio=currentUser?.studio_name||'—';
+  const city=currentUser?.city||'';
+  const phone=currentUser?.phone||'';
+  const name=document.getElementById('doc-minor-name')?.value||'';
   const dob=document.getElementById('doc-minor-dob')?.value;
-  const dobFr=dob?new Date(dob).toLocaleDateString('fr-FR'):'[Date de naissance]';
-  const parentName=document.getElementById('doc-parent-name')?.value||'[Représentant légal]';
-  const parentPhone=document.getElementById('doc-parent-phone')?.value||'[Téléphone]';
-  const tattooDesc=document.getElementById('doc-tattoo-desc')?.value||'[Description du tatouage]';
+  const dobFr=dob?new Date(dob).toLocaleDateString('fr-FR'):'';
+  const parentName=document.getElementById('doc-parent-name')?.value||'';
+  const parentPhone=document.getElementById('doc-parent-phone')?.value||'';
+  const tattooDesc=document.getElementById('doc-tattoo-desc')?.value||'';
   const sessionDate=document.getElementById('doc-session-date')?.value;
-  const sessionFr=sessionDate?new Date(sessionDate).toLocaleDateString('fr-FR'):'[Date de séance]';
-  const baseStyle='font-family:Georgia,serif;font-size:12px;line-height:1.7;color:#222;';
-  if(currentDocType==='minor'){return`<div style="${baseStyle}"><div style="text-align:center;margin-bottom:14px;border-bottom:2px solid #111;padding-bottom:12px;"><div style="font-size:22px;font-weight:900;letter-spacing:-1px;">inkr</div><div style="font-size:14px;font-weight:700;">AUTORISATION PARENTALE</div></div><p>Je soussigné(e) <strong>${parentName}</strong>, représentant(e) légal(e) de <strong>${name}</strong>, né(e) le <strong>${dobFr}</strong>, autorise <strong>${artistName}</strong> (${studio}) à réaliser le tatouage suivant :</p><div style="background:#efefef;padding:10px;border-left:3px solid #333;margin:10px 0;font-style:italic;">${tattooDesc}</div><p>Séance prévue le : <strong>${sessionFr}</strong> &nbsp; Tél. tuteur : <strong>${parentPhone}</strong></p></div>`;}
-  else{return`<div style="${baseStyle}"><div style="text-align:center;margin-bottom:14px;border-bottom:2px solid #111;padding-bottom:12px;"><div style="font-size:22px;font-weight:900;letter-spacing:-1px;">inkr</div><div style="font-size:14px;font-weight:700;">FICHE DE CONSENTEMENT — ADULTE</div></div><p>Client(e) : <strong>${name}</strong> &nbsp;&nbsp; Date : <strong>${sessionFr}</strong></p><div style="background:#efefef;padding:10px;border-left:3px solid #333;margin:10px 0;font-style:italic;">${tattooDesc}</div><p>Je soussigné(e) déclare être majeur(e) et consentir librement à ce tatouage réalisé par <strong>${artistName}</strong> (${studio}).</p></div>`;}
+  const sessionFr=sessionDate?new Date(sessionDate).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):'';
+  const now=new Date();
+  const nowFr=now.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})+' à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  const s=`font-family:'Helvetica Neue',Arial,sans-serif;`;
+  const field=(val,placeholder)=>`<span style="border-bottom:1.5px solid #333;display:inline-block;min-width:180px;padding:0 4px 1px;font-weight:600;color:${val?'#111':'#aaa'}">${val||placeholder}</span>`;
+  if(currentDocType==='minor'){
+    return`<div style="${s}color:#111;">
+      <div style="text-align:center;padding-bottom:14px;margin-bottom:18px;border-bottom:2px solid #111;">
+        <div style="font-size:26px;font-weight:900;letter-spacing:-1.5px;margin-bottom:2px;">inkr</div>
+        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#888;margin-bottom:10px;">Pro Studio</div>
+        <div style="font-size:17px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Autorisation parentale</div>
+        <div style="font-size:11px;color:#888;margin-top:3px;">Consentement tatouage mineur</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px;">
+        <tr><td style="padding:5px 0;color:#888;width:140px;">Artiste</td><td style="padding:5px 0;font-weight:600;">${artistName}${studio?' · '+studio:''}</td></tr>
+        ${city?`<tr><td style="padding:5px 0;color:#888;">Studio</td><td style="padding:5px 0;">${city}</td></tr>`:''}
+        <tr><td style="padding:5px 0;color:#888;">Mineur(e)</td><td style="padding:5px 0;">${field(name,'Prénom Nom')}</td></tr>
+        <tr><td style="padding:5px 0;color:#888;">Né(e) le</td><td style="padding:5px 0;">${field(dobFr,'—')}</td></tr>
+        <tr><td style="padding:5px 0;color:#888;">Représentant légal</td><td style="padding:5px 0;">${field(parentName,'Nom du parent/tuteur')}</td></tr>
+        <tr><td style="padding:5px 0;color:#888;">Téléphone tuteur</td><td style="padding:5px 0;">${field(parentPhone,'—')}</td></tr>
+        <tr><td style="padding:5px 0;color:#888;">Date de séance</td><td style="padding:5px 0;font-weight:600;">${field(sessionFr,'—')}</td></tr>
+      </table>
+      <div style="background:#f5f5f5;border-left:3px solid #111;padding:10px 14px;font-size:12px;margin-bottom:14px;font-style:italic;color:#444;">${tattooDesc||'Description du tatouage…'}</div>
+      <p style="font-size:11px;line-height:1.7;color:#444;">Je soussigné(e), représentant(e) légal(e) de l'enfant désigné(e) ci-dessus, autorise <strong>${artistName}</strong> à réaliser ce tatouage. Je certifie être le/la représentant(e) légal(e), avoir pris connaissance des risques, et que l'enfant ne présente aucune allergie connue. Je m'engage à veiller aux soins post-tatouage.</p>
+      <div style="font-size:10px;color:#888;margin-top:10px;padding-top:8px;border-top:1px dashed #ddd;">Signé le ${nowFr}</div>
+    </div>`;
+  } else {
+    return`<div style="${s}color:#111;">
+      <div style="text-align:center;padding-bottom:14px;margin-bottom:18px;border-bottom:2px solid #111;">
+        <div style="font-size:26px;font-weight:900;letter-spacing:-1.5px;margin-bottom:2px;">inkr</div>
+        <div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#888;margin-bottom:10px;">Pro Studio</div>
+        <div style="font-size:17px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;">Fiche de consentement</div>
+        <div style="font-size:11px;color:#888;margin-top:3px;">Tatouage adulte</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px;">
+        <tr><td style="padding:5px 0;color:#888;width:140px;">Artiste</td><td style="padding:5px 0;font-weight:600;">${artistName}${studio?' · '+studio:''}</td></tr>
+        <tr><td style="padding:5px 0;color:#888;">Client(e)</td><td style="padding:5px 0;">${field(name,'Prénom Nom')}</td></tr>
+        <tr><td style="padding:5px 0;color:#888;">Date de séance</td><td style="padding:5px 0;font-weight:600;">${field(sessionFr,'—')}</td></tr>
+      </table>
+      <div style="background:#f5f5f5;border-left:3px solid #111;padding:10px 14px;font-size:12px;margin-bottom:14px;font-style:italic;color:#444;">${tattooDesc||'Description du tatouage…'}</div>
+      <p style="font-size:11px;line-height:1.7;color:#444;">Je soussigné(e) déclare être majeur(e) et consentir librement à ce tatouage. Je certifie ne pas être sous l'influence de substances altérant mon jugement, ne pas présenter de contre-indication médicale connue, et avoir été informé(e) du caractère permanent et irréversible du tatouage. Je m'engage à respecter les soins post-tatouage.</p>
+      <div style="font-size:10px;color:#888;margin-top:10px;padding-top:8px;border-top:1px dashed #ddd;">Signé le ${nowFr}</div>
+    </div>`;
+  }
 }
 function initSigCanvas(){
   const canvas=document.getElementById('sig-canvas');if(!canvas)return;
@@ -2668,26 +2743,38 @@ function confirmSignature(){
   const canvas=document.getElementById('sig-canvas');if(!canvas)return;
   const ctx=canvas.getContext('2d');
   const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
-  if(!data.some(v=>v!==0)){showNotif('Veuillez signer le document','error');return;}
+  if(!data.some(v=>v!==0)){showNotif('Veuillez signer le document d\'abord','error');return;}
+  if(!currentSigDocClientId){showNotif('Sélectionnez un client CRM pour enregistrer','error');return;}
   const sigImage=canvas.toDataURL('image/png');
   const now=new Date();
-  const timestamp='Signé le '+now.toLocaleDateString('fr-FR')+' à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
-  const doc={id:Date.now(),type:currentDocType,typeName:currentDocType==='minor'?'Décharge mineur':'Consentement adulte',timestamp,signature:sigImage,
-    clientName:document.getElementById('doc-minor-name')?.value||'',
+  const timestamp='Signé le '+now.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'})+' à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  const clientName=document.getElementById('doc-minor-name')?.value||'';
+  const doc={
+    id:Date.now(),
+    type:currentDocType,
+    typeName:currentDocType==='minor'?'Décharge mineur':'Consentement adulte',
+    timestamp,
+    signature:sigImage,
+    clientName,
     tattooDesc:document.getElementById('doc-tattoo-desc')?.value||'',
-    sessionDate:document.getElementById('doc-session-date')?.value||''};
-  if(currentSigDocClientId){
-    if(!clientDocuments[currentSigDocClientId])clientDocuments[currentSigDocClientId]=[];
-    clientDocuments[currentSigDocClientId].push(doc);
-    // Refresh CRM card if open
-    const ar=document.querySelector('.client-row.active');
-    if(ar){const aid=parseInt(ar.id.replace('cr-',''));if(!isNaN(aid))renderClientCard(aid,false);}
-  }
+    sessionDate:document.getElementById('doc-session-date')?.value||''
+  };
+  if(!clientDocuments[currentSigDocClientId])clientDocuments[currentSigDocClientId]=[];
+  clientDocuments[currentSigDocClientId].push(doc);
+  // Refresh CRM card if that client is currently open
+  const ar=document.querySelector('.client-row.active');
+  if(ar){const aid=parseInt(ar.id.replace('cr-',''));if(!isNaN(aid)&&String(aid)===String(currentSigDocClientId))renderClientCard(aid,false);}
+  const c=clients.find(x=>String(x.id)===String(currentSigDocClientId));
+  const cName=c?[c.prenom,c.name].filter(Boolean).join(' '):clientName;
   const res=document.getElementById('sig-result');
-  res.style.display='block';res.style.background='rgba(46,204,113,.12)';res.style.color='var(--green)';
-  res.textContent='✅ Document signé et classé dans la fiche client !';
-  showNotif('✅ Document signé !','success');
-  setTimeout(()=>{closeSigModal();document.getElementById('doc-generator').style.display='none';},2200);
+  res.style.display='block';
+  res.style.background='rgba(46,204,113,.1)';
+  res.style.color='var(--green)';
+  res.style.border='1px solid rgba(46,204,113,.25)';
+  res.style.borderRadius='var(--r)';
+  res.innerHTML=`✅ Document signé et enregistré dans la fiche de <strong>${cName}</strong><br><span style="font-size:10px;opacity:.7;">${timestamp}</span>`;
+  showNotif('✅ Signé — classé dans la fiche '+cName,'success');
+  setTimeout(()=>{closeSigModal();document.getElementById('doc-generator').style.display='none';},2800);
 }
 function printSignedDoc(){
   // Capture current signature if exists
