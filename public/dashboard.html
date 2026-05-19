@@ -163,47 +163,72 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
 .cr-photo{width:30px;height:30px;border-radius:50%;background:var(--acl);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;color:var(--accent);overflow:hidden;}
 .cr-photo img{width:100%;height:100%;object-fit:cover;}
 
-/* CRM CARD - AIRBNB STYLE */
+/* CRM CARD — STYLE ÉDITORIAL */
 .client-detail-col{overflow-y:auto;padding:0;}
-.crm-card{max-width:620px;margin:0 auto;padding:28px 28px 40px;}
-.crm-hero{display:flex;align-items:center;gap:16px;margin-bottom:0;padding-bottom:22px;border-bottom:1px solid var(--border);}
-.crm-avatar-wrap{flex-shrink:0;}
-.crm-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#667eea22,#a855f722);border:2px solid rgba(139,92,246,.3);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:var(--accent);overflow:hidden;letter-spacing:-1px;}
-.crm-avatar img{width:100%;height:100%;object-fit:cover;}
-.crm-hero-meta{flex:1;min-width:0;}
-.crm-hero-name{font-size:20px;font-weight:800;letter-spacing:-.4px;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.crm-hero-sub{font-size:12px;color:var(--muted);}
-.crm-edit-btn{flex-shrink:0;display:flex;align-items:center;gap:5px;padding:7px 14px;background:transparent;border:1px solid var(--border);border-radius:20px;font-size:12px;font-weight:600;color:var(--txt);cursor:pointer;transition:all .2s;}
-.crm-edit-btn:hover{border-color:var(--accent);color:var(--accent);}
-.crm-stats-row{display:flex;align-items:center;padding:18px 0;border-bottom:1px solid var(--border);}
-.crm-stat{flex:1;text-align:center;}
-.crm-stat-val{font-size:18px;font-weight:800;margin-bottom:2px;}
-.crm-stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
-.crm-stat-sep{width:1px;height:32px;background:var(--border);}
-.crm-body{padding:6px 0;}
-.crm-info-row{display:flex;align-items:flex-start;gap:13px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.04);}
-.crm-info-icon{font-size:15px;width:22px;flex-shrink:0;margin-top:1px;opacity:.7;}
-.crm-info-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
-.crm-info-val{font-size:14px;color:var(--txt);font-weight:500;}
-.crm-divider{height:1px;background:var(--border);margin:8px 0;}
-.crm-notes-block{padding:10px 0;}
-.crm-notes-text{font-size:14px;color:var(--txt);line-height:1.7;white-space:pre-wrap;}
-.crm-tags-wrap{display:flex;flex-wrap:wrap;gap:6px;padding:10px 0;}
-.crm-tag{padding:4px 11px;background:var(--acl);border:1px solid rgba(139,92,246,.25);border-radius:20px;font-size:11px;font-weight:600;color:var(--accent);}
-.crm-actions{display:flex;gap:8px;flex-wrap:wrap;padding-top:20px;border-top:1px solid var(--border);margin-top:8px;}
-.crm-action-btn{flex:1;min-width:120px;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px 14px;background:var(--card);border:1px solid var(--border);border-radius:var(--r);font-size:13px;font-weight:600;color:var(--txt);cursor:pointer;transition:all .2s;}
-.crm-action-btn:hover{border-color:var(--accent);color:var(--accent);}
-.crm-action-btn.crm-action-danger:hover{border-color:var(--red);color:var(--red);}
-.crm-edit-body{padding-top:20px;}
-.crm-edit-section{margin-bottom:18px;}
-.crm-edit-section-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;}
+.crm-card{max-width:600px;}
+
+/* Header éditorial */
+.crm-header{padding:32px 36px 24px;border-bottom:1px solid rgba(255,255,255,.06);}
+.crm-header-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;}
+.crm-name{font-size:30px;font-weight:900;letter-spacing:-1px;line-height:1;color:#fff;}
+.crm-edit-trigger{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.3);background:none;border:none;cursor:pointer;padding:4px 0;transition:color .15s;}
+.crm-edit-trigger:hover{color:#fff;}
+.crm-header-sub{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.25);}
+
+/* Stats en ligne — typographie forte */
+.crm-stats{display:flex;gap:0;padding:22px 36px;border-bottom:1px solid rgba(255,255,255,.06);}
+.crm-stat{flex:1;padding-right:28px;margin-right:28px;border-right:1px solid rgba(255,255,255,.06);}
+.crm-stat:last-child{border-right:none;padding-right:0;margin-right:0;}
+.crm-stat-n{font-size:26px;font-weight:900;letter-spacing:-1px;color:#fff;line-height:1;}
+.crm-stat-l{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.25);margin-top:3px;}
+
+/* Rows d'info — clean, table-like */
+.crm-rows{padding:0 36px;}
+.crm-row{display:flex;align-items:baseline;gap:20px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.crm-row:last-child{border-bottom:none;}
+.crm-row-lbl{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.25);width:72px;flex-shrink:0;}
+.crm-row-val{font-size:13px;color:rgba(255,255,255,.8);line-height:1.5;}
+
+/* Tags — minimaliste */
+.crm-tags-line{display:flex;flex-wrap:wrap;gap:5px;}
+.crm-tag-pill{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.4);padding:3px 8px;border:1px solid rgba(255,255,255,.1);border-radius:2px;}
+
+/* Notes */
+.crm-notes{padding:18px 36px 0;font-size:13px;color:rgba(255,255,255,.5);line-height:1.8;border-top:1px solid rgba(255,255,255,.06);font-style:italic;}
+
+/* Actions — texte pur */
+.crm-actions-row{display:flex;align-items:center;gap:0;padding:20px 36px;border-top:1px solid rgba(255,255,255,.06);margin-top:4px;}
+.crm-act{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,.3);background:none;border:none;cursor:pointer;padding:6px 16px 6px 0;transition:color .15s;}
+.crm-act:hover{color:#fff;}
+.crm-act-sep{width:1px;height:12px;background:rgba(255,255,255,.1);margin-right:16px;}
+.crm-act.del:hover{color:var(--red);}
+
+/* Mode édition */
+.crm-edit-wrap{padding:28px 36px;}
+.crm-edit-section-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:12px;margin-top:22px;}
+.crm-edit-section-title:first-child{margin-top:0;}
 .crm-edit-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.crm-edit-field label{display:block;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
-.crm-tag-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
-.crm-tag-check{display:flex;align-items:center;gap:5px;padding:6px 10px;border:1px solid var(--border);border-radius:20px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;user-select:none;}
+.crm-edit-field label{display:block;font-size:9px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+
+/* Tag checkboxes */
+.crm-tag-grid{display:flex;flex-wrap:wrap;gap:5px;}
+.crm-tag-check{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border:1px solid rgba(255,255,255,.1);border-radius:2px;font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:rgba(255,255,255,.35);cursor:pointer;transition:all .15s;user-select:none;}
 .crm-tag-check input{display:none;}
-.crm-tag-check.on{background:var(--acl);border-color:rgba(139,92,246,.4);color:var(--accent);}
-.crm-tag-check:hover{border-color:var(--accent);color:var(--txt);}
+.crm-tag-check.on{border-color:rgba(255,255,255,.5);color:#fff;background:rgba(255,255,255,.06);}
+.crm-tag-check:hover{border-color:rgba(255,255,255,.3);color:rgba(255,255,255,.7);}
+
+/* Agenda styles */
+.rdv-ac-drop{position:absolute;top:100%;left:0;right:0;background:#1a1a1a;border:1px solid var(--border);border-radius:var(--r);z-index:99;margin-top:2px;display:none;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+.rdv-ac-item{padding:9px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05);transition:background .1s;}
+.rdv-ac-item:hover{background:rgba(255,255,255,.05);}
+.rdv-ac-item:last-child{border-bottom:none;}
+.rdv-ac-item strong{color:#fff;font-weight:600;}
+.rdv-ac-item span{color:var(--muted);}
+.rdv-style-grid{display:flex;flex-wrap:wrap;gap:5px;}
+.rdv-style-chip{display:inline-flex;align-items:center;gap:4px;padding:5px 11px;border:1px solid var(--border);border-radius:2px;font-size:11px;letter-spacing:.3px;color:var(--muted);cursor:pointer;transition:all .15s;user-select:none;}
+.rdv-style-chip input{display:none;}
+.rdv-style-chip:has(input:checked){border-color:rgba(255,255,255,.4);color:#fff;background:rgba(255,255,255,.05);}
+.rdv-style-chip:hover{border-color:var(--accent);color:var(--txt);}
 .cr-name{font-size:12px;font-weight:600;}
 .cr-last{font-size:10px;color:var(--muted);}
 .client-detail-col{overflow-y:auto;padding:18px;}
@@ -492,20 +517,36 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
 
       <!-- FORMULAIRE NOUVEAU RDV MANUEL -->
       <div class="new-rdv-form" id="new-rdv-form">
-        <div style="font-size:14px;font-weight:700;margin-bottom:13px;">+ Nouveau rendez-vous manuel</div>
+        <div style="font-size:14px;font-weight:700;margin-bottom:13px;">+ Nouveau rendez-vous</div>
         <div class="grid-2">
-          <div class="form-group"><label>Prénom & Nom client *</label><input class="form-control" id="nrdv-name" placeholder="Sophie Martin"></div>
-          <div class="form-group"><label>Téléphone</label><input class="form-control" id="nrdv-phone" type="tel" placeholder="+33 6 ..."></div>
+          <div class="form-group" style="position:relative;">
+            <label>Prénom *</label>
+            <input class="form-control" id="nrdv-prenom" placeholder="Sophie" autocomplete="off" oninput="rdvAutocomplete(this.value)" onblur="setTimeout(rdvCheckNewClient,200)">
+            <div id="rdv-ac-drop" class="rdv-ac-drop"></div>
+          </div>
+          <div class="form-group"><label>Nom *</label><input class="form-control" id="nrdv-nom" placeholder="Martin" autocomplete="off"></div>
         </div>
         <div class="grid-2">
           <div class="form-group"><label>Email</label><input class="form-control" id="nrdv-email" type="email"></div>
-          <div class="form-group"><label>Style</label>
-            <select class="form-control" id="nrdv-style">
-              <option value="">— Choisir —</option>
-              <option>Fine line</option><option>Réalisme</option><option>Japonais</option>
-              <option>Blackwork</option><option>Géométrique</option><option>Aquarelle</option>
-              <option>Old school</option><option>Flash</option><option>Lettering</option>
-            </select>
+          <div class="form-group"><label>Téléphone</label><input class="form-control" id="nrdv-phone" type="tel" placeholder="+33 6 ..."></div>
+        </div>
+        <div class="form-group">
+          <label>Style(s)</label>
+          <div class="rdv-style-grid" id="nrdv-style-grid">
+            <label class="rdv-style-chip"><input type="checkbox" value="Fine line"> Fine line</label>
+            <label class="rdv-style-chip"><input type="checkbox" value="Flash"> ⚡ Flash</label>
+            <label class="rdv-style-chip"><input type="checkbox" value="Japonais"> 🎌 Japonais</label>
+            <label class="rdv-style-chip"><input type="checkbox" value="Réalisme"> 🎨 Réalisme</label>
+            <label class="rdv-style-chip"><input type="checkbox" value="Blackwork"> ◼ Blackwork</label>
+            <label class="rdv-style-chip"><input type="checkbox" value="Old school"> ⚓ Old school</label>
+            <label class="rdv-style-chip"><input type="checkbox" value="Géométrique"> 🔷 Géo</label>
+            <label class="rdv-style-chip"><input type="checkbox" value="Néo-trad"> 🌸 Néo-trad</label>
+            <label class="rdv-style-chip"><input type="checkbox" value="Lettering"> ✍️ Lettering</label>
+            <label class="rdv-style-chip"><input type="checkbox" value="Aquarelle"> 🎨 Aquarelle</label>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:7px;">
+            <input class="form-control" id="nrdv-style-custom" placeholder="Autre style…" style="font-size:11px;">
+            <button class="btn btn-ghost btn-sm" onclick="rdvAddStyle()" style="white-space:nowrap;">+ Ajouter</button>
           </div>
         </div>
         <div class="grid-3">
@@ -518,12 +559,15 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
           <div class="form-group"><label>Taille</label>
             <select class="form-control" id="nrdv-size">
               <option value="">—</option>
-              <option>XS (< 5cm)</option><option>S (5-10cm)</option><option>M (10-20cm)</option>
-              <option>L (20-30cm)</option><option>XL (> 30cm)</option>
+              <option>XS (&lt; 5cm)</option><option>S (5-10cm)</option><option>M (10-20cm)</option>
+              <option>L (20-30cm)</option><option>XL (&gt; 30cm)</option>
             </select>
           </div>
         </div>
         <div class="form-group"><label>Notes / description</label><textarea class="form-control" id="nrdv-desc" style="min-height:55px;" placeholder="Description du projet..."></textarea></div>
+        <div id="nrdv-new-client-banner" style="display:none;padding:10px 12px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);border-radius:var(--r);font-size:12px;margin-bottom:10px;">
+          💡 Ce client n'est pas dans votre CRM. <label style="cursor:pointer;font-weight:700;"><input type="checkbox" id="nrdv-create-client" style="margin-right:4px;accent-color:var(--accent);">Créer automatiquement sa fiche client</label>
+        </div>
         <div style="display:flex;gap:7px;">
           <button class="btn btn-primary btn-sm" onclick="saveNewRDV()">Enregistrer</button>
           <button class="btn btn-ghost btn-sm" onclick="toggleNewRDVForm()">Annuler</button>
@@ -1093,18 +1137,72 @@ function toggleNewRDVForm(){
   const f=document.getElementById('new-rdv-form');
   f.classList.toggle('visible');
   if(f.classList.contains('visible')){
-    const today=new Date().toISOString().split('T')[0];
-    document.getElementById('nrdv-date').value=today;
+    document.getElementById('nrdv-date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('nrdv-prenom').focus();
   }
 }
+function rdvAutocomplete(val){
+  const drop=document.getElementById('rdv-ac-drop');
+  if(!val||val.length<2){drop.innerHTML='';drop.style.display='none';return;}
+  const q=val.toLowerCase();
+  const matches=clients.filter(c=>(c.prenom||'').toLowerCase().startsWith(q)||(c.name||'').toLowerCase().startsWith(q)).slice(0,6);
+  if(!matches.length){drop.style.display='none';return;}
+  drop.innerHTML=matches.map(c=>{
+    const full=[c.prenom,c.name].filter(Boolean).join(' ');
+    return`<div class="rdv-ac-item" onclick="rdvSelectClient(${c.id})">
+      <strong>${full}</strong>${c.phone?`<span> · ${c.phone}</span>`:''}${c.email?`<span> · ${c.email}</span>`:''}
+    </div>`;
+  }).join('');
+  drop.style.display='block';
+}
+function rdvSelectClient(id){
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  document.getElementById('nrdv-prenom').value=c.prenom||'';
+  document.getElementById('nrdv-nom').value=c.name||'';
+  document.getElementById('nrdv-email').value=c.email||'';
+  document.getElementById('nrdv-phone').value=c.phone||'';
+  document.getElementById('rdv-ac-drop').style.display='none';
+  document.getElementById('nrdv-new-client-banner').style.display='none';
+  showNotif(`Client ${[c.prenom,c.name].filter(Boolean).join(' ')} sélectionné`,'success');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#nrdv-prenom')&&!e.target.closest('#rdv-ac-drop')){
+    const d=document.getElementById('rdv-ac-drop');if(d)d.style.display='none';
+  }
+});
+function rdvAddStyle(){
+  const val=document.getElementById('nrdv-style-custom').value.trim();
+  if(!val)return;
+  const grid=document.getElementById('nrdv-style-grid');
+  const lbl=document.createElement('label');
+  lbl.className='rdv-style-chip';
+  lbl.innerHTML=`<input type="checkbox" value="${val}" checked> ${val}`;
+  grid.appendChild(lbl);
+  document.getElementById('nrdv-style-custom').value='';
+}
+function rdvCheckNewClient(){
+  const prenom=document.getElementById('nrdv-prenom').value.trim();
+  const nom=document.getElementById('nrdv-nom').value.trim();
+  if(!prenom&&!nom)return;
+  const found=clients.find(c=>{
+    const cp=(c.prenom||'').toLowerCase();
+    const cn=(c.name||'').toLowerCase();
+    return cp===prenom.toLowerCase()||cn===nom.toLowerCase()||(cp===prenom.toLowerCase()&&cn===nom.toLowerCase());
+  });
+  document.getElementById('nrdv-new-client-banner').style.display=found?'none':'block';
+}
 async function saveNewRDV(){
-  const name=document.getElementById('nrdv-name').value.trim();
+  const prenom=document.getElementById('nrdv-prenom').value.trim();
+  const nom=document.getElementById('nrdv-nom').value.trim();
   const date=document.getElementById('nrdv-date').value;
-  if(!name||!date){showNotif('Nom et date requis','error');return;}
+  if((!prenom&&!nom)||!date){showNotif('Prénom/Nom et date requis','error');return;}
+  const fullname=[prenom,nom].filter(Boolean).join(' ');
+  const styles=[...document.querySelectorAll('#nrdv-style-grid input:checked')].map(i=>i.value);
   const res=await fetch('/api/appointments',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({
-    client_name:name,client_email:document.getElementById('nrdv-email').value,
+    client_name:fullname,
+    client_email:document.getElementById('nrdv-email').value,
     client_phone:document.getElementById('nrdv-phone').value,
-    style:document.getElementById('nrdv-style').value,
+    style:styles.join(', '),
     body_zone:document.getElementById('nrdv-zone').value,
     size:document.getElementById('nrdv-size').value,
     description:document.getElementById('nrdv-desc').value,
@@ -1112,7 +1210,22 @@ async function saveNewRDV(){
     price:document.getElementById('nrdv-price').value||null,
     status:'manual'
   })});
-  if(res.ok){showNotif('✅ RDV ajouté !','success');toggleNewRDVForm();['nrdv-name','nrdv-email','nrdv-phone','nrdv-zone','nrdv-desc','nrdv-price'].forEach(id=>document.getElementById(id).value='');loadAppointments();}
+  if(res.ok){
+    // Créer fiche CRM si demandé
+    if(document.getElementById('nrdv-create-client')?.checked){
+      await fetch('/api/clients',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({name:nom,prenom,email:document.getElementById('nrdv-email').value,phone:document.getElementById('nrdv-phone').value,tags:JSON.stringify(styles)})});
+      showNotif(`✅ RDV + fiche client créés !`,'success');
+      loadClients();
+    } else {
+      showNotif('✅ RDV ajouté !','success');
+    }
+    toggleNewRDVForm();
+    ['nrdv-prenom','nrdv-nom','nrdv-email','nrdv-phone','nrdv-zone','nrdv-desc','nrdv-price'].forEach(id=>document.getElementById(id).value='');
+    document.querySelectorAll('#nrdv-style-grid input').forEach(i=>i.checked=false);
+    document.getElementById('nrdv-new-client-banner').style.display='none';
+    loadAppointments();
+  }
 }
 async function loadAppointments(){
   const res=await fetch('/api/appointments',{credentials:'include'});
@@ -1289,7 +1402,6 @@ async function saveClient(){
 function renderClientCard(id, editMode=false){
   const c=clients.find(x=>x.id===id);if(!c)return;
   const fullname=[c.prenom,c.name].filter(Boolean).join(' ');
-  const initials=fullname.split(' ').filter(Boolean).map(n=>n[0]).join('').slice(0,2).toUpperCase();
   const clientRDV=appointments.filter(a=>a.client_email===c.email||a.client_name===fullname||a.client_name===c.name);
   const age=c.date_naissance?Math.floor((new Date()-new Date(c.date_naissance))/31557600000):(c.age||0);
   const ageStr=age>0?`${age} ans`:'';
@@ -1300,90 +1412,80 @@ function renderClientCard(id, editMode=false){
   if(editMode){
     info.innerHTML=`
     <div class="crm-card">
-      <div class="crm-hero">
-        <div class="crm-avatar-wrap">
-          <div class="crm-avatar">${c.photo_url?`<img src="${c.photo_url}" alt="">`:(initials||'?')}</div>
+      <div class="crm-header">
+        <div class="crm-header-top">
+          <div class="crm-name">${fullname||'Nouveau client'}</div>
+          <div style="display:flex;gap:20px;">
+            <button class="crm-edit-trigger" onclick="renderClientCard(${id},false)">Annuler</button>
+            <button class="crm-edit-trigger" onclick="updateClient(${id})" style="color:rgba(255,255,255,.7);">Sauvegarder</button>
+          </div>
         </div>
-        <div class="crm-hero-meta">
-          <div class="crm-hero-name">${fullname||'Nouveau client'}</div>
-          <div class="crm-hero-sub">${[c.city,ageStr].filter(Boolean).join(' · ')||'Aucune info'}</div>
-        </div>
-        <div style="display:flex;gap:6px;margin-left:auto;">
-          <button class="btn btn-ghost btn-sm" onclick="renderClientCard(${id},false)" style="font-size:11px;">✕ Annuler</button>
-          <button class="btn btn-primary btn-sm" onclick="updateClient(${id})" style="font-size:11px;">💾 Sauvegarder</button>
-        </div>
+        <div class="crm-header-sub">${[c.city,ageStr].filter(Boolean).join(' · ')||'&nbsp;'}</div>
       </div>
-      <div class="crm-edit-body">
-        <div class="crm-edit-section">
-          <div class="crm-edit-section-title">Identité</div>
-          <div class="crm-edit-row">
-            <div class="crm-edit-field"><label>Prénom</label><input class="form-control" id="ce-prenom" value="${(c.prenom||'').replace(/"/g,'&quot;')}" placeholder="Sophie"></div>
-            <div class="crm-edit-field"><label>Nom</label><input class="form-control" id="ce-name" value="${(c.name||'').replace(/"/g,'&quot;')}" placeholder="Martin"></div>
-          </div>
-          <div class="crm-edit-row">
-            <div class="crm-edit-field"><label>Date de naissance</label><input class="form-control" id="ce-dob" type="date" value="${c.date_naissance||''}"></div>
-            <div class="crm-edit-field"><label>Ville</label><input class="form-control" id="ce-city" value="${(c.city||'').replace(/"/g,'&quot;')}" placeholder="Bordeaux"></div>
-          </div>
+      <div class="crm-edit-wrap">
+        <div class="crm-edit-section-title">Identité</div>
+        <div class="crm-edit-row">
+          <div class="crm-edit-field"><label>Prénom</label><input class="form-control" id="ce-prenom" value="${(c.prenom||'').replace(/"/g,'&quot;')}" placeholder="Sophie"></div>
+          <div class="crm-edit-field"><label>Nom</label><input class="form-control" id="ce-name" value="${(c.name||'').replace(/"/g,'&quot;')}" placeholder="Martin"></div>
         </div>
-        <div class="crm-divider"></div>
-        <div class="crm-edit-section">
-          <div class="crm-edit-section-title">Contact</div>
-          <div class="crm-edit-row">
-            <div class="crm-edit-field"><label>Email</label><input class="form-control" id="ce-email" type="email" value="${(c.email||'').replace(/"/g,'&quot;')}" placeholder="sophie@email.com"></div>
-            <div class="crm-edit-field"><label>Téléphone</label><input class="form-control" id="ce-phone" type="tel" value="${(c.phone||'').replace(/"/g,'&quot;')}" placeholder="06 xx xx xx xx"></div>
-          </div>
+        <div class="crm-edit-row" style="margin-top:10px;">
+          <div class="crm-edit-field"><label>Date de naissance</label><input class="form-control" id="ce-dob" type="date" value="${c.date_naissance||''}"></div>
+          <div class="crm-edit-field"><label>Ville</label><input class="form-control" id="ce-city" value="${(c.city||'').replace(/"/g,'&quot;')}" placeholder="Bordeaux"></div>
         </div>
-        <div class="crm-divider"></div>
-        <div class="crm-edit-section">
-          <div class="crm-edit-section-title">Styles tatouage</div>
-          <div class="crm-tag-grid" id="ce-tag-grid">
-            ${['fine line','flash','japonais','realisme','blackwork','old school','geometrique','neo-trad'].map(t=>`
-            <label class="crm-tag-check ${tags.map(x=>x.toLowerCase()).includes(t)?'on':''}">
-              <input type="checkbox" value="${t}" ${tags.map(x=>x.toLowerCase()).includes(t)?'checked':''} onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)">
-              ${{'fine line':'Fine line','flash':'⚡ Flash','japonais':'🎌 Japonais','realisme':'🎨 Réalisme','blackwork':'◼ Blackwork','old school':'⚓ Old school','geometrique':'🔷 Géométrique','neo-trad':'🌸 Néo-trad'}[t]}
-            </label>`).join('')}
-          </div>
+        <div class="crm-edit-section-title">Contact</div>
+        <div class="crm-edit-row">
+          <div class="crm-edit-field"><label>Email</label><input class="form-control" id="ce-email" type="email" value="${(c.email||'').replace(/"/g,'&quot;')}" placeholder="sophie@email.com"></div>
+          <div class="crm-edit-field"><label>Téléphone</label><input class="form-control" id="ce-phone" type="tel" value="${(c.phone||'').replace(/"/g,'&quot;')}" placeholder="06 xx xx xx xx"></div>
         </div>
-        <div class="crm-divider"></div>
-        <div class="crm-edit-section">
-          <div class="crm-edit-section-title">Notes</div>
-          <textarea class="form-control" id="ce-notes" style="min-height:90px;width:100%;">${c.notes||''}</textarea>
+        <div class="crm-edit-section-title">Styles tatouage</div>
+        <div class="crm-tag-grid" id="ce-tag-grid">
+          ${['fine line','flash','japonais','realisme','blackwork','old school','geometrique','neo-trad'].map(t=>`
+          <label class="crm-tag-check ${tags.map(x=>x.toLowerCase()).includes(t)?'on':''}">
+            <input type="checkbox" value="${t}" ${tags.map(x=>x.toLowerCase()).includes(t)?'checked':''} onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)">
+            ${{'fine line':'Fine line','flash':'Flash','japonais':'Japonais','realisme':'Réalisme','blackwork':'Blackwork','old school':'Old school','geometrique':'Géométrique','neo-trad':'Néo-trad'}[t]}
+          </label>`).join('')}
         </div>
-        <div id="ce-save-msg" style="margin-top:10px;font-size:12px;color:var(--green);display:none;">✅ Fiche mise à jour !</div>
+        <div class="crm-edit-section-title">Notes</div>
+        <textarea class="form-control" id="ce-notes" style="min-height:90px;width:100%;">${c.notes||''}</textarea>
       </div>
     </div>`;
   } else {
     info.innerHTML=`
     <div class="crm-card">
-      <div class="crm-hero">
-        <div class="crm-avatar-wrap">
-          <div class="crm-avatar">${c.photo_url?`<img src="${c.photo_url}" alt="">`:(initials||'?')}</div>
+      <div class="crm-header">
+        <div class="crm-header-top">
+          <div class="crm-name">${fullname||'—'}</div>
+          <button class="crm-edit-trigger" onclick="renderClientCard(${id},true)">Modifier</button>
         </div>
-        <div class="crm-hero-meta">
-          <div class="crm-hero-name">${fullname||'—'}</div>
-          <div class="crm-hero-sub">${[c.city,ageStr].filter(Boolean).join(' · ')||'&nbsp;'}</div>
+        <div class="crm-header-sub">${[c.city,ageStr].filter(Boolean).join(' · ')||'&nbsp;'}</div>
+      </div>
+      <div class="crm-stats">
+        <div class="crm-stat">
+          <div class="crm-stat-n">${clientRDV.length}</div>
+          <div class="crm-stat-l">Séances</div>
         </div>
-        <button class="crm-edit-btn" onclick="renderClientCard(${id},true)" title="Modifier">✏️ Modifier</button>
+        <div class="crm-stat">
+          <div class="crm-stat-n">${ageStr||'—'}</div>
+          <div class="crm-stat-l">Âge</div>
+        </div>
+        <div class="crm-stat">
+          <div class="crm-stat-n" style="font-size:14px;letter-spacing:0;">${clientSince}</div>
+          <div class="crm-stat-l">Client depuis</div>
+        </div>
       </div>
-      <div class="crm-stats-row">
-        <div class="crm-stat"><div class="crm-stat-val">${clientRDV.length}</div><div class="crm-stat-lbl">Séances</div></div>
-        <div class="crm-stat-sep"></div>
-        <div class="crm-stat"><div class="crm-stat-val">${ageStr||'—'}</div><div class="crm-stat-lbl">Âge</div></div>
-        <div class="crm-stat-sep"></div>
-        <div class="crm-stat"><div class="crm-stat-val" style="font-size:12px;">${clientSince}</div><div class="crm-stat-lbl">Client depuis</div></div>
+      <div class="crm-rows">
+        ${anniv?`<div class="crm-row"><div class="crm-row-lbl">Anniversaire</div><div class="crm-row-val">${anniv}</div></div>`:''}
+        ${c.email?`<div class="crm-row"><div class="crm-row-lbl">Email</div><div class="crm-row-val">${c.email}</div></div>`:''}
+        ${c.phone?`<div class="crm-row"><div class="crm-row-lbl">Téléphone</div><div class="crm-row-val">${c.phone}</div></div>`:''}
+        ${c.city?`<div class="crm-row"><div class="crm-row-lbl">Ville</div><div class="crm-row-val">${c.city}</div></div>`:''}
+        ${tags.length?`<div class="crm-row"><div class="crm-row-lbl">Styles</div><div class="crm-row-val"><div class="crm-tags-line">${tags.map(t=>`<span class="crm-tag-pill">${t}</span>`).join('')}</div></div></div>`:''}
       </div>
-      <div class="crm-body">
-        ${anniv?`<div class="crm-info-row"><span class="crm-info-icon">🎂</span><div><div class="crm-info-label">Anniversaire</div><div class="crm-info-val">${anniv}</div></div></div>`:''}
-        ${c.email?`<div class="crm-info-row"><span class="crm-info-icon">✉️</span><div><div class="crm-info-label">Email</div><div class="crm-info-val">${c.email}</div></div></div>`:''}
-        ${c.phone?`<div class="crm-info-row"><span class="crm-info-icon">📞</span><div><div class="crm-info-label">Téléphone</div><div class="crm-info-val">${c.phone}</div></div></div>`:''}
-        ${c.city?`<div class="crm-info-row"><span class="crm-info-icon">📍</span><div><div class="crm-info-label">Ville</div><div class="crm-info-val">${c.city}</div></div></div>`:''}
-        ${c.notes?`<div class="crm-divider"></div><div class="crm-notes-block"><div class="crm-info-label" style="margin-bottom:6px;">Notes</div><div class="crm-notes-text">${c.notes.replace(/\n/g,'<br>')}</div></div>`:''}
-        ${tags.length?`<div class="crm-divider"></div><div class="crm-tags-wrap">${tags.map(t=>`<span class="crm-tag">${t}</span>`).join('')}</div>`:''}
-      </div>
-      <div class="crm-actions">
-        <button class="crm-action-btn" onclick="dashGo('dp-campaigns',document.getElementById('nav-campaigns'));showNewCamp();">📣<span>Campagne</span></button>
-        ${c.email?`<button class="crm-action-btn" onclick="openEmailModal(${c.id},'${c.email}','${c.name}')">✉️<span>Envoyer un email</span></button>`:''}
-        <button class="crm-action-btn crm-action-danger" onclick="deleteClient(${c.id})">🗑<span>Supprimer</span></button>
+      ${c.notes?`<div class="crm-notes">${c.notes.replace(/\n/g,'<br>')}</div>`:''}
+      <div class="crm-actions-row">
+        <button class="crm-act" onclick="dashGo('dp-campaigns',document.getElementById('nav-campaigns'));showNewCamp();">Campagne</button>
+        ${c.email?`<div class="crm-act-sep"></div><button class="crm-act" onclick="openEmailModal(${c.id},'${c.email}','${c.name}')">Email</button>`:''}
+        <div class="crm-act-sep"></div>
+        <button class="crm-act" onclick="deleteClient(${c.id})" style="color:rgba(255,70,70,.35);">Supprimer</button>
       </div>
     </div>`;
   }
