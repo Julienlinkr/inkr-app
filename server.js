@@ -21,9 +21,19 @@ app.use('/api/campaigns', require('./routes/campaigns'));
 app.use('/api/appointments', require('./routes/appointments'));
 app.use('/api/tournee', require('./routes/tournee'));
 
-// ============ PAGES ============
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
-app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
+// ============ PAGES (no-cache pour forcer le rechargement) ============
+app.get('/', (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+app.get('/dashboard', (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  res.set('Expires', '0');
+  res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
+});
 
 // ============ STATUS ============
 app.get('/api/status', (req, res) => {
