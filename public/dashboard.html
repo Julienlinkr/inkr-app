@@ -87,14 +87,40 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
 
 /* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
-.stat-card{background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);padding:16px 18px;}
-.stat-val{font-size:28px;font-weight:900;margin-bottom:4px;color:#fff;letter-spacing:-1px;}
-.stat-lbl{font-size:11px;color:#999;font-weight:500;letter-spacing:.3px;}
+.stat-card{background:#141414;border:1px solid #2a2a2a;border-radius:var(--rl);padding:18px 20px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s;}
+.stat-card:hover{border-color:#3a3a3a;transform:translateY(-1px);}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;}
+.stat-card:nth-child(1)::after{background:linear-gradient(90deg,var(--accent),rgba(139,92,246,0));}
+.stat-card:nth-child(2)::after{background:linear-gradient(90deg,var(--green),rgba(46,204,113,0));}
+.stat-card:nth-child(3)::after{background:linear-gradient(90deg,var(--blue),rgba(74,158,255,0));}
+.stat-card:nth-child(4)::after{background:linear-gradient(90deg,var(--gold),rgba(240,180,41,0));}
+.stat-val{font-size:32px;font-weight:900;margin-bottom:5px;color:#fff;letter-spacing:-1.5px;line-height:1;}
+.stat-lbl{font-size:11px;color:#888;font-weight:500;letter-spacing:.4px;text-transform:uppercase;}
 
 /* PANEL HEADER */
-.dp-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}
+.dp-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;}
 .dp-title{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.3px;}
 .dp-sub{font-size:13px;color:#888;margin-top:3px;}
+
+/* OVERVIEW HERO */
+.ov-hero{background:linear-gradient(135deg,rgba(139,92,246,.12) 0%,rgba(139,92,246,.03) 60%,transparent 100%);border:1px solid rgba(139,92,246,.15);border-radius:var(--rl);padding:22px 26px;margin-bottom:22px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.ov-hero-title{font-size:26px;font-weight:900;letter-spacing:-.8px;background:linear-gradient(135deg,#fff 60%,rgba(139,92,246,.8));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ov-hero-sub{font-size:13px;color:#888;margin-top:4px;}
+.ov-card{background:#141414;border:1px solid #2a2a2a;border-radius:var(--rl);overflow:hidden;transition:border-color .2s;}
+.ov-card:hover{border-color:#3a3a3a;}
+.ov-card-hdr{padding:14px 18px;border-bottom:1px solid #222;display:flex;justify-content:space-between;align-items:center;}
+.ov-card-title{font-size:13px;font-weight:700;color:#f0f0f0;}
+
+/* NOTIF BADGE */
+.msg-badge{display:inline-flex;align-items:center;justify-content:center;background:#E74C3C;color:#fff;font-size:10px;font-weight:800;border-radius:10px;padding:1px 6px;margin-left:6px;animation:pulse-badge 2s infinite;}
+@keyframes pulse-badge{0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,.4);}50%{box-shadow:0 0 0 5px rgba(231,76,60,0);}}
+
+/* MSG NOTIFICATION POPUP */
+.msg-notif-popup{position:fixed;top:70px;right:18px;background:#1a1a1a;border:1px solid rgba(139,92,246,.3);border-radius:var(--rl);padding:14px 16px;width:280px;z-index:500;box-shadow:0 8px 32px rgba(0,0,0,.6);transform:translateX(320px);transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+.msg-notif-popup.show{transform:translateX(0);}
+.msg-notif-hdr{font-size:12px;font-weight:700;color:#fff;margin-bottom:10px;display:flex;justify-content:space-between;}
+.msg-notif-item{display:flex;gap:9px;align-items:center;padding:6px 0;border-bottom:1px solid #222;}
+.msg-notif-item:last-child{border-bottom:none;}
 
 /* AGENDA */
 .rdv-view-toggle{display:flex;background:#1a1a1a;border:1px solid #333;border-radius:var(--r);padding:3px;gap:2px;}
@@ -505,52 +531,52 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
   <!-- OVERVIEW -->
   <div class="dash-panel active" id="dp-overview">
     <div class="dp-inner">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap;gap:10px;">
+      <!-- Hero bar -->
+      <div class="ov-hero">
         <div>
-          <div class="dp-title" id="ov-title">Bonjour 👋</div>
-          <div class="dp-sub">Tableau de bord inkr Pro</div>
+          <div class="ov-hero-title" id="ov-title">Bonjour 👋</div>
+          <div class="ov-hero-sub">Tableau de bord inkr Pro</div>
         </div>
         <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">
-          <input type="date" class="form-control" id="ov-from" style="width:140px;font-size:12px;" onchange="filterOverview()">
-          <span style="color:#666;font-size:12px;">→</span>
-          <input type="date" class="form-control" id="ov-to" style="width:140px;font-size:12px;" onchange="filterOverview()">
-          <button class="btn btn-ghost btn-sm" onclick="resetOverviewFilter()" style="font-size:11px;">Réinitialiser</button>
+          <input type="date" class="form-control" id="ov-from" style="width:138px;font-size:12px;" onchange="filterOverview()">
+          <span style="color:#555;font-size:13px;">→</span>
+          <input type="date" class="form-control" id="ov-to" style="width:138px;font-size:12px;" onchange="filterOverview()">
+          <button class="btn btn-ghost btn-sm" onclick="resetOverviewFilter()" style="font-size:11px;">Reset</button>
         </div>
       </div>
-      <div class="stats-grid" id="ov-stats-grid">
+      <!-- Stats -->
+      <div class="stats-grid">
         <div class="stat-card"><div class="stat-val" style="color:var(--accent)" id="stat-rdv">—</div><div class="stat-lbl">RDV période</div></div>
         <div class="stat-card"><div class="stat-val" style="color:var(--green)" id="stat-clients">—</div><div class="stat-lbl">Clients</div></div>
         <div class="stat-card"><div class="stat-val" style="color:var(--blue)" id="stat-camps">—</div><div class="stat-lbl">Campagnes</div></div>
         <div class="stat-card"><div class="stat-val" style="color:var(--gold)" id="stat-pending">—</div><div class="stat-lbl">En attente</div></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;margin-top:4px;" id="ov-grid">
-        <!-- Colonne gauche : RDVs recap + messages -->
-        <div>
-          <div id="pending-rdv-preview" style="margin-bottom:14px;"></div>
-          <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);overflow:hidden;">
-            <div style="padding:14px 18px;border-bottom:1px solid #2a2a2a;display:flex;justify-content:space-between;align-items:center;">
-              <div style="font-size:13px;font-weight:700;">💬 Messages récents</div>
-              <button class="btn btn-ghost btn-sm" onclick="dashGo('dp-messages',document.getElementById('nav-messages'))" style="font-size:11px;">Voir tout →</button>
-            </div>
-            <div id="ov-messages-preview"></div>
+      <!-- Pending preview (above grid) -->
+      <div id="pending-rdv-preview" style="margin-bottom:14px;"></div>
+      <!-- 2-col grid -->
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start;">
+        <!-- Colonne gauche : Messages -->
+        <div class="ov-card">
+          <div class="ov-card-hdr">
+            <div class="ov-card-title">💬 Messages récents</div>
+            <button class="btn btn-ghost btn-sm" onclick="dashGo('dp-messages',document.getElementById('nav-messages'))" style="font-size:11px;">Voir tout →</button>
           </div>
+          <div id="ov-messages-preview"></div>
         </div>
-        <!-- Colonne droite : RDVs du jour -->
-        <div>
-          <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);overflow:hidden;">
-            <div style="padding:14px 18px;border-bottom:1px solid #2a2a2a;">
-              <div style="font-size:13px;font-weight:700;">📅 Aujourd'hui</div>
-              <div style="font-size:11px;color:#888;margin-top:2px;" id="ov-today-date"></div>
+        <!-- Colonne droite -->
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="ov-card">
+            <div class="ov-card-hdr">
+              <div class="ov-card-title">📅 Aujourd'hui</div>
+              <div style="font-size:11px;color:#666;" id="ov-today-date"></div>
             </div>
-            <div id="ov-today-rdv" style="padding:8px 0;"></div>
+            <div id="ov-today-rdv"></div>
           </div>
-          <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);overflow:hidden;margin-top:12px;">
-            <div style="padding:14px 18px;border-bottom:1px solid #2a2a2a;">
-              <div style="font-size:13px;font-weight:700;">👁 Vues profil inkr</div>
-            </div>
-            <div style="padding:18px;text-align:center;">
-              <div style="font-size:32px;font-weight:900;color:var(--accent);" id="ov-views">—</div>
-              <div style="font-size:11px;color:#888;margin-top:4px;">visites ce mois</div>
+          <div class="ov-card">
+            <div class="ov-card-hdr"><div class="ov-card-title">👁 Vues profil inkr</div></div>
+            <div style="padding:20px;text-align:center;">
+              <div style="font-size:38px;font-weight:900;letter-spacing:-2px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;" id="ov-views">—</div>
+              <div style="font-size:11px;color:#777;margin-top:5px;text-transform:uppercase;letter-spacing:.5px;">visites ce mois</div>
             </div>
           </div>
         </div>
@@ -997,8 +1023,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
         </div>
         <div class="form-group"><label>Description du tatouage prévu</label><input class="form-control" id="doc-tattoo-desc" placeholder="Ex: Fine line fleur, avant-bras gauche, 8cm"></div>
         <div class="form-group"><label>Date de la séance</label><input class="form-control" id="doc-session-date" type="date"></div>
-        <div style="display:flex;gap:7px;margin-top:8px;">
-          <button class="btn btn-primary btn-sm" onclick="printDocument()">🖨️ Imprimer / PDF</button>
+        <div style="display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="openSignatureModal()">✍️ Faire signer</button>
+          <button class="btn btn-ghost btn-sm" onclick="printDocument()">🖨️ Imprimer sans signature</button>
           <button class="btn btn-ghost btn-sm" onclick="document.getElementById('doc-generator').style.display='none'">Fermer</button>
         </div>
       </div>
@@ -1127,6 +1154,37 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
         <button class="btn btn-ghost btn-sm" onclick="closeRDVDetail()">Fermer</button>
         <button class="btn btn-primary btn-sm" onclick="saveRDVEdit(currentDetailId)">💾 Sauvegarder</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- SIGNATURE PAD MODAL -->
+<div class="acompte-modal" id="sig-modal" onclick="if(event.target===this)closeSigModal()">
+  <div style="background:#111;border:1px solid #2a2a2a;border-radius:var(--rl);padding:0;width:700px;max-width:96vw;max-height:93vh;display:flex;flex-direction:column;overflow:hidden;">
+    <div style="padding:16px 22px;border-bottom:1px solid #1f1f1f;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+      <div style="font-size:14px;font-weight:800;" id="sig-modal-title">✍️ Signature du document</div>
+      <button onclick="closeSigModal()" style="background:none;border:none;color:#888;font-size:20px;cursor:pointer;padding:0;">✕</button>
+    </div>
+    <!-- Document preview -->
+    <div id="sig-doc-preview" style="background:#f9f9f9;color:#111;padding:24px 28px;font-size:12px;line-height:1.8;overflow-y:auto;flex:1;min-height:0;max-height:260px;"></div>
+    <!-- Signature zone -->
+    <div style="padding:18px 22px;background:#111;flex-shrink:0;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#777;margin-bottom:8px;">
+        Signature &nbsp;<span style="font-weight:400;color:#555;font-size:10px;text-transform:none;letter-spacing:0;">— souris, doigt ou stylet</span>
+      </div>
+      <div style="position:relative;background:#0a0a0a;border:2px dashed #2a2a2a;border-radius:var(--r);overflow:hidden;">
+        <canvas id="sig-canvas" style="display:block;width:100%;touch-action:none;cursor:crosshair;" height="160"></canvas>
+        <button onclick="clearSigCanvas()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.75);border:1px solid #3a3a3a;color:#aaa;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;backdrop-filter:blur(4px);">Effacer</button>
+        <div style="position:absolute;bottom:28px;left:16px;right:16px;border-bottom:1px dashed #2a2a2a;pointer-events:none;"></div>
+        <div style="position:absolute;bottom:10px;left:16px;font-size:9px;color:#333;pointer-events:none;letter-spacing:.5px;text-transform:uppercase;">Signature</div>
+      </div>
+      <div id="sig-timestamp" style="font-size:11px;color:#666;margin-top:9px;font-style:italic;"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" onclick="confirmSignature()">✅ Valider & enregistrer</button>
+        <button class="btn btn-ghost btn-sm" onclick="printSignedDoc()">🖨️ Imprimer PDF signé</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeSigModal()">Annuler</button>
+      </div>
+      <div id="sig-result" style="margin-top:10px;font-size:12px;display:none;padding:9px;border-radius:var(--r);"></div>
     </div>
   </div>
 </div>
@@ -1750,7 +1808,7 @@ function renderClientCard(id, editMode=false){
   const age=c.date_naissance?Math.floor((new Date()-new Date(c.date_naissance))/31557600000):(c.age||0);
   const ageStr=age>0?`${age} ans`:'';
   const anniv=c.date_naissance?new Date(c.date_naissance).toLocaleDateString('fr-FR',{day:'numeric',month:'long'}):'';
-  const tags=JSON.parse(c.tags||'[]');
+  let tags=[];try{tags=JSON.parse(c.tags||'[]');}catch(e){tags=[];}
   const clientSince=new Date(c.created_at||Date.now()).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
   const info=document.getElementById('client-info');
   if(editMode){
@@ -1829,9 +1887,31 @@ function renderClientCard(id, editMode=false){
         ${tags.length?`<div class="crm-row"><div class="crm-row-lbl">Styles</div><div class="crm-row-val"><div class="crm-tags-line">${tags.map(t=>`<span class="crm-tag-pill">${t}</span>`).join('')}</div></div></div>`:''}
       </div>
       ${c.notes?`<div class="crm-notes">${c.notes.replace(/\n/g,'<br>')}</div>`:''}
+      ${loyaltyPrograms.length?`<div style="padding:18px 36px;border-top:1px solid #2a2a2a;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#666;margin-bottom:10px;">Programmes Fidélité</div>
+        ${loyaltyPrograms.map(p=>{
+          const enrolled=p.clients&&p.clients.includes(id);
+          return`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #1a1a1a;">
+            <div><div style="font-size:12px;font-weight:600;color:#d0d0d0;">${p.name}</div>
+            <div style="font-size:10px;color:#888;">${{points:'🏆 Points',stamp:'☕ Tampon',raffle:'🎰 Tirage'}[p.type]||p.type}</div></div>
+            <label class="toggle" style="margin:0;"><input type="checkbox" ${enrolled?'checked':''} onchange="toggleClientLoyalty(${id},${p.id},this.checked)"><span class="toggle-slider"></span></label>
+          </div>`;
+        }).join('')}
+      </div>`:''}
+      ${clientDocuments[id]&&clientDocuments[id].length?`<div style="padding:18px 36px;border-top:1px solid #2a2a2a;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#666;margin-bottom:10px;">Documents signés</div>
+        ${clientDocuments[id].map(d=>`<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a;">
+          <div style="font-size:16px;">📄</div>
+          <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:#d0d0d0;">${d.typeName}</div>
+          <div style="font-size:10px;color:#888;">${d.timestamp}</div></div>
+          <img src="${d.signature}" style="height:32px;background:#0a0a0a;border-radius:4px;border:1px solid #333;padding:2px;">
+        </div>`).join('')}
+      </div>`:''}
       <div class="crm-actions-row">
         <button class="crm-act" onclick="dashGo('dp-campaigns',document.getElementById('nav-campaigns'));showNewCamp();">Campagne</button>
         ${c.email?`<div class="crm-act-sep"></div><button class="crm-act" onclick="openEmailModal(${c.id},'${c.email}','${c.name}')">Email</button>`:''}
+        <div class="crm-act-sep"></div>
+        <button class="crm-act" onclick="dashGo('dp-documents',document.getElementById('nav-documents'));setTimeout(()=>{prefillDocFromClient(${c.id});},200);">Document</button>
         <div class="crm-act-sep"></div>
         <button class="crm-act" onclick="deleteClient(${c.id})" style="color:rgba(255,70,70,.35);">Supprimer</button>
       </div>
@@ -1999,7 +2079,7 @@ async function sendCampId(id){
 }
 
 // ======== AUTOMATIONS ========
-const AUTO_LABELS={sms_24h_before:{icon:'⏰',title:'SMS 24h avant le RDV',desc:'Rappel avec conseils de préparation'},followup_j5:{icon:'🩹',title:'Suivi cicatrisation J+5',desc:'Check 5 jours après'},retouche_j30:{icon:'🔄',title:'Offre retouche J+30',desc:'Retouche gratuite à 1 mois'},relance_m3:{icon:'💬',title:'Relance inactivité 3 mois',desc:'Client absent depuis 3 mois'},birthday:{icon:'🎂',title:'Message anniversaire',desc:'Offre spéciale le jour J'}};
+const AUTO_LABELS={sms_24h_before:{icon:'💬',title:'WhatsApp / Email 24h avant le RDV',desc:'Rappel automatique avec conseils de préparation'},followup_j5:{icon:'🩹',title:'Suivi cicatrisation J+5',desc:'WhatsApp/Email 5 jours après la séance'},retouche_j30:{icon:'🔄',title:'Offre retouche J+30',desc:'WhatsApp/Email retouche gratuite à 1 mois'},relance_m3:{icon:'💬',title:'Relance inactivité 3 mois',desc:'WhatsApp/Email si client absent depuis 3 mois'},birthday:{icon:'🎂',title:'Message anniversaire',desc:'Offre spéciale le jour de l\'anniversaire'}};
 async function loadAutomations(){
   const res=await fetch('/api/clients/automations',{credentials:'include'});if(!res.ok)return;
   const data=await res.json();automations=data.automations||[];renderAutomations();
@@ -2369,14 +2449,15 @@ function renderLoyaltyPrograms(){
   }
   const typeLabels={points:'🏆 Points cumulés',stamp:'☕ Carte tampon',raffle:'🎰 Tirage au sort'};
   el.innerHTML=loyaltyPrograms.map(p=>`
-    <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);padding:18px 20px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
-      <div>
+    <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);padding:18px 20px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+      <div style="flex:1;">
         <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;">${p.name}</div>
-        <div style="font-size:12px;color:#888;">${typeLabels[p.type]||p.type} · ${p.clients.length} clients inscrits</div>
+        <div style="font-size:12px;color:#888;">${typeLabels[p.type]||p.type} · ${(p.clients||[]).length} client(s) inscrits</div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;">
+      <div style="display:flex;gap:7px;align-items:center;flex-shrink:0;">
         <span style="font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(46,204,113,.12);color:var(--green);font-weight:700;border:1px solid rgba(46,204,113,.2);">ACTIF</span>
-        <button class="btn btn-ghost btn-sm" onclick="deleteLoyaltyProgram(${p.id})" style="font-size:13px;padding:5px 9px;">🗑</button>
+        <button class="btn btn-ghost btn-sm" onclick="editLoyaltyProgram(${p.id})" style="font-size:12px;padding:5px 9px;" title="Modifier">✏️</button>
+        <button class="btn btn-ghost btn-sm" onclick="deleteLoyaltyProgram(${p.id})" style="font-size:12px;padding:5px 9px;" title="Supprimer">🗑</button>
       </div>
     </div>`).join('');
 }
@@ -2385,6 +2466,47 @@ function deleteLoyaltyProgram(id){
   loyaltyPrograms=loyaltyPrograms.filter(p=>p.id!==id);
   renderLoyaltyPrograms();
   showNotif('Programme supprimé','');
+}
+function editLoyaltyProgram(id){
+  const p=loyaltyPrograms.find(x=>x.id===id);if(!p)return;
+  document.getElementById('loy-name').value=p.name;
+  selectLoyaltyType(p.type,document.querySelector(`.loy-type-btn:has(input[value="${p.type}"])`)||document.querySelector('.loy-type-btn'));
+  const saveBtn=document.querySelector('#new-loyalty-form .btn-primary');
+  if(saveBtn){saveBtn.textContent='Mettre à jour';saveBtn.onclick=()=>updateLoyaltyProgram(id);}
+  const f=document.getElementById('new-loyalty-form');f.style.display='block';f.scrollIntoView({behavior:'smooth'});
+}
+function updateLoyaltyProgram(id){
+  const name=document.getElementById('loy-name').value.trim();
+  if(!name){showNotif('Donnez un nom au programme','error');return;}
+  const typeEl=document.querySelector('.loy-type-btn.sel input[type="radio"]');
+  const type=typeEl?typeEl.value:'points';
+  const p=loyaltyPrograms.find(x=>x.id===id);if(!p)return;
+  p.name=name;p.type=type;
+  renderLoyaltyPrograms();
+  document.getElementById('new-loyalty-form').style.display='none';
+  document.getElementById('loy-name').value='';
+  // Reset save button
+  const saveBtn=document.querySelector('#new-loyalty-form .btn-primary');
+  if(saveBtn){saveBtn.textContent='Créer le programme';saveBtn.onclick=saveLoyaltyProgram;}
+  showNotif('✅ Programme mis à jour !','success');
+}
+function toggleClientLoyalty(clientId,programId,enrolled){
+  const p=loyaltyPrograms.find(x=>x.id===programId);if(!p)return;
+  if(!p.clients)p.clients=[];
+  if(enrolled&&!p.clients.includes(clientId))p.clients.push(clientId);
+  else if(!enrolled)p.clients=p.clients.filter(id=>id!==clientId);
+  showNotif(enrolled?`✅ Client inscrit au programme "${p.name}" !`:`Programme "${p.name}" désactivé`,'success');
+}
+function prefillDocFromClient(clientId){
+  const c=clients.find(x=>x.id===clientId);if(!c)return;
+  const age=c.date_naissance?Math.floor((new Date()-new Date(c.date_naissance))/31557600000):0;
+  const isMinor=age>0&&age<18;
+  if(isMinor)openMinorWaiver();else openAdultConsent();
+  setTimeout(()=>{
+    const sel=document.getElementById('doc-client-select');
+    if(sel)sel.value=clientId;
+    prefillDocClient(clientId);
+  },100);
 }
 
 // ======== DOCUMENTS ========
@@ -2420,7 +2542,7 @@ function prefillDocClient(id){
   if(c.date_naissance)document.getElementById('doc-minor-dob').value=c.date_naissance;
   if(c.phone)document.getElementById('doc-parent-phone').value=c.phone;
 }
-function printDocument(){
+function printDocument(sigImage,sigTimestamp){
   const artistName=currentUser?.name||'[Artiste]';
   const studio=currentUser?.studio_name||'[Studio]';
   const minorName=document.getElementById('doc-minor-name').value||'[Prénom Nom]';
@@ -2432,6 +2554,7 @@ function printDocument(){
   const sessionDate=document.getElementById('doc-session-date').value;
   const sessionFr=sessionDate?new Date(sessionDate).toLocaleDateString('fr-FR'):'[Date de séance]';
   const today=new Date().toLocaleDateString('fr-FR');
+  const sigBlock=sigImage?`<div class="sig-block"><div class="sig"><img src="${sigImage}" style="max-width:100%;height:60px;object-fit:contain;border-bottom:2px solid #111;display:block;"><div class="sig-lbl">${sigTimestamp||'Signature'}</div></div><div class="sig"><div class="sig-line"></div><div class="sig-lbl">Signature de l'artiste tatoueur</div></div></div>`:`<div class="sig-block"><div class="sig"><div class="sig-line"></div><div class="sig-lbl">Signature du représentant légal</div></div><div class="sig"><div class="sig-line"></div><div class="sig-lbl">Signature de l'artiste tatoueur</div></div></div>`;
   const css=`body{font-family:Georgia,serif;max-width:680px;margin:40px auto;padding:40px;color:#111;line-height:1.7;font-size:14px;}
     h1{font-size:22px;text-align:center;margin-bottom:4px;letter-spacing:-0.5px;}
     h2{font-size:13px;color:#666;text-align:center;margin-bottom:32px;font-weight:400;text-transform:uppercase;letter-spacing:1px;}
@@ -2463,10 +2586,7 @@ function printDocument(){
         <li>M'engager à veiller au respect des soins post-tatouage recommandés</li>
         <li>Dégager le tatoueur et le studio de toute responsabilité en cas de non-respect des soins</li>
       </ul>
-      <div class="sig-block">
-        <div class="sig"><div class="sig-line"></div><div class="sig-lbl">Signature du représentant légal</div></div>
-        <div class="sig"><div class="sig-line"></div><div class="sig-lbl">Signature de l'artiste tatoueur</div></div>
-      </div>
+      ${sigBlock}
       <div class="footer">Document généré le ${today} via inkr Pro · ${studio}</div>
     </body></html>`);
   } else {
@@ -2484,16 +2604,100 @@ function printDocument(){
         <li>M'engager à suivre scrupuleusement les conseils de soins post-tatouage</li>
         <li>Dégager le tatoueur de toute responsabilité en cas de non-respect des soins post-tatouage</li>
       </ul>
-      <div class="sig-block">
-        <div class="sig"><div class="sig-line"></div><div class="sig-lbl">Signature du/de la client(e)</div></div>
-        <div class="sig"><div class="sig-line"></div><div class="sig-lbl">Signature de l'artiste tatoueur</div></div>
-      </div>
+      ${sigBlock}
       <div class="footer">Document généré le ${today} via inkr Pro · ${studio}</div>
     </body></html>`);
   }
   win.document.close();
   setTimeout(()=>win.print(),400);
 }
+
+// ======== SIGNATURE PAD ========
+const clientDocuments={};
+let sigDrawing=false,sigLastX=0,sigLastY=0,currentSigDocClientId=null;
+
+function openSignatureModal(){
+  const clientId=document.getElementById('doc-client-select')?.value||null;
+  currentSigDocClientId=clientId;
+  document.getElementById('sig-modal-title').textContent=currentDocType==='minor'?'📋 Décharge pour mineur — Signature':'✍️ Consentement adulte — Signature';
+  document.getElementById('sig-doc-preview').innerHTML=buildDocPreviewHtml();
+  const now=new Date();
+  document.getElementById('sig-timestamp').textContent='Signé le '+now.toLocaleDateString('fr-FR')+' à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('sig-result').style.display='none';
+  document.getElementById('sig-modal').classList.add('open');
+  setTimeout(initSigCanvas,80);
+}
+function buildDocPreviewHtml(){
+  const artistName=currentUser?.name||'[Artiste]';
+  const studio=currentUser?.studio_name||'[Studio]';
+  const name=document.getElementById('doc-minor-name')?.value||'[Nom]';
+  const dob=document.getElementById('doc-minor-dob')?.value;
+  const dobFr=dob?new Date(dob).toLocaleDateString('fr-FR'):'[Date de naissance]';
+  const parentName=document.getElementById('doc-parent-name')?.value||'[Représentant légal]';
+  const parentPhone=document.getElementById('doc-parent-phone')?.value||'[Téléphone]';
+  const tattooDesc=document.getElementById('doc-tattoo-desc')?.value||'[Description du tatouage]';
+  const sessionDate=document.getElementById('doc-session-date')?.value;
+  const sessionFr=sessionDate?new Date(sessionDate).toLocaleDateString('fr-FR'):'[Date de séance]';
+  const baseStyle='font-family:Georgia,serif;font-size:12px;line-height:1.7;color:#222;';
+  if(currentDocType==='minor'){return`<div style="${baseStyle}"><div style="text-align:center;margin-bottom:14px;border-bottom:2px solid #111;padding-bottom:12px;"><div style="font-size:22px;font-weight:900;letter-spacing:-1px;">inkr</div><div style="font-size:14px;font-weight:700;">AUTORISATION PARENTALE</div></div><p>Je soussigné(e) <strong>${parentName}</strong>, représentant(e) légal(e) de <strong>${name}</strong>, né(e) le <strong>${dobFr}</strong>, autorise <strong>${artistName}</strong> (${studio}) à réaliser le tatouage suivant :</p><div style="background:#efefef;padding:10px;border-left:3px solid #333;margin:10px 0;font-style:italic;">${tattooDesc}</div><p>Séance prévue le : <strong>${sessionFr}</strong> &nbsp; Tél. tuteur : <strong>${parentPhone}</strong></p></div>`;}
+  else{return`<div style="${baseStyle}"><div style="text-align:center;margin-bottom:14px;border-bottom:2px solid #111;padding-bottom:12px;"><div style="font-size:22px;font-weight:900;letter-spacing:-1px;">inkr</div><div style="font-size:14px;font-weight:700;">FICHE DE CONSENTEMENT — ADULTE</div></div><p>Client(e) : <strong>${name}</strong> &nbsp;&nbsp; Date : <strong>${sessionFr}</strong></p><div style="background:#efefef;padding:10px;border-left:3px solid #333;margin:10px 0;font-style:italic;">${tattooDesc}</div><p>Je soussigné(e) déclare être majeur(e) et consentir librement à ce tatouage réalisé par <strong>${artistName}</strong> (${studio}).</p></div>`;}
+}
+function initSigCanvas(){
+  const canvas=document.getElementById('sig-canvas');if(!canvas)return;
+  canvas.width=canvas.offsetWidth||640;
+  const ctx=canvas.getContext('2d');
+  ctx.strokeStyle='#eeeeee';ctx.lineWidth=2.2;ctx.lineCap='round';ctx.lineJoin='round';
+  function getPos(e,canvas){
+    const r=canvas.getBoundingClientRect();
+    const sx=canvas.width/r.width,sy=canvas.height/r.height;
+    if(e.touches){const t=e.touches[0];return{x:(t.clientX-r.left)*sx,y:(t.clientY-r.top)*sy};}
+    return{x:(e.clientX-r.left)*sx,y:(e.clientY-r.top)*sy};
+  }
+  canvas.onmousedown=(e)=>{sigDrawing=true;const p=getPos(e,canvas);sigLastX=p.x;sigLastY=p.y;};
+  canvas.onmousemove=(e)=>{if(!sigDrawing)return;const p=getPos(e,canvas);ctx.beginPath();ctx.moveTo(sigLastX,sigLastY);ctx.lineTo(p.x,p.y);ctx.stroke();sigLastX=p.x;sigLastY=p.y;};
+  canvas.onmouseup=canvas.onmouseleave=()=>{sigDrawing=false;};
+  canvas.ontouchstart=(e)=>{e.preventDefault();sigDrawing=true;const p=getPos(e,canvas);sigLastX=p.x;sigLastY=p.y;};
+  canvas.ontouchmove=(e)=>{e.preventDefault();if(!sigDrawing)return;const p=getPos(e,canvas);ctx.beginPath();ctx.moveTo(sigLastX,sigLastY);ctx.lineTo(p.x,p.y);ctx.stroke();sigLastX=p.x;sigLastY=p.y;};
+  canvas.ontouchend=()=>{sigDrawing=false;};
+}
+function clearSigCanvas(){
+  const canvas=document.getElementById('sig-canvas');if(!canvas)return;
+  canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+}
+function confirmSignature(){
+  const canvas=document.getElementById('sig-canvas');if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const data=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  if(!data.some(v=>v!==0)){showNotif('Veuillez signer le document','error');return;}
+  const sigImage=canvas.toDataURL('image/png');
+  const now=new Date();
+  const timestamp='Signé le '+now.toLocaleDateString('fr-FR')+' à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  const doc={id:Date.now(),type:currentDocType,typeName:currentDocType==='minor'?'Décharge mineur':'Consentement adulte',timestamp,signature:sigImage,
+    clientName:document.getElementById('doc-minor-name')?.value||'',
+    tattooDesc:document.getElementById('doc-tattoo-desc')?.value||'',
+    sessionDate:document.getElementById('doc-session-date')?.value||''};
+  if(currentSigDocClientId){
+    if(!clientDocuments[currentSigDocClientId])clientDocuments[currentSigDocClientId]=[];
+    clientDocuments[currentSigDocClientId].push(doc);
+    // Refresh CRM card if open
+    const ar=document.querySelector('.client-row.active');
+    if(ar){const aid=parseInt(ar.id.replace('cr-',''));if(!isNaN(aid))renderClientCard(aid,false);}
+  }
+  const res=document.getElementById('sig-result');
+  res.style.display='block';res.style.background='rgba(46,204,113,.12)';res.style.color='var(--green)';
+  res.textContent='✅ Document signé et classé dans la fiche client !';
+  showNotif('✅ Document signé !','success');
+  setTimeout(()=>{closeSigModal();document.getElementById('doc-generator').style.display='none';},2200);
+}
+function printSignedDoc(){
+  // Capture current signature if exists
+  const canvas=document.getElementById('sig-canvas');
+  const sigImage=canvas&&canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data.some(v=>v!==0)?canvas.toDataURL('image/png'):null;
+  const ts=document.getElementById('sig-timestamp')?.textContent||'';
+  closeSigModal();
+  printDocument(sigImage,ts);
+}
+function closeSigModal(){document.getElementById('sig-modal').classList.remove('open');}
 
 // ======== TESTS ========
 async function loadStatus(){
