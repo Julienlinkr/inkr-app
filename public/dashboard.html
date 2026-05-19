@@ -823,8 +823,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
         <div style="font-size:15px;font-weight:800;margin-bottom:2px;">+ Nouveau client</div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">Fiche CRM complète</div>
         <div class="grid-2">
-          <div class="form-group"><label>Prénom *</label><input class="form-control" id="nc-prenom" placeholder="Sophie"></div>
-          <div class="form-group"><label>Nom *</label><input class="form-control" id="nc-name" placeholder="Martin"></div>
+          <div class="form-group"><label>Prénom *</label><input class="form-control" id="nc-prenom" placeholder="Sophie" onblur="this.value=formatPrenom(this.value)"></div>
+          <div class="form-group"><label>Nom *</label><input class="form-control" id="nc-name" placeholder="MARTIN" onblur="this.value=formatNom(this.value)"></div>
         </div>
         <div class="grid-2">
           <div class="form-group"><label>Date de naissance</label><input class="form-control" id="nc-dob" type="date"></div>
@@ -1772,7 +1772,9 @@ function renderClients(list){
     return na.localeCompare(nb,'fr');
   });
   el.innerHTML=list.map(c=>{
-    const fullname=[c.prenom,c.name].filter(Boolean).join(' ');
+    const fp=formatPrenom(c.prenom||'');
+    const fn=formatNom(c.name||'');
+    const fullname=[fp,fn].filter(Boolean).join(' ');
     const initials=fullname.split(' ').filter(Boolean).map(n=>n[0]).join('').slice(0,2).toUpperCase();
     return`<div class="client-row" id="cr-${c.id}" onclick="openClient(${c.id})">
       <div class="cr-photo">${c.photo_url?`<img src="${c.photo_url}" alt="">`:initials}</div>
@@ -1788,8 +1790,8 @@ function showAddClient(){
 }
 function cancelAddClient(){document.getElementById('add-client-form').style.display='none';document.getElementById('client-placeholder').style.display='flex';}
 async function saveClient(){
-  const name=document.getElementById('nc-name').value.trim();
-  const prenom=document.getElementById('nc-prenom').value.trim();
+  const name=formatNom(document.getElementById('nc-name').value.trim());
+  const prenom=formatPrenom(document.getElementById('nc-prenom').value.trim());
   if(!name&&!prenom){showNotif('Nom ou prénom requis','error');return;}
   const dob=document.getElementById('nc-dob').value;
   const age=dob?Math.floor((new Date()-new Date(dob))/31557600000):0;
@@ -1801,8 +1803,8 @@ async function saveClient(){
   loadClients();
 }
 function renderClientCard(id, editMode=false){
-  const c=clients.find(x=>x.id===id);if(!c)return;
-  const fullname=[c.prenom,c.name].filter(Boolean).join(' ');
+  const c=clients.find(x=>String(x.id)===String(id));if(!c){console.error('renderClientCard: client not found for id=',id,typeof id);return;}
+  const fullname=[formatPrenom(c.prenom||''),formatNom(c.name||'')].filter(Boolean).join(' ');
   const clientRDV=appointments.filter(a=>a.client_email===c.email||a.client_name===fullname||a.client_name===c.name);
   const totalSpent=clientRDV.reduce((s,a)=>s+(parseFloat(a.price)||0),0);
   const age=c.date_naissance?Math.floor((new Date()-new Date(c.date_naissance))/31557600000):(c.age||0);
@@ -1811,6 +1813,7 @@ function renderClientCard(id, editMode=false){
   let tags=[];try{tags=JSON.parse(c.tags||'[]');}catch(e){tags=[];}
   const clientSince=new Date(c.created_at||Date.now()).toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
   const info=document.getElementById('client-info');
+  try{
   if(editMode){
     info.innerHTML=`
     <div class="crm-card">
@@ -1827,8 +1830,8 @@ function renderClientCard(id, editMode=false){
       <div class="crm-edit-wrap">
         <div class="crm-edit-section-title">Identité</div>
         <div class="crm-edit-row">
-          <div class="crm-edit-field"><label>Prénom</label><input class="form-control" id="ce-prenom" value="${(c.prenom||'').replace(/"/g,'&quot;')}" placeholder="Sophie"></div>
-          <div class="crm-edit-field"><label>Nom</label><input class="form-control" id="ce-name" value="${(c.name||'').replace(/"/g,'&quot;')}" placeholder="Martin"></div>
+          <div class="crm-edit-field"><label>Prénom</label><input class="form-control" id="ce-prenom" value="${formatPrenom(c.prenom||'').replace(/"/g,'&quot;')}" placeholder="Sophie" onblur="this.value=formatPrenom(this.value)"></div>
+          <div class="crm-edit-field"><label>Nom</label><input class="form-control" id="ce-name" value="${formatNom(c.name||'').replace(/"/g,'&quot;')}" placeholder="MARTIN" onblur="this.value=formatNom(this.value)"></div>
         </div>
         <div class="crm-edit-row" style="margin-top:10px;">
           <div class="crm-edit-field"><label>Date de naissance</label><input class="form-control" id="ce-dob" type="date" value="${c.date_naissance||''}"></div>
@@ -1918,11 +1921,12 @@ function renderClientCard(id, editMode=false){
           <div style="flex:1;"><div style="font-size:12px;font-weight:600;color:#d0d0d0;">${d.typeName}</div>
           <div style="font-size:10px;color:#888;">${d.timestamp}</div></div>
           <img src="${d.signature}" style="height:32px;background:#0a0a0a;border-radius:4px;border:1px solid #333;padding:2px;">
+          <button onclick="downloadSignedDoc(${d.id},${id})" style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.25);color:#a78bfa;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;" title="Télécharger le document signé">⬇ Télécharger</button>
         </div>`).join('')}
       </div>`:''}
       <div class="crm-actions-row">
         <button class="crm-act" onclick="dashGo('dp-campaigns',document.getElementById('nav-campaigns'));showNewCamp();">Campagne</button>
-        ${c.email?`<div class="crm-act-sep"></div><button class="crm-act" onclick="openEmailModal(${c.id},'${c.email}','${c.name}')">Email</button>`:''}
+        ${c.email?`<div class="crm-act-sep"></div><button class="crm-act" onclick="openClientEmail(${id})">Email</button>`:''}
         <div class="crm-act-sep"></div>
         <button class="crm-act" onclick="dashGo('dp-documents',document.getElementById('nav-documents'));setTimeout(()=>{prefillDocFromClient(${c.id});},200);">Document</button>
         <div class="crm-act-sep"></div>
@@ -1930,9 +1934,10 @@ function renderClientCard(id, editMode=false){
       </div>
     </div>`;
   }
+  }catch(err){console.error('renderClientCard error for id='+id+':',err);info.innerHTML='<div style="padding:24px;color:var(--red);font-size:12px;">Erreur affichage fiche client. Vérifiez la console.</div>';}
 }
 async function openClient(id){
-  const c=clients.find(x=>x.id===id);if(!c)return;
+  const c=clients.find(x=>String(x.id)===String(id));if(!c)return;
   document.querySelectorAll('.client-row').forEach(r=>r.classList.remove('active'));
   document.getElementById('cr-'+id)?.classList.add('active');
   document.getElementById('add-client-form').style.display='none';
@@ -1941,12 +1946,12 @@ async function openClient(id){
   renderClientCard(id,false);
 }
 async function updateClient(id){
-  const c=clients.find(x=>x.id===id);if(!c)return;
+  const c=clients.find(x=>String(x.id)===String(id));if(!c)return;
   const dob=document.getElementById('ce-dob').value;
   const age=dob?Math.floor((new Date()-new Date(dob))/31557600000):c.age||0;
   const body={
-    name:document.getElementById('ce-name').value.trim()||c.name,
-    prenom:document.getElementById('ce-prenom').value.trim(),
+    name:formatNom(document.getElementById('ce-name').value.trim()||c.name),
+    prenom:formatPrenom(document.getElementById('ce-prenom').value.trim()),
     email:document.getElementById('ce-email').value.trim(),
     phone:document.getElementById('ce-phone').value.trim(),
     city:document.getElementById('ce-city').value.trim(),
@@ -2655,7 +2660,7 @@ function buildDocPreviewHtml(){
   }
 }
 
-function printDocument(sigImage,sigTimestamp){
+function buildPrintHtml(sigImage,sigTimestamp){
   const f=_docFields();
   const now=new Date();
   const printTs=sigTimestamp||('Signé le '+f.dateFr+' à '+f.timeFr+(f.city?' à '+f.city:''));
@@ -2705,9 +2710,9 @@ function printDocument(sigImage,sigTimestamp){
     <div>${f.timeFr}</div>
     ${f.city?`<div>${f.city}</div>`:''}
   </div>`;
-  const win=window.open('','_blank');if(!win)return;
+  let html='';
   if(currentDocType==='minor'){
-    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Autorisation parentale — ${f.clientName||'Mineur'}</title><style>${css}</style></head><body>
+    html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Autorisation parentale — ${f.clientName||'Mineur'}</title><style>${css}</style></head><body>
       <div class="header">
         <div class="logo-wrap"><div class="logo">inkr</div></div>
         <div class="logo-sub">Espace artiste professionnel</div>
@@ -2732,9 +2737,9 @@ function printDocument(sigImage,sigTimestamp){
       — m'engager à veiller au respect des soins post-tatouage.</p>
       ${sigBlockHtml}
       <div class="footer">Document généré via inkr Pro · ${f.studio||f.artistFull} · ${f.dateFr}</div>
-    </body></html>`);
+    </body></html>`;
   } else {
-    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Consentement adulte — ${f.clientName||'Client'}</title><style>${css}</style></head><body>
+    html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Consentement adulte — ${f.clientName||'Client'}</title><style>${css}</style></head><body>
       <div class="header">
         <div class="logo-wrap"><div class="logo">inkr</div></div>
         <div class="logo-sub">Espace artiste professionnel</div>
@@ -2757,8 +2762,14 @@ function printDocument(sigImage,sigTimestamp){
       — m'engager à respecter scrupuleusement les soins post-tatouage recommandés.</p>
       ${sigBlockHtml}
       <div class="footer">Document généré via inkr Pro · ${f.studio||f.artistFull} · ${f.dateFr}</div>
-    </body></html>`);
+    </body></html>`;
   }
+  return html;
+}
+function printDocument(sigImage,sigTimestamp){
+  const html=buildPrintHtml(sigImage,sigTimestamp);
+  const win=window.open('','_blank');if(!win)return;
+  win.document.write(html);
   win.document.close();
   setTimeout(()=>win.print(),400);
 }
@@ -2878,7 +2889,8 @@ function confirmSignature(){
     signature:sigImage,
     clientName,
     tattooDesc:document.getElementById('doc-tattoo-desc')?.value||'',
-    sessionDate:document.getElementById('doc-session-date')?.value||''
+    sessionDate:document.getElementById('doc-session-date')?.value||'',
+    html:buildPrintHtml(sigImage,timestamp)
   };
   if(!clientDocuments[currentSigDocClientId])clientDocuments[currentSigDocClientId]=[];
   clientDocuments[currentSigDocClientId].push(doc);
@@ -2927,6 +2939,39 @@ async function testSMS(){
 }
 
 // ======== UTILS ========
+// Formatage automatique des noms : prénom = 1ère lettre majuscule, reste minuscule. Nom = tout majuscule.
+function formatPrenom(v){
+  if(!v)return'';
+  return v.trim().split(/\s+/).map(w=>w?w[0].toUpperCase()+w.slice(1).toLowerCase():'').join(' ');
+}
+function formatNom(v){
+  if(!v)return'';
+  return v.trim().toUpperCase();
+}
+// Ouverture email client — version sûre qui ne risque pas de casser sur apostrophe/guillemet dans le nom
+function openClientEmail(id){
+  const c=clients.find(x=>String(x.id)===String(id));
+  if(c&&c.email)openEmailModal(c.id,c.email,c.name);
+}
+// Téléchargement d'un document signé (HTML auto-contenu)
+function downloadSignedDoc(docId,clientId){
+  const docs=clientDocuments[clientId];
+  if(!docs)return;
+  const doc=docs.find(d=>d.id===docId);
+  if(!doc){showNotif('Document introuvable','error');return;}
+  const htmlContent=doc.html||(doc.signature?`<html><body><h2>${doc.typeName}</h2><p>${doc.timestamp}</p><img src="${doc.signature}" style="max-width:400px;"><hr><p>${doc.clientName}</p></body></html>`:'');
+  if(!htmlContent){showNotif('Aucun contenu à télécharger','error');return;}
+  const blob=new Blob([htmlContent],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  const safeName=(doc.typeName||'document').replace(/\s+/g,'-').toLowerCase();
+  const safeTs=(doc.timestamp||'').replace(/[^0-9]/g,'').slice(0,12)||String(docId);
+  a.download=`inkr_${safeName}_${safeTs}.html`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+  showNotif('📄 Document téléchargé','success');
+}
 function showNotif(msg,type=''){
   const n=document.getElementById('notif');n.textContent=msg;n.className=`notif show ${type}`;
   setTimeout(()=>n.classList.remove('show'),3500);
