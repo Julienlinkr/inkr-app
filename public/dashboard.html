@@ -191,9 +191,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
 .tpl-lbl{font-size:10px;font-weight:600;}
 .ch-picker{display:flex;gap:6px;margin-bottom:13px;flex-wrap:wrap;}
 .ch-pick{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;border:2px solid transparent;transition:all .15s;opacity:.35;}
-.aud-pick{padding:5px 12px;border-radius:980px;font-size:12px;font-weight:600;border:1.5px solid var(--border);color:var(--muted);cursor:pointer;transition:all .2s;background:transparent;white-space:nowrap;}
-.aud-pick:hover{border-color:var(--accent);color:var(--txt);}
-.aud-pick.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+.aud-style-label{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);cursor:pointer;padding:4px 6px;border-radius:6px;transition:background .15s;}
+.aud-style-label:hover{background:rgba(139,92,246,.08);color:var(--txt);}
+.aud-style-label input{accent-color:var(--accent);width:14px;height:14px;cursor:pointer;}
 .ch-pick.sel{opacity:1;border-color:#fff;}
 .var-chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:11px;}
 .var-chip{background:var(--surface);border:1px solid var(--blue);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--blue);cursor:pointer;}
@@ -691,10 +691,22 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
           <div class="var-chip" onclick="insertV('{{studio}}')">{{studio}}</div>
           <div class="var-chip" onclick="insertV('{{lien_résa}}')">{{lien_résa}}</div>
         </div>
-        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Destinataires</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;">
-          <div class="aud-pick sel" data-aud="all" onclick="selectAud(this,'all')">👥 Tous les clients</div>
-          <div id="aud-tag-picks" style="display:contents;"></div>
+        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Destinataires</div>
+        <div id="aud-boxes" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--txt);">
+            <input type="checkbox" id="aud-all" checked onchange="onAudAll(this)" style="accent-color:var(--accent);width:15px;height:15px;">
+            👥 Tous les clients
+          </label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;padding-left:4px;" id="aud-style-grid">
+            <label class="aud-style-label"><input type="checkbox" value="fine line" onchange="onAudStyle()"> Fine line</label>
+            <label class="aud-style-label"><input type="checkbox" value="flash" onchange="onAudStyle()"> ⚡ Flash</label>
+            <label class="aud-style-label"><input type="checkbox" value="japonais" onchange="onAudStyle()"> 🎌 Japonais</label>
+            <label class="aud-style-label"><input type="checkbox" value="realisme" onchange="onAudStyle()"> 🎨 Réalisme</label>
+            <label class="aud-style-label"><input type="checkbox" value="blackwork" onchange="onAudStyle()"> ◼ Blackwork</label>
+            <label class="aud-style-label"><input type="checkbox" value="old school" onchange="onAudStyle()"> ⚓ Old school</label>
+            <label class="aud-style-label"><input type="checkbox" value="geometrique" onchange="onAudStyle()"> 🔷 Géométrique</label>
+            <label class="aud-style-label"><input type="checkbox" value="neo-trad" onchange="onAudStyle()"> 🌸 Néo-trad</label>
+          </div>
         </div>
         <div id="aud-count" style="font-size:11px;color:var(--muted);margin-bottom:12px;"></div>
         <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Canaux</div>
@@ -735,12 +747,21 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.94)
           <div><div id="profil-name-display" style="font-size:15px;font-weight:800;"></div><div id="profil-studio-display" style="font-size:11px;color:var(--muted);"></div></div>
         </div>
         <div class="grid-2">
+          <div class="form-group"><label>Prénom</label><input class="form-control" id="p-prenom" placeholder="Julien"></div>
+          <div class="form-group"><label>Nom d'artiste</label><input class="form-control" id="p-nom-artiste" placeholder="@inkr_tattoo"></div>
+        </div>
+        <div class="grid-2">
           <div class="form-group"><label>Nom complet</label><input class="form-control" id="p-name"></div>
           <div class="form-group"><label>Nom du studio</label><input class="form-control" id="p-studio"></div>
         </div>
+        <div class="form-group"><label>Adresse complète</label><input class="form-control" id="p-adresse" placeholder="12 rue de la Paix, 75001 Paris"></div>
         <div class="grid-2">
           <div class="form-group"><label>Ville</label><input class="form-control" id="p-city"></div>
           <div class="form-group"><label>Téléphone</label><input class="form-control" id="p-phone" type="tel"></div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label>Instagram</label><input class="form-control" id="p-instagram" placeholder="@studio_inkr"></div>
+          <div class="form-group"><label>Pinterest</label><input class="form-control" id="p-pinterest" placeholder="@studio_inkr"></div>
         </div>
         <div class="form-group"><label>Email</label><input class="form-control" id="p-email" type="email" disabled></div>
         <div id="profil-save-msg" style="margin-top:9px;font-size:12px;display:none;color:var(--green);">✅ Profil mis à jour !</div>
@@ -993,10 +1014,15 @@ function populateUser(){
   document.getElementById('profil-name-display').textContent=u.name;
   document.getElementById('profil-studio-display').textContent=u.studio_name||'';
   document.getElementById('p-name').value=u.name||'';
+  document.getElementById('p-prenom').value=u.prenom||'';
+  document.getElementById('p-nom-artiste').value=u.nom_artiste||'';
   document.getElementById('p-studio').value=u.studio_name||'';
   document.getElementById('p-city').value=u.city||'';
+  document.getElementById('p-adresse').value=u.adresse||'';
   document.getElementById('p-phone').value=u.phone||'';
   document.getElementById('p-email').value=u.email||'';
+  document.getElementById('p-instagram').value=u.instagram||'';
+  document.getElementById('p-pinterest').value=u.pinterest||'';
 }
 async function logout(){
   await fetch('/api/auth/logout',{method:'POST',credentials:'include'});
@@ -1233,32 +1259,60 @@ async function openClient(id){
       </div>
       <div style="flex:1;">
         <div style="font-size:16px;font-weight:800;">${fullname||'—'}</div>
-        <div style="font-size:11px;color:var(--muted);">${[c.city,ageDisplay!=='—'?ageDisplay:null].filter(Boolean).join(' · ')}</div>
+        <div style="font-size:11px;color:var(--muted);">${[c.city,ageDisplay!=='—'?ageDisplay:null].filter(Boolean).join(' · ')} · ${clientRDV.length} RDV</div>
       </div>
       <button class="btn btn-danger btn-sm" onclick="deleteClient(${c.id})">Supprimer</button>
     </div>
-    <div class="grid-4" style="margin-bottom:14px;">
-      <div class="info-box"><div class="info-box-lbl">RDV</div><div class="info-box-val">${clientRDV.length}</div></div>
-      <div class="info-box"><div class="info-box-lbl">Âge</div><div class="info-box-val">${ageDisplay}</div></div>
-      <div class="info-box"><div class="info-box-lbl">Email</div><div class="info-box-val" style="font-size:11px;word-break:break-all;">${c.email||'—'}</div></div>
-      <div class="info-box"><div class="info-box-lbl">Tél.</div><div class="info-box-val" style="font-size:11px;">${c.phone||'—'}</div></div>
+    <div class="grid-2" style="margin-bottom:0;">
+      <div class="form-group"><label>Prénom</label><input class="form-control" id="ce-prenom" value="${(c.prenom||'').replace(/"/g,'&quot;')}"></div>
+      <div class="form-group"><label>Nom</label><input class="form-control" id="ce-name" value="${(c.name||'').replace(/"/g,'&quot;')}"></div>
     </div>
-    ${c.date_naissance?`<div style="font-size:11px;color:var(--muted);margin-bottom:12px;">🎂 Anniversaire : ${new Date(c.date_naissance).toLocaleDateString('fr-FR',{day:'numeric',month:'long'})}</div>`:''}
-    <div class="form-group"><label>Notes</label>
-      <textarea class="form-control" id="cn-${c.id}" style="min-height:80px;">${c.notes||''}</textarea>
-      <button class="btn btn-primary btn-sm" style="margin-top:6px;" onclick="saveNotes(${c.id})">Sauvegarder</button>
+    <div class="grid-2">
+      <div class="form-group"><label>Email</label><input class="form-control" id="ce-email" type="email" value="${(c.email||'').replace(/"/g,'&quot;')}"></div>
+      <div class="form-group"><label>Téléphone</label><input class="form-control" id="ce-phone" type="tel" value="${(c.phone||'').replace(/"/g,'&quot;')}"></div>
     </div>
-    <div style="margin-top:9px;display:flex;gap:6px;flex-wrap:wrap;">
-      <button class="btn btn-ghost btn-sm" onclick="dashGo('dp-campaigns',document.getElementById('nav-campaigns'));showNewCamp();">📣 Créer une campagne</button>
-      ${c.email?`<button class="btn btn-ghost btn-sm" onclick="openEmailModal(${c.id},'${c.email}','${c.name}')">✉️ Envoyer un email</button>`:''}
+    <div class="grid-2">
+      <div class="form-group"><label>Ville</label><input class="form-control" id="ce-city" value="${(c.city||'').replace(/"/g,'&quot;')}"></div>
+      <div class="form-group"><label>Date de naissance</label><input class="form-control" id="ce-dob" type="date" value="${c.date_naissance||''}"></div>
     </div>
+    <div class="form-group"><label>Notes (style préféré, allergies, infos importantes…)</label>
+      <textarea class="form-control" id="ce-notes" style="min-height:80px;">${c.notes||''}</textarea>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" onclick="updateClient(${c.id})">💾 Sauvegarder</button>
+      <button class="btn btn-ghost btn-sm" onclick="dashGo('dp-campaigns',document.getElementById('nav-campaigns'));showNewCamp();">📣 Campagne</button>
+      ${c.email?`<button class="btn btn-ghost btn-sm" onclick="openEmailModal(${c.id},'${c.email}','${c.name}')">✉️ Email</button>`:''}
+    </div>
+    <div id="ce-save-msg" style="margin-top:8px;font-size:12px;color:var(--green);display:none;">✅ Fiche mise à jour !</div>
   `;
 }
-async function saveNotes(id){
-  const notes=document.getElementById('cn-'+id)?.value||'';
-  const c=clients.find(x=>x.id===id);
-  await fetch(`/api/clients/${id}`,{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({...c,notes})});
-  showNotif('✅ Notes sauvegardées','success');
+async function updateClient(id){
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  const dob=document.getElementById('ce-dob').value;
+  const age=dob?Math.floor((new Date()-new Date(dob))/31557600000):c.age||0;
+  const body={
+    name:document.getElementById('ce-name').value.trim()||c.name,
+    prenom:document.getElementById('ce-prenom').value.trim(),
+    email:document.getElementById('ce-email').value.trim(),
+    phone:document.getElementById('ce-phone').value.trim(),
+    city:document.getElementById('ce-city').value.trim(),
+    notes:document.getElementById('ce-notes').value,
+    tags:c.tags?JSON.parse(c.tags||'[]'):[],
+    age,
+    date_naissance:dob,
+    photo_url:c.photo_url||''
+  };
+  const res=await fetch(`/api/clients/${id}`,{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(res.ok){
+    Object.assign(c,body,{tags:JSON.stringify(body.tags)});
+    const msg=document.getElementById('ce-save-msg');
+    msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);
+    showNotif('✅ Fiche client mise à jour !','success');
+    renderClients(clients);
+    document.getElementById('cr-'+id)?.classList.add('active');
+  } else {
+    showNotif('❌ Erreur lors de la sauvegarde','error');
+  }
 }
 async function deleteClient(id){
   if(!confirm('Supprimer ce client ?'))return;
@@ -1320,40 +1374,41 @@ function duplicateCamp(id){
   showNewCamp();
   showNotif('📋 Campagne dupliquée — modifiez et envoyez !','success');
 }
-let selectedAudience = 'all';
-function selectAud(el, aud) {
-  document.querySelectorAll('.aud-pick').forEach(a => a.classList.remove('sel'));
-  el.classList.add('sel');
-  selectedAudience = aud;
+function getSelectedAudience() {
+  const allCb = document.getElementById('aud-all');
+  if (!allCb || allCb.checked) return 'all';
+  const selected = [...document.querySelectorAll('#aud-style-grid input:checked')].map(i => i.value);
+  return selected.length ? 'tags:' + selected.join(',') : 'all';
+}
+function onAudAll(cb) {
+  if (cb.checked) {
+    document.querySelectorAll('#aud-style-grid input').forEach(i => i.checked = false);
+  }
+  updateAudCount();
+}
+function onAudStyle() {
+  const anyChecked = [...document.querySelectorAll('#aud-style-grid input:checked')].length > 0;
+  const allCb = document.getElementById('aud-all');
+  if (allCb) allCb.checked = !anyChecked;
   updateAudCount();
 }
 function updateAudCount() {
   const el = document.getElementById('aud-count');
   if (!el) return;
-  if (selectedAudience === 'all') {
-    el.textContent = `${clients.length} client(s) ciblé(s)`;
+  const aud = getSelectedAudience();
+  if (aud === 'all') {
+    el.textContent = `👥 ${clients.length} client(s) ciblé(s)`;
   } else {
-    const tag = selectedAudience.replace('tag:', '').toLowerCase();
-    const count = clients.filter(c => { try { return JSON.parse(c.tags||'[]').some(t => t.toLowerCase() === tag); } catch { return false; } }).length;
-    el.textContent = `${count} client(s) avec le tag "${selectedAudience.replace('tag:','')}"`;
+    const tags = aud.replace('tags:','').split(',').map(t=>t.toLowerCase());
+    const count = clients.filter(c => { try { return JSON.parse(c.tags||'[]').some(t=>tags.includes(t.toLowerCase())); } catch { return false; } }).length;
+    el.textContent = `🎯 ${count} client(s) avec ces styles`;
   }
 }
-function renderAudPicks() {
-  const allTags = new Set();
-  clients.forEach(c => { try { JSON.parse(c.tags||'[]').forEach(t => { if(t) allTags.add(t); }); } catch {} });
-  const el = document.getElementById('aud-tag-picks');
-  if (!el) return;
-  el.innerHTML = [...allTags].map(tag =>
-    `<div class="aud-pick" data-aud="tag:${tag}" onclick="selectAud(this,'tag:${tag}')"># ${tag}</div>`
-  ).join('');
-  updateAudCount();
-}
 function showNewCamp(){
-  selectedAudience='all';
-  document.querySelectorAll('.aud-pick').forEach(a=>a.classList.remove('sel'));
-  const allBtn=document.querySelector('.aud-pick[data-aud="all"]');
-  if(allBtn) allBtn.classList.add('sel');
-  renderAudPicks();
+  const allCb = document.getElementById('aud-all');
+  if (allCb) allCb.checked = true;
+  document.querySelectorAll('#aud-style-grid input').forEach(i => i.checked = false);
+  updateAudCount();
   document.getElementById('new-camp-form').style.display='block';
   document.getElementById('camp-list').style.display='none';
 }
@@ -1365,7 +1420,7 @@ async function sendCamp(){
   const name=document.getElementById('c-name').value.trim()||'Campagne';
   const message=document.getElementById('c-msg').value.trim();
   const channels=[...document.querySelectorAll('.ch-pick.sel')].map(el=>el.dataset.ch);
-  const audience=selectedAudience||'all';
+  const audience=getSelectedAudience();
   if(!message){showNotif('Le message est vide','error');return;}
   const res=await fetch('/api/campaigns',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,message,channels,audience})});
   const{id}=await res.json();
@@ -1419,8 +1474,26 @@ async function saveAutoMsg(id){
 
 // ======== PROFIL ========
 async function saveProfil(){
-  const res=await fetch('/api/auth/profile',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:document.getElementById('p-name').value,studio_name:document.getElementById('p-studio').value,city:document.getElementById('p-city').value,phone:document.getElementById('p-phone').value})});
-  if(res.ok){currentUser.name=document.getElementById('p-name').value;currentUser.studio_name=document.getElementById('p-studio').value;populateUser();const msg=document.getElementById('profil-save-msg');msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);showNotif('✅ Profil mis à jour !','success');}
+  const body={
+    name:document.getElementById('p-name').value,
+    prenom:document.getElementById('p-prenom').value,
+    nom_artiste:document.getElementById('p-nom-artiste').value,
+    studio_name:document.getElementById('p-studio').value,
+    city:document.getElementById('p-city').value,
+    adresse:document.getElementById('p-adresse').value,
+    phone:document.getElementById('p-phone').value,
+    instagram:document.getElementById('p-instagram').value,
+    pinterest:document.getElementById('p-pinterest').value
+  };
+  const res=await fetch('/api/auth/profile',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(res.ok){
+    Object.assign(currentUser,body);
+    populateUser();
+    const msg=document.getElementById('profil-save-msg');
+    msg.style.display='block';
+    setTimeout(()=>msg.style.display='none',3000);
+    showNotif('✅ Profil mis à jour !','success');
+  }
 }
 
 // ======== MESSAGES ========

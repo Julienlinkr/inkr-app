@@ -137,6 +137,11 @@ function runMigrations() {
     'ALTER TABLE appointments ADD COLUMN acompte_amount REAL DEFAULT 0',
     'ALTER TABLE appointments ADD COLUMN acompte_status TEXT DEFAULT "none"',
     'ALTER TABLE appointments ADD COLUMN acompte_stripe_url TEXT DEFAULT ""',
+    'ALTER TABLE users ADD COLUMN prenom TEXT DEFAULT ""',
+    'ALTER TABLE users ADD COLUMN nom_artiste TEXT DEFAULT ""',
+    'ALTER TABLE users ADD COLUMN adresse TEXT DEFAULT ""',
+    'ALTER TABLE users ADD COLUMN instagram TEXT DEFAULT ""',
+    'ALTER TABLE users ADD COLUMN pinterest TEXT DEFAULT ""',
   ];
   migrations.forEach(sql => { try { db.exec(sql); } catch(e) { /* colonne déjà existante */ } });
 }

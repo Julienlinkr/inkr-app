@@ -81,7 +81,7 @@ router.get('/me', (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = db.prepare('SELECT id, email, name, studio_name, city, phone, avatar_seed, created_at FROM users WHERE id = ?').get(decoded.userId);
+    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest, avatar_seed, created_at FROM users WHERE id = ?').get(decoded.userId);
     if (!user) return res.status(401).json({ error: 'Utilisateur introuvable' });
     res.json({ user });
   } catch {
@@ -95,10 +95,10 @@ router.put('/profile', (req, res) => {
   if (!token) return res.status(401).json({ error: 'Non connecté' });
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const { name, studio_name, city, phone } = req.body;
+    const { name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest } = req.body;
     if (!name) return res.status(400).json({ error: 'Nom requis' });
-    db.prepare('UPDATE users SET name=?, studio_name=?, city=?, phone=? WHERE id=?')
-      .run(name, studio_name || '', city || '', phone || '', decoded.userId);
+    db.prepare('UPDATE users SET name=?, prenom=?, nom_artiste=?, studio_name=?, city=?, adresse=?, phone=?, instagram=?, pinterest=? WHERE id=?')
+      .run(name, prenom||'', nom_artiste||'', studio_name||'', city||'', adresse||'', phone||'', instagram||'', pinterest||'', decoded.userId);
     res.json({ success: true });
   } catch {
     res.status(401).json({ error: 'Session expirée' });

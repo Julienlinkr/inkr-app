@@ -45,18 +45,21 @@ router.post('/:id/send', requireAuth, async (req, res) => {
 
   // ── Ciblage par audience ──
   const audience = campaign.audience || 'all';
+  const allClients = db.prepare('SELECT * FROM clients WHERE user_id = ?').all(req.user.userId);
   let clients;
   if (audience === 'all') {
-    clients = db.prepare('SELECT * FROM clients WHERE user_id = ?').all(req.user.userId);
-  } else if (audience.startsWith('tag:')) {
-    const tag = audience.replace('tag:', '').toLowerCase();
-    const all = db.prepare('SELECT * FROM clients WHERE user_id = ?').all(req.user.userId);
-    clients = all.filter(c => {
-      try { return JSON.parse(c.tags || '[]').some(t => t.toLowerCase() === tag); }
-      catch { return false; }
+    clients = allClients;
+  } else if (audience.startsWith('tags:')) {
+    // Format: "tags:flash,fine line,japonais"
+    const selectedTags = audience.replace('tags:', '').split(',').map(t => t.trim().toLowerCase()).filter(Boolean);
+    clients = allClients.filter(c => {
+      try {
+        const ctags = JSON.parse(c.tags || '[]').map(t => t.toLowerCase());
+        return selectedTags.some(st => ctags.includes(st));
+      } catch { return false; }
     });
   } else {
-    clients = db.prepare('SELECT * FROM clients WHERE user_id = ?').all(req.user.userId);
+    clients = allClients;
   }
 
   const results = { email: 0, sms: 0, errors: [], audience_count: clients.length };
@@ -175,7 +178,8 @@ async function sendEmail(to, subject, text, user = {}, appUrl = 'https://inkr-ap
   const from = process.env.EMAIL_FROM || 'inkr <onboarding@resend.dev>';
   console.log(`📧 [EMAIL] Envoi depuis "${from}" vers ${to} | Sujet: ${subject}`);
 
-  const studioName = user.studio_name || user.name || '';
+  const artistName = [user.prenom, user.nom_artiste || user.name].filter(Boolean).join(' ');
+  const studioName = user.studio_name || artistName || '';
   const replyTo = user.email || undefined;
 
   const html = `<!DOCTYPE html>
@@ -197,9 +201,12 @@ async function sendEmail(to, subject, text, user = {}, appUrl = 'https://inkr-ap
   </td></tr>
   <tr><td style="background:#0A0A0A;border-radius:0 0 16px 16px;padding:28px 36px;">
     ${studioName ? `<div style="font-size:14px;font-weight:700;color:#ffffff;margin-bottom:10px;">${studioName}</div>` : ''}
-    ${user.city ? `<div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:4px;">📍 &nbsp;${user.city}</div>` : ''}
+    ${artistName ? `<div style="font-size:12px;color:rgba(255,255,255,0.35);margin-bottom:8px;letter-spacing:.5px;">${artistName}</div>` : ''}
+    ${user.adresse ? `<div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:4px;">📍 &nbsp;${user.adresse}${user.city ? ', '+user.city : ''}</div>` : user.city ? `<div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:4px;">📍 &nbsp;${user.city}</div>` : ''}
     ${user.phone ? `<div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:4px;">📞 &nbsp;${user.phone}</div>` : ''}
     ${user.email ? `<div style="font-size:13px;margin-bottom:4px;"><a href="mailto:${user.email}" style="color:rgba(255,255,255,0.4);text-decoration:none;">✉️ &nbsp;${user.email}</a></div>` : ''}
+    ${user.instagram ? `<div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:4px;"><a href="https://instagram.com/${user.instagram.replace('@','')}" style="color:rgba(255,255,255,0.4);text-decoration:none;">📸 &nbsp;${user.instagram}</a></div>` : ''}
+    ${user.pinterest ? `<div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:4px;"><a href="https://pinterest.com/${user.pinterest.replace('@','')}" style="color:rgba(255,255,255,0.4);text-decoration:none;">📌 &nbsp;${user.pinterest}</a></div>` : ''}
     <div style="margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07);font-size:11px;color:rgba(255,255,255,0.2);">
       Envoyé via <a href="https://inkr.club" style="color:rgba(255,255,255,0.3);text-decoration:none;">inkr</a> · La plateforme des tatoueurs
     </div>
