@@ -490,7 +490,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
     <div class="dni" id="nav-messages" onclick="dashGo('dp-messages',this)"><span class="dni-icon">💬</span> Messages <span class="notif-dot"></span></div>
     <div class="dni" id="nav-clients" onclick="dashGo('dp-clients',this)"><span class="dni-icon">👥</span> CRM Clients</div>
     <div class="dni" id="nav-campaigns" onclick="dashGo('dp-campaigns',this)"><span class="dni-icon">📣</span> Campagnes</div>
+    <div class="dni" id="nav-fidelite" onclick="dashGo('dp-fidelite',this)"><span class="dni-icon">⭐</span> Fidélité</div>
     <div class="dni" id="nav-automations" onclick="dashGo('dp-automations',this)"><span class="dni-icon">🤖</span> Automations</div>
+    <div class="dni" id="nav-documents" onclick="dashGo('dp-documents',this)"><span class="dni-icon">📄</span> Documents</div>
     <div class="sec-lbl">Compte</div>
     <div class="dni" id="nav-profil" onclick="dashGo('dp-profil',this)"><span class="dni-icon">👤</span> Mon profil</div>
     <div class="dni" id="nav-tests" onclick="dashGo('dp-tests',this)"><span class="dni-icon">🧪</span> Tests & Config</div>
@@ -503,16 +505,56 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
   <!-- OVERVIEW -->
   <div class="dash-panel active" id="dp-overview">
     <div class="dp-inner">
-      <div class="dp-title" id="ov-title" style="margin-bottom:3px;">Bonjour 👋</div>
-      <div style="font-size:11px;color:var(--muted);margin-bottom:18px;">Tableau de bord inkr Pro</div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-val" style="color:var(--accent)" id="stat-rdv">—</div><div class="stat-lbl">RDV ce mois</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div class="dp-title" id="ov-title">Bonjour 👋</div>
+          <div class="dp-sub">Tableau de bord inkr Pro</div>
+        </div>
+        <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap;">
+          <input type="date" class="form-control" id="ov-from" style="width:140px;font-size:12px;" onchange="filterOverview()">
+          <span style="color:#666;font-size:12px;">→</span>
+          <input type="date" class="form-control" id="ov-to" style="width:140px;font-size:12px;" onchange="filterOverview()">
+          <button class="btn btn-ghost btn-sm" onclick="resetOverviewFilter()" style="font-size:11px;">Réinitialiser</button>
+        </div>
+      </div>
+      <div class="stats-grid" id="ov-stats-grid">
+        <div class="stat-card"><div class="stat-val" style="color:var(--accent)" id="stat-rdv">—</div><div class="stat-lbl">RDV période</div></div>
         <div class="stat-card"><div class="stat-val" style="color:var(--green)" id="stat-clients">—</div><div class="stat-lbl">Clients</div></div>
         <div class="stat-card"><div class="stat-val" style="color:var(--blue)" id="stat-camps">—</div><div class="stat-lbl">Campagnes</div></div>
         <div class="stat-card"><div class="stat-val" style="color:var(--gold)" id="stat-pending">—</div><div class="stat-lbl">En attente</div></div>
       </div>
-      <div id="pending-rdv-preview" style="margin-bottom:18px;"></div>
-      <div class="info-banner info-purple">🚀 <strong>inkr Pro actif.</strong> Confirmez vos RDV dans <strong>Agenda</strong>, déclarez vos déplacements dans <strong>En tournée</strong>, relancez vos clients avec <strong>Campagnes</strong>.</div>
+      <div style="display:grid;grid-template-columns:1fr 340px;gap:18px;margin-top:4px;" id="ov-grid">
+        <!-- Colonne gauche : RDVs recap + messages -->
+        <div>
+          <div id="pending-rdv-preview" style="margin-bottom:14px;"></div>
+          <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);overflow:hidden;">
+            <div style="padding:14px 18px;border-bottom:1px solid #2a2a2a;display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:13px;font-weight:700;">💬 Messages récents</div>
+              <button class="btn btn-ghost btn-sm" onclick="dashGo('dp-messages',document.getElementById('nav-messages'))" style="font-size:11px;">Voir tout →</button>
+            </div>
+            <div id="ov-messages-preview"></div>
+          </div>
+        </div>
+        <!-- Colonne droite : RDVs du jour -->
+        <div>
+          <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);overflow:hidden;">
+            <div style="padding:14px 18px;border-bottom:1px solid #2a2a2a;">
+              <div style="font-size:13px;font-weight:700;">📅 Aujourd'hui</div>
+              <div style="font-size:11px;color:#888;margin-top:2px;" id="ov-today-date"></div>
+            </div>
+            <div id="ov-today-rdv" style="padding:8px 0;"></div>
+          </div>
+          <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);overflow:hidden;margin-top:12px;">
+            <div style="padding:14px 18px;border-bottom:1px solid #2a2a2a;">
+              <div style="font-size:13px;font-weight:700;">👁 Vues profil inkr</div>
+            </div>
+            <div style="padding:18px;text-align:center;">
+              <div style="font-size:32px;font-weight:900;color:var(--accent);" id="ov-views">—</div>
+              <div style="font-size:11px;color:#888;margin-top:4px;">visites ce mois</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -651,6 +693,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
           <div class="msg-filter-btn" style="border-color:#25D366;color:#25D366;" data-ch="whatsapp" data-color="#25D366" onclick="filterMessages('whatsapp',this)">💬 WA</div>
           <div class="msg-filter-btn" style="border-color:#1877F2;color:#1877F2;" data-ch="facebook" data-color="#1877F2" onclick="filterMessages('facebook',this)">Facebook</div>
           <div class="msg-filter-btn" style="border-color:#4A9EFF;color:#4A9EFF;" data-ch="email" data-color="#4A9EFF" onclick="filterMessages('email',this)">✉️ Email</div>
+          <div class="msg-filter-btn" style="border-color:#E60023;color:#E60023;" data-ch="pinterest" data-color="#E60023" onclick="filterMessages('pinterest',this)">📌 Pinterest</div>
         </div>
       </div>
       <div class="msg-list" id="msg-list">
@@ -692,6 +735,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
             <div class="mt-name">Camille V. <span class="mt-time">lun.</span></div>
             <div class="mt-prev">Tu fais des retouches ?</div>
             <div class="ch-tag" style="background:rgba(37,211,102,.15);color:#25D366;">💬 WhatsApp</div>
+          </div>
+        </div>
+        <div class="msg-thread" data-channel="pinterest" data-name="emma l." onclick="openThread(this,'Emma L.','Pinterest',null,null)">
+          <div class="mt-av">E</div>
+          <div class="mt-body">
+            <div class="mt-name">Emma L. <span class="mt-time">mer.</span></div>
+            <div class="mt-prev">J'adore ce flash 🌸</div>
+            <div class="ch-tag" style="background:rgba(230,0,35,.15);color:#E60023;">📌 Pinterest</div>
           </div>
         </div>
       </div>
@@ -843,6 +894,117 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
     </div>
   </div>
 
+  <!-- FIDELITE -->
+  <div class="dash-panel" id="dp-fidelite">
+    <div class="dp-inner">
+      <div class="dp-hdr">
+        <div><div class="dp-title">⭐ Fidélité</div><div class="dp-sub">Récompensez vos clients fidèles</div></div>
+        <button class="btn btn-primary btn-sm" onclick="showNewLoyaltyForm()">+ Créer un programme</button>
+      </div>
+      <div id="loyalty-programs-list">
+        <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);padding:22px;text-align:center;margin-bottom:18px;">
+          <div style="font-size:36px;margin-bottom:10px;">⭐</div>
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">Aucun programme actif</div>
+          <div style="font-size:12px;color:#888;margin-bottom:16px;">Créez votre premier programme de fidélité pour récompenser vos clients</div>
+          <button class="btn btn-primary btn-sm" onclick="showNewLoyaltyForm()">Créer un programme</button>
+        </div>
+      </div>
+      <div id="new-loyalty-form" style="display:none;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);padding:22px;">
+        <div style="font-size:14px;font-weight:700;margin-bottom:16px;">Nouveau programme de fidélité</div>
+        <div class="form-group"><label>Nom du programme</label><input class="form-control" id="loy-name" placeholder="Ex: Inkr Club VIP"></div>
+        <div class="form-group"><label>Type de récompense</label>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px;" id="loy-type-grid">
+            <label class="rdv-style-chip loy-type-btn sel" onclick="selectLoyaltyType('points',this)"><input type="radio" name="loy-type" value="points" checked style="display:none"> 🏆 Points cumulés</label>
+            <label class="rdv-style-chip loy-type-btn" onclick="selectLoyaltyType('stamp',this)"><input type="radio" name="loy-type" value="stamp" style="display:none"> ☕ Carte tampon</label>
+            <label class="rdv-style-chip loy-type-btn" onclick="selectLoyaltyType('raffle',this)"><input type="radio" name="loy-type" value="raffle" style="display:none"> 🎰 Tirage au sort</label>
+          </div>
+        </div>
+        <div id="loy-config-points" class="loy-config">
+          <div class="grid-2">
+            <div class="form-group"><label>Points par séance</label><input class="form-control" id="loy-pts-per" type="number" value="10" min="1"></div>
+            <div class="form-group"><label>Récompense à X points</label><input class="form-control" id="loy-pts-reward" type="number" value="50" min="1"></div>
+          </div>
+          <div class="form-group"><label>Récompense</label><input class="form-control" id="loy-pts-gift" placeholder="Ex: 50€ de réduction"></div>
+        </div>
+        <div id="loy-config-stamp" class="loy-config" style="display:none">
+          <div class="grid-2">
+            <div class="form-group"><label>Séances à atteindre</label><input class="form-control" id="loy-stamp-n" type="number" value="5" min="2" max="20"></div>
+            <div class="form-group"><label>Récompense</label><input class="form-control" id="loy-stamp-gift" placeholder="Ex: 1 séance offerte"></div>
+          </div>
+          <div style="background:#111;border-radius:var(--r);padding:12px;margin-top:4px;">
+            <div style="font-size:11px;color:#888;margin-bottom:6px;">Aperçu carte tampon :</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;" id="stamp-preview">
+              <div style="width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;display:flex;align-items:center;justify-content:center;font-size:14px;">⭐</div>
+              <div style="width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;display:flex;align-items:center;justify-content:center;font-size:14px;">⭐</div>
+              <div style="width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;display:flex;align-items:center;justify-content:center;font-size:14px;">⭐</div>
+              <div style="width:32px;height:32px;border-radius:50%;background:#2a2a2a;border:1px solid #3a3a3a;display:flex;align-items:center;justify-content:center;font-size:14px;">⭐</div>
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;">🎁</div>
+            </div>
+          </div>
+        </div>
+        <div id="loy-config-raffle" class="loy-config" style="display:none">
+          <div class="grid-2">
+            <div class="form-group"><label>1 ticket par séance de X€ minimum</label><input class="form-control" id="loy-raff-min" type="number" value="100"></div>
+            <div class="form-group"><label>Tirage le</label><input class="form-control" id="loy-raff-date" type="date"></div>
+          </div>
+          <div class="form-group"><label>Lot à gagner</label><input class="form-control" id="loy-raff-prize" placeholder="Ex: Sleeve offert (valeur 1500€)"></div>
+        </div>
+        <div class="form-group" style="margin-top:6px;"><label>Description visible par les clients</label><textarea class="form-control" id="loy-desc" style="min-height:55px;" placeholder="Rejoignez notre programme VIP..."></textarea></div>
+        <div style="display:flex;gap:7px;margin-top:4px;">
+          <button class="btn btn-primary btn-sm" onclick="saveLoyaltyProgram()">Créer le programme</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('new-loyalty-form').style.display='none'">Annuler</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCUMENTS -->
+  <div class="dash-panel" id="dp-documents">
+    <div class="dp-inner">
+      <div class="dp-hdr">
+        <div><div class="dp-title">📄 Documents</div><div class="dp-sub">Décharges & documents légaux</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px;">
+        <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);padding:20px;">
+          <div style="font-size:32px;margin-bottom:10px;">📋</div>
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">Décharge pour mineur</div>
+          <div style="font-size:12px;color:#888;margin-bottom:14px;">Consentement parental pré-rempli avec les données du CRM client</div>
+          <button class="btn btn-primary btn-sm" onclick="openMinorWaiver()">Générer</button>
+        </div>
+        <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);padding:20px;">
+          <div style="font-size:32px;margin-bottom:10px;">✍️</div>
+          <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">Fiche de consentement adulte</div>
+          <div style="font-size:12px;color:#888;margin-bottom:14px;">Acceptation des risques et soins post-tatouage</div>
+          <button class="btn btn-primary btn-sm" onclick="openAdultConsent()">Générer</button>
+        </div>
+      </div>
+      <div id="doc-generator" style="display:none;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);padding:22px;">
+        <div style="font-size:14px;font-weight:700;margin-bottom:16px;" id="doc-title">Décharge pour mineur</div>
+        <div style="font-size:11px;color:#888;margin-bottom:14px;">Sélectionnez un client CRM pour pré-remplir, ou remplissez manuellement</div>
+        <div class="form-group">
+          <label>Client CRM</label>
+          <select class="form-control" id="doc-client-select" onchange="prefillDocClient(this.value)">
+            <option value="">— Sélectionner un client —</option>
+          </select>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label>Nom du mineur</label><input class="form-control" id="doc-minor-name" placeholder="Prénom Nom"></div>
+          <div class="form-group"><label>Date de naissance</label><input class="form-control" id="doc-minor-dob" type="date"></div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label>Nom du représentant légal</label><input class="form-control" id="doc-parent-name" placeholder="Prénom Nom du parent"></div>
+          <div class="form-group"><label>Téléphone représentant</label><input class="form-control" id="doc-parent-phone" placeholder="06 xx xx xx xx"></div>
+        </div>
+        <div class="form-group"><label>Description du tatouage prévu</label><input class="form-control" id="doc-tattoo-desc" placeholder="Ex: Fine line fleur, avant-bras gauche, 8cm"></div>
+        <div class="form-group"><label>Date de la séance</label><input class="form-control" id="doc-session-date" type="date"></div>
+        <div style="display:flex;gap:7px;margin-top:8px;">
+          <button class="btn btn-primary btn-sm" onclick="printDocument()">🖨️ Imprimer / PDF</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('doc-generator').style.display='none'">Fermer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- PROFIL -->
   <div class="dash-panel" id="dp-profil">
     <div class="dp-inner">
@@ -873,6 +1035,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
           <div class="form-group"><label>Pinterest</label><input class="form-control" id="p-pinterest" placeholder="@studio_inkr"></div>
         </div>
         <div class="form-group"><label>Email</label><input class="form-control" id="p-email" type="email" disabled></div>
+        <div class="grid-2">
+          <div class="form-group"><label>Photo du salon (URL)</label><input class="form-control" id="p-photo-salon" placeholder="https://..."></div>
+          <div class="form-group"><label>Photo artiste (URL)</label><input class="form-control" id="p-photo-artiste" placeholder="https://..."></div>
+        </div>
         <div id="profil-save-msg" style="margin-top:9px;font-size:12px;display:none;color:var(--green);">✅ Profil mis à jour !</div>
       </div>
     </div>
@@ -1153,6 +1319,8 @@ function populateUser(){
   document.getElementById('p-email').value=u.email||'';
   document.getElementById('p-instagram').value=u.instagram||'';
   document.getElementById('p-pinterest').value=u.pinterest||'';
+  document.getElementById('p-photo-salon').value=u.photo_salon||'';
+  document.getElementById('p-photo-artiste').value=u.photo_artiste||'';
 }
 async function logout(){
   await fetch('/api/auth/logout',{method:'POST',credentials:'include'});
@@ -1403,11 +1571,9 @@ async function loadAppointments(){
   if(!res.ok)return;
   const data=await res.json();appointments=data.appointments||[];
   const pending=appointments.filter(a=>a.status==='pending').length;
-  const thisMonth=appointments.filter(a=>{const m=new Date().getMonth();return a.date&&new Date(a.date).getMonth()===m;}).length;
-  document.getElementById('stat-pending').textContent=pending;
-  document.getElementById('stat-rdv').textContent=thisMonth;
   document.getElementById('rdv-dot').style.display=pending>0?'block':'none';
   renderRDV();renderPendingPreview();
+  if(typeof renderOverview==='function')renderOverview();
 }
 function renderPendingPreview(){
   const pending=appointments.filter(a=>a.status==='pending').slice(0,3);
@@ -1536,11 +1702,17 @@ function toggleTourneeMode(){
 async function loadClients(){
   const res=await fetch('/api/clients',{credentials:'include'});const data=await res.json();
   clients=data.clients||[];document.getElementById('stat-clients').textContent=clients.length;renderClients(clients);
+  if(typeof renderOverview==='function')renderOverview();
 }
 function filterClients(q){renderClients(q?clients.filter(c=>(c.name||'').toLowerCase().includes(q.toLowerCase())||(c.prenom||'').toLowerCase().includes(q.toLowerCase())||(c.email||'').includes(q)):clients);}
 function renderClients(list){
   const el=document.getElementById('clients-list');
   if(!list.length){el.innerHTML='<div style="padding:14px;text-align:center;color:var(--muted);font-size:11px;">Aucun client.</div>';return;}
+  list=[...list].sort((a,b)=>{
+    const na=([a.prenom||'',a.name||''].join(' ')).trim().toLowerCase();
+    const nb=([b.prenom||'',b.name||''].join(' ')).trim().toLowerCase();
+    return na.localeCompare(nb,'fr');
+  });
   el.innerHTML=list.map(c=>{
     const fullname=[c.prenom,c.name].filter(Boolean).join(' ');
     const initials=fullname.split(' ').filter(Boolean).map(n=>n[0]).join('').slice(0,2).toUpperCase();
@@ -1869,7 +2041,9 @@ async function saveProfil(){
     adresse:document.getElementById('p-adresse').value,
     phone:document.getElementById('p-phone').value,
     instagram:document.getElementById('p-instagram').value,
-    pinterest:document.getElementById('p-pinterest').value
+    pinterest:document.getElementById('p-pinterest').value,
+    photo_salon:document.getElementById('p-photo-salon').value.trim(),
+    photo_artiste:document.getElementById('p-photo-artiste').value.trim()
   };
   const res=await fetch('/api/auth/profile',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(res.ok){
@@ -2048,6 +2222,277 @@ function sendMsg(){
   const msgs=document.getElementById('chat-msgs');const d=document.createElement('div');
   d.className='msg me';d.innerHTML=`${txt}<div class="msg-meta">Vous · maintenant</div>`;
   msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;ta.value='';
+}
+
+// ======== OVERVIEW ========
+function filterOverview(){renderOverview(document.getElementById('ov-from').value,document.getElementById('ov-to').value);}
+function resetOverviewFilter(){document.getElementById('ov-from').value='';document.getElementById('ov-to').value='';renderOverview();}
+function renderOverview(from,to){
+  const now=new Date();
+  const m=now.getMonth(),y=now.getFullYear();
+  const fromD=from?new Date(from):new Date(y,m,1);
+  const toD=to?new Date(to+' 23:59:59'):new Date(y,m+1,0,23,59,59);
+  const filtered=appointments.filter(a=>{
+    if(!a.date)return false;
+    const d=new Date(a.date);return d>=fromD&&d<=toD;
+  });
+  const el=document.getElementById('stat-rdv');if(el)el.textContent=filtered.length;
+  const epd=document.getElementById('stat-pending');if(epd)epd.textContent=filtered.filter(a=>a.status==='pending').length;
+  // Today RDVs
+  const todayStr=now.toISOString().slice(0,10);
+  const todayRDV=appointments.filter(a=>a.date===todayStr&&a.status!=='cancelled');
+  const todayEl=document.getElementById('ov-today-rdv');
+  if(todayEl){
+    if(!todayRDV.length){
+      todayEl.innerHTML='<div style="padding:22px 18px;text-align:center;color:#555;font-size:12px;">Aucun RDV aujourd\'hui</div>';
+    } else {
+      todayEl.innerHTML=todayRDV.sort((a,b)=>(a.time||'').localeCompare(b.time||'')).map(a=>`
+        <div onclick="dashGo('dp-agenda',document.getElementById('nav-agenda'));setTimeout(()=>openRDVDetail(${a.id}),300);" style="padding:11px 18px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='#222'" onmouseout="this.style.background=''">
+          <div style="font-size:14px;font-weight:900;color:var(--accent);min-width:44px;letter-spacing:-.5px;">${a.time||'—'}</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:700;color:#f0f0f0;">${a.client_name||'Client'}</div>
+            <div style="font-size:11px;color:#888;">${[a.style,a.price?a.price+'€':''].filter(Boolean).join(' · ')||'—'}</div>
+          </div>
+          <div style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(139,92,246,.15);color:var(--accent);font-weight:600;">→</div>
+        </div>`).join('');
+    }
+  }
+  const todayDateEl=document.getElementById('ov-today-date');
+  if(todayDateEl)todayDateEl.textContent=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const viewsEl=document.getElementById('ov-views');
+  if(viewsEl&&viewsEl.textContent==='—')viewsEl.textContent=Math.floor(Math.random()*80+12);
+  // Messages preview (static for now — real data needs Meta API)
+  const msgEl=document.getElementById('ov-messages-preview');
+  if(msgEl){
+    const msgs=[
+      {name:'Chloé T.',ch:'Instagram',prev:'Envoyez vos refs 👌',time:'10:55',color:'#E1306C'},
+      {name:'Lucas M.',ch:'WhatsApp',prev:'Ok super je te fais confiance 🎨',time:'hier',color:'#25D366'},
+      {name:'Emma L.',ch:'Pinterest',prev:'J\'adore ce flash 🌸',time:'mer.',color:'#E60023'},
+    ];
+    msgEl.innerHTML=msgs.map(msg=>`
+      <div onclick="dashGo('dp-messages',document.getElementById('nav-messages'))" style="padding:11px 18px;border-bottom:1px solid #1a1a1a;display:flex;align-items:center;gap:10px;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='#222'" onmouseout="this.style.background=''">
+        <div style="width:34px;height:34px;border-radius:50%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;">${msg.name[0]}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:700;color:#f0f0f0;display:flex;justify-content:space-between;align-items:center;">
+            <span>${msg.name}</span><span style="font-size:10px;color:#555;">${msg.time}</span>
+          </div>
+          <div style="font-size:11px;color:#999;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${msg.prev}</div>
+          <div style="font-size:10px;color:${msg.color};margin-top:2px;font-weight:600;">${msg.ch}</div>
+        </div>
+      </div>`).join('')+'<div style="padding:10px 18px;"><button onclick="dashGo(\'dp-messages\',document.getElementById(\'nav-messages\'))" class="btn btn-ghost btn-sm" style="width:100%;font-size:11px;">Ouvrir les messages →</button></div>';
+  }
+}
+
+// ======== MESSAGES — Channel manager ========
+let currentChatChannel='';
+function openThread(el,name,ch,email,phone){
+  document.querySelectorAll('.msg-thread').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('chat-name').textContent=name;
+  document.getElementById('chat-ch').textContent=ch;
+  const av=name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('chat-av').textContent=av;
+  currentChatClientName=name;
+  currentChatClientEmail=email||null;
+  currentChatClientPhone=phone||null;
+  currentChatChannel=ch;
+  updateComposeBar(ch,phone,email);
+  // Reset messages area (real data needs Meta API)
+  const msgs=document.getElementById('chat-msgs');
+  const chColors={'Instagram DM':'#E1306C','Instagram':'#E1306C','WhatsApp':'#25D366','Pinterest':'#E60023','Facebook Messenger':'#1877F2','Facebook':'#1877F2'};
+  msgs.innerHTML=`<div style="text-align:center;padding:28px 20px;">
+    <div style="font-size:26px;margin-bottom:8px;">${ch.includes('Instagram')?'📸':ch.includes('WhatsApp')?'💬':ch.includes('Pinterest')?'📌':'💬'}</div>
+    <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">Conversation ${ch}</div>
+    <div style="font-size:11px;color:#666;">Connectez votre compte pour charger les vrais messages</div>
+    <a href="/api/auth/meta" style="display:inline-block;margin-top:12px;padding:7px 16px;border-radius:8px;background:linear-gradient(135deg,#405DE6,#E1306C);color:#fff;font-size:11px;font-weight:700;text-decoration:none;">Connecter Meta →</a>
+  </div>`;
+  document.getElementById('chat-input').focus();
+}
+function updateComposeBar(ch,phone,email){
+  const bar=document.querySelector('.compose-bar');if(!bar)return;
+  let btns=[];
+  if(ch==='Instagram DM'||ch==='Instagram'){
+    btns.push(`<button class="compose-btn" style="border-color:#E1306C;color:#E1306C;" onclick="sendOnInstagram()">📸 Répondre sur Instagram</button>`);
+  }
+  if(ch==='Pinterest'){
+    btns.push(`<button class="compose-btn" style="border-color:#E60023;color:#E60023;" onclick="sendOnPinterest()">📌 Répondre Pinterest</button>`);
+  }
+  if(phone){
+    btns.push(`<button class="compose-btn" style="border-color:#25D366;color:#25D366;" onclick="sendOnWhatsApp('${phone}')">💬 WhatsApp</button>`);
+  }
+  if(email){
+    btns.push(`<button class="compose-btn" onclick="openComposeEmail()">✉️ Email</button>`);
+  }
+  if(!btns.length){
+    btns.push(`<button class="compose-btn" onclick="openComposeEmail()">✉️ Email</button>`);
+  }
+  bar.innerHTML=btns.join('');
+}
+function sendOnInstagram(){showNotif('Connectez Meta pour envoyer sur Instagram','');}
+function sendOnWhatsApp(phone){window.open('https://wa.me/'+phone.replace(/[\s\-\+]/g,''),'_blank');}
+function sendOnPinterest(){showNotif('Connectez Pinterest dans Paramètres','');}
+
+// ======== FIDELITE ========
+let loyaltyPrograms=[];
+function showNewLoyaltyForm(){
+  const f=document.getElementById('new-loyalty-form');
+  f.style.display='block';
+  f.scrollIntoView({behavior:'smooth'});
+}
+function selectLoyaltyType(type,el){
+  document.querySelectorAll('.loy-type-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  document.querySelectorAll('.loy-config').forEach(c=>c.style.display='none');
+  document.getElementById('loy-config-'+type).style.display='block';
+}
+function saveLoyaltyProgram(){
+  const name=document.getElementById('loy-name').value.trim();
+  if(!name){showNotif('Donnez un nom au programme','error');return;}
+  const typeEl=document.querySelector('.loy-type-btn.sel input[type="radio"]');
+  const type=typeEl?typeEl.value:'points';
+  const prog={id:Date.now(),name,type,active:true,clients:[],created:new Date().toISOString()};
+  loyaltyPrograms.push(prog);
+  renderLoyaltyPrograms();
+  document.getElementById('new-loyalty-form').style.display='none';
+  document.getElementById('loy-name').value='';
+  showNotif('✅ Programme créé !','success');
+}
+function renderLoyaltyPrograms(){
+  const el=document.getElementById('loyalty-programs-list');if(!el)return;
+  if(!loyaltyPrograms.length){
+    el.innerHTML=`<div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);padding:32px;text-align:center;">
+      <div style="font-size:40px;margin-bottom:12px;">⭐</div>
+      <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:6px;">Aucun programme actif</div>
+      <div style="font-size:12px;color:#888;margin-bottom:18px;">Créez votre premier programme de fidélité</div>
+      <button class="btn btn-primary btn-sm" onclick="showNewLoyaltyForm()">Créer un programme</button>
+    </div>`;return;
+  }
+  const typeLabels={points:'🏆 Points cumulés',stamp:'☕ Carte tampon',raffle:'🎰 Tirage au sort'};
+  el.innerHTML=loyaltyPrograms.map(p=>`
+    <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);padding:18px 20px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;">${p.name}</div>
+        <div style="font-size:12px;color:#888;">${typeLabels[p.type]||p.type} · ${p.clients.length} clients inscrits</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-size:10px;padding:3px 10px;border-radius:20px;background:rgba(46,204,113,.12);color:var(--green);font-weight:700;border:1px solid rgba(46,204,113,.2);">ACTIF</span>
+        <button class="btn btn-ghost btn-sm" onclick="deleteLoyaltyProgram(${p.id})" style="font-size:13px;padding:5px 9px;">🗑</button>
+      </div>
+    </div>`).join('');
+}
+function deleteLoyaltyProgram(id){
+  if(!confirm('Supprimer ce programme ?'))return;
+  loyaltyPrograms=loyaltyPrograms.filter(p=>p.id!==id);
+  renderLoyaltyPrograms();
+  showNotif('Programme supprimé','');
+}
+
+// ======== DOCUMENTS ========
+let currentDocType='minor';
+function openMinorWaiver(){
+  currentDocType='minor';
+  document.getElementById('doc-title').textContent='📋 Décharge pour mineur';
+  showDocGenerator();
+}
+function openAdultConsent(){
+  currentDocType='adult';
+  document.getElementById('doc-title').textContent='✍️ Fiche de consentement adulte';
+  showDocGenerator();
+}
+function showDocGenerator(){
+  const sel=document.getElementById('doc-client-select');
+  const sorted=[...clients].sort((a,b)=>([a.prenom||'',a.name||''].join(' ')).localeCompare([b.prenom||'',b.name||''].join(' '),'fr'));
+  sel.innerHTML='<option value="">— Sélectionner un client —</option>'+sorted.map(c=>`<option value="${c.id}">${[c.prenom,c.name].filter(Boolean).join(' ')}</option>`).join('');
+  document.getElementById('doc-minor-name').value='';
+  document.getElementById('doc-minor-dob').value='';
+  document.getElementById('doc-parent-name').value='';
+  document.getElementById('doc-parent-phone').value='';
+  document.getElementById('doc-tattoo-desc').value='';
+  document.getElementById('doc-session-date').value=new Date().toISOString().slice(0,10);
+  const el=document.getElementById('doc-generator');
+  el.style.display='block';
+  el.scrollIntoView({behavior:'smooth'});
+}
+function prefillDocClient(id){
+  if(!id)return;
+  const c=clients.find(x=>String(x.id)===String(id));if(!c)return;
+  document.getElementById('doc-minor-name').value=[c.prenom,c.name].filter(Boolean).join(' ');
+  if(c.date_naissance)document.getElementById('doc-minor-dob').value=c.date_naissance;
+  if(c.phone)document.getElementById('doc-parent-phone').value=c.phone;
+}
+function printDocument(){
+  const artistName=currentUser?.name||'[Artiste]';
+  const studio=currentUser?.studio_name||'[Studio]';
+  const minorName=document.getElementById('doc-minor-name').value||'[Prénom Nom]';
+  const dob=document.getElementById('doc-minor-dob').value;
+  const dobFr=dob?new Date(dob).toLocaleDateString('fr-FR'):'[Date de naissance]';
+  const parentName=document.getElementById('doc-parent-name').value||'[Nom du représentant légal]';
+  const parentPhone=document.getElementById('doc-parent-phone').value||'[Téléphone]';
+  const tattooDesc=document.getElementById('doc-tattoo-desc').value||'[Description du tatouage]';
+  const sessionDate=document.getElementById('doc-session-date').value;
+  const sessionFr=sessionDate?new Date(sessionDate).toLocaleDateString('fr-FR'):'[Date de séance]';
+  const today=new Date().toLocaleDateString('fr-FR');
+  const css=`body{font-family:Georgia,serif;max-width:680px;margin:40px auto;padding:40px;color:#111;line-height:1.7;font-size:14px;}
+    h1{font-size:22px;text-align:center;margin-bottom:4px;letter-spacing:-0.5px;}
+    h2{font-size:13px;color:#666;text-align:center;margin-bottom:32px;font-weight:400;text-transform:uppercase;letter-spacing:1px;}
+    .logo{font-size:30px;font-weight:900;text-align:center;letter-spacing:-1.5px;margin-bottom:8px;}
+    .header{text-align:center;border-bottom:2px solid #111;padding-bottom:20px;margin-bottom:28px;}
+    .field{border-bottom:1px solid #555;display:inline-block;min-width:220px;margin:0 4px;padding-bottom:1px;}
+    .box{background:#f9f9f9;border-left:4px solid #111;padding:12px 16px;font-style:italic;margin:12px 0;}
+    .sig-block{display:flex;justify-content:space-between;margin-top:70px;gap:40px;}
+    .sig{flex:1;}.sig-line{border-bottom:2px solid #111;margin-top:60px;}
+    .sig-lbl{font-size:11px;color:#777;margin-top:6px;text-align:center;}
+    hr{border:none;border-top:1px solid #e0e0e0;margin:24px 0;}
+    ul{margin:8px 0 16px 22px;}li{margin-bottom:4px;}
+    .footer{text-align:center;margin-top:50px;font-size:10px;color:#aaa;border-top:1px solid #eee;padding-top:12px;}`;
+  const win=window.open('','_blank');
+  if(!win)return;
+  if(currentDocType==='minor'){
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Décharge mineur</title><style>${css}</style></head><body>
+      <div class="header"><div class="logo">inkr</div><h1>AUTORISATION PARENTALE</h1><h2>Consentement pour tatouage mineur</h2></div>
+      <p>Je soussigné(e) <span class="field">${parentName}</span>, représentant(e) légal(e) de <span class="field">${minorName}</span>, né(e) le <span class="field">${dobFr}</span>, autorise le tatoueur <strong>${artistName}</strong> (${studio}) à réaliser le tatouage suivant :</p>
+      <div class="box">${tattooDesc}</div>
+      <p>Séance prévue le : <span class="field">${sessionFr}</span> &nbsp; Téléphone représentant : <span class="field">${parentPhone}</span></p>
+      <hr>
+      <p>Je confirme avoir pris connaissance et accepter les points suivants :</p>
+      <ul>
+        <li>Être le représentant(e) légal(e) de l'enfant désigné(e) ci-dessus</li>
+        <li>Consentir librement à ce tatouage après avoir reçu toutes les informations nécessaires</li>
+        <li>Que l'enfant ne présente aucune allergie connue aux encres et produits utilisés</li>
+        <li>Que je serai présent(e) ou représenté(e) lors de l'intégralité de la séance</li>
+        <li>M'engager à veiller au respect des soins post-tatouage recommandés</li>
+        <li>Dégager le tatoueur et le studio de toute responsabilité en cas de non-respect des soins</li>
+      </ul>
+      <div class="sig-block">
+        <div class="sig"><div class="sig-line"></div><div class="sig-lbl">Signature du représentant légal</div></div>
+        <div class="sig"><div class="sig-line"></div><div class="sig-lbl">Signature de l'artiste tatoueur</div></div>
+      </div>
+      <div class="footer">Document généré le ${today} via inkr Pro · ${studio}</div>
+    </body></html>`);
+  } else {
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Consentement adulte</title><style>${css}</style></head><body>
+      <div class="header"><div class="logo">inkr</div><h1>FICHE DE CONSENTEMENT</h1><h2>Tatouage adulte</h2></div>
+      <p>Client(e) : <span class="field">${minorName}</span> &nbsp;&nbsp; Date : <span class="field">${sessionFr}</span></p>
+      <p>Tatouage prévu :</p><div class="box">${tattooDesc}</div>
+      <hr>
+      <p>Je soussigné(e) déclare :</p>
+      <ul>
+        <li>Être majeur(e) et consentir librement à ce tatouage</li>
+        <li>Ne pas être sous l'influence de substances altérant mon jugement</li>
+        <li>Ne pas présenter de contre-indications médicales connues (diabète non contrôlé, troubles de coagulation, grossesse, etc.)</li>
+        <li>Avoir été informé(e) du caractère permanent et irréversible du tatouage</li>
+        <li>M'engager à suivre scrupuleusement les conseils de soins post-tatouage</li>
+        <li>Dégager le tatoueur de toute responsabilité en cas de non-respect des soins post-tatouage</li>
+      </ul>
+      <div class="sig-block">
+        <div class="sig"><div class="sig-line"></div><div class="sig-lbl">Signature du/de la client(e)</div></div>
+        <div class="sig"><div class="sig-line"></div><div class="sig-lbl">Signature de l'artiste tatoueur</div></div>
+      </div>
+      <div class="footer">Document généré le ${today} via inkr Pro · ${studio}</div>
+    </body></html>`);
+  }
+  win.document.close();
+  setTimeout(()=>win.print(),400);
 }
 
 // ======== TESTS ========
