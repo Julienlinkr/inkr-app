@@ -121,35 +121,36 @@ router.post('/import', (req, res) => {
   `);
 
   let inserted = 0, skipped = 0;
-  const insertMany = db.transaction((items) => {
-    for (const a of items) {
+  try {
+    db.exec('BEGIN');
+    for (const a of list) {
       if (!a.nom || !a.ville) { skipped++; continue; }
       const styles = Array.isArray(a.styles) ? JSON.stringify(a.styles) : (a.styles || '[]');
-      const r = stmt.run(
-        (a.nom||'').slice(0,200),
-        (a.nom_commercial||'').slice(0,200),
-        (a.siren||'').slice(0,20),
-        (a.adresse||'').slice(0,300),
-        (a.cp||'').slice(0,10),
-        (a.ville||'').slice(0,100),
-        (a.telephone||'').slice(0,30),
-        (a.email||'').slice(0,200),
-        (a.instagram||'').slice(0,100),
-        (a.site_web||'').slice(0,300),
-        styles,
-        (a.bio||'').slice(0,1000),
-        parseFloat(a.lat)||0,
-        parseFloat(a.lng)||0,
-        (a.source||'import').slice(0,50)
-      );
-      if (r.changes > 0) inserted++; else skipped++;
+      try {
+        const r = stmt.run(
+          (a.nom||'').slice(0,200),
+          (a.nom_commercial||'').slice(0,200),
+          (a.siren||'').slice(0,20),
+          (a.adresse||'').slice(0,300),
+          (a.cp||'').slice(0,10),
+          (a.ville||'').slice(0,100),
+          (a.telephone||'').slice(0,30),
+          (a.email||'').slice(0,200),
+          (a.instagram||'').slice(0,100),
+          (a.site_web||'').slice(0,300),
+          styles,
+          (a.bio||'').slice(0,1000),
+          parseFloat(a.lat)||0,
+          parseFloat(a.lng)||0,
+          (a.source||'import').slice(0,50)
+        );
+        if (r.changes > 0) inserted++; else skipped++;
+      } catch(rowErr) { skipped++; }
     }
-  });
-
-  try {
-    insertMany(list);
+    db.exec('COMMIT');
     res.json({ inserted, skipped, total: list.length });
   } catch(e) {
+    try { db.exec('ROLLBACK'); } catch(_) {}
     console.error('Import error:', e);
     res.status(500).json({ error: e.message });
   }
