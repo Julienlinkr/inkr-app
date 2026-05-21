@@ -548,6 +548,29 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   /* TOAST */
   .toast{bottom:16px;right:16px;left:16px;max-width:none;}
 }
+.adv-filters{background:white;border:1.5px solid var(--g6);border-radius:16px;padding:16px 20px;display:flex;flex-direction:column;gap:12px;margin-bottom:28px;}
+.af-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.af-label{font-size:12px;font-weight:600;color:var(--g3);white-space:nowrap;}
+.af-input{flex:1;min-width:200px;padding:8px 14px;border:1.5px solid var(--g5);border-radius:980px;font-size:13px;outline:none;font-family:inherit;}
+.af-input:focus{border-color:var(--black);}
+.af-styles{gap:8px;}
+.af-check{display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border:1.5px solid var(--g5);border-radius:980px;background:white;transition:all .2s;user-select:none;}
+.af-check:has(input:checked){border-color:var(--black);background:var(--black);color:white;}
+.af-check input{display:none;}
+.af-star{padding:6px 12px;border-radius:980px;border:1.5px solid var(--g5);font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;}
+.af-star.on{background:var(--black);color:white;border-color:var(--black);}
+.af-reset{align-self:flex-start;padding:5px 12px;border:none;background:none;color:var(--g3);font-size:12px;cursor:pointer;}
+.af-reset:hover{color:var(--black);}
+/* SHORTLIST */
+.ac-shortlist{position:absolute;top:10px;left:10px;width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);border:none;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:2;}
+.ac-shortlist.saved{background:rgba(168,85,247,.8);}
+/* SHORTLIST PANEL */
+.shortlist-panel{position:fixed;bottom:24px;right:24px;z-index:990;background:var(--black);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:16px 20px;color:white;max-width:280px;display:none;}
+.shortlist-panel.show{display:block;}
+.sl-title{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;}
+.sl-list{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;}
+.sl-item{display:flex;align-items:center;gap:8px;font-size:12px;}
+.sl-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -568,6 +591,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
     </div>
   </div>
 </nav>
+<div style="background:linear-gradient(90deg,#667eea,#a855f7,#ec4899);text-align:center;padding:7px;font-size:12px;font-weight:700;color:white;letter-spacing:.8px;">🏆 PLATEFORME N°1 DES TATOUEURS EN EUROPE · +4 200 ARTISTES RÉFÉRENCÉS</div>
 
 <!-- NOTIF BANNER -->
 <div class="notif-banner" id="notifBanner">
@@ -613,16 +637,35 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
       <div class="r"><span class="stag">Explorer</span></div>
       <h2 class="sh2 r rd1">Tous les styles.<br>Tous les artistes.</h2>
       <p class="sh2-sub r rd2">Filtre par style, ville ou budget.</p>
-      <div class="filters r rd3">
-        <button class="fp on" data-filter="all">Tous</button>
-        <button class="fp" data-filter="fineline">Fine Line</button>
-        <button class="fp" data-filter="japonais">Japonais</button>
-        <button class="fp" data-filter="realisme">Réalisme</button>
-        <button class="fp" data-filter="blackwork">Blackwork</button>
-        <button class="fp" data-filter="geometrique">Géométrique</button>
-        <button class="fp" data-filter="old-school">Old School</button>
-        <button class="fp" data-filter="aquarelle">Aquarelle</button>
-      </div>
+      <div class="adv-filters r rd3" id="advFilters">
+  <!-- Recherche ville -->
+  <div class="af-row">
+    <input class="af-input" type="text" id="af-ville" placeholder="🏙 Ville (ex: Paris, Lyon...)" oninput="applyAdvFilters()"/>
+  </div>
+  <!-- Styles multi-select -->
+  <div class="af-row af-styles">
+    <span class="af-label">Style :</span>
+    <label class="af-check"><input type="checkbox" value="fineline" onchange="applyAdvFilters()"> Fine Line</label>
+    <label class="af-check"><input type="checkbox" value="japonais" onchange="applyAdvFilters()"> Japonais</label>
+    <label class="af-check"><input type="checkbox" value="realisme" onchange="applyAdvFilters()"> Réalisme</label>
+    <label class="af-check"><input type="checkbox" value="blackwork" onchange="applyAdvFilters()"> Blackwork</label>
+    <label class="af-check"><input type="checkbox" value="geometrique" onchange="applyAdvFilters()"> Géométrique</label>
+    <label class="af-check"><input type="checkbox" value="old-school" onchange="applyAdvFilters()"> Old School</label>
+    <label class="af-check"><input type="checkbox" value="aquarelle" onchange="applyAdvFilters()"> Aquarelle</label>
+    <label class="af-check"><input type="checkbox" value="tribal" onchange="applyAdvFilters()"> Tribal</label>
+  </div>
+  <!-- Étoiles -->
+  <div class="af-row">
+    <span class="af-label">Note min :</span>
+    <div class="af-stars" id="afStars">
+      <span class="af-star" data-v="0" onclick="setStarFilter(0,this)" style="opacity:.3">Toutes</span>
+      <span class="af-star" data-v="3" onclick="setStarFilter(3,this)">★★★+</span>
+      <span class="af-star" data-v="4" onclick="setStarFilter(4,this)">★★★★+</span>
+      <span class="af-star" data-v="5" onclick="setStarFilter(5,this)">★★★★★</span>
+    </div>
+  </div>
+  <button class="af-reset" onclick="resetAdvFilters()">✕ Réinitialiser</button>
+</div>
       <div class="ag" id="artistGrid"></div>
       <div class="r" style="text-align:center"><button class="btn-more" onclick="showView('map')">🗺 Voir tous sur la carte</button></div>
     </div>
@@ -756,6 +799,9 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
       <p>Abonne-toi. Quand ils passent dans ta ville — notification push immédiate.</p>
     </div>
     <div class="tr-city-bar city-bar" id="trCityBar"></div>
+    <div style="max-width:400px;margin:0 auto 20px;padding:0 24px;">
+      <input class="af-input" type="text" id="tr-search" placeholder="🔍 Rechercher un artiste..." oninput="filterTrArtist(this.value)" style="width:100%;background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.15);color:var(--black);"/>
+    </div>
     <div class="swipe-hint" id="swipeHint" style="display:none">Glisse pour explorer <span class="swipe-hint-arrow">→</span></div>
     <div class="tournee-grid" id="tourneeGrid"></div>
   </div>
@@ -770,6 +816,22 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
       <p>Guides pratiques, tendances, réglementation, styles — le contenu de référence sur le tatouage en France.</p>
     </div>
     <div class="bv-grid" id="blogGrid"></div>
+  </div>
+</div>
+
+<!-- ══ ARTICLE VIEW ══ -->
+<div class="view" id="view-article">
+  <div style="min-height:100vh;background:var(--black);color:white;">
+    <div style="position:sticky;top:0;z-index:100;background:rgba(10,10,10,.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.08);padding:12px 24px;display:flex;align-items:center;gap:16px;">
+      <button onclick="showView('blog')" style="background:rgba(255,255,255,.1);border:none;color:white;padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;">← Retour</button>
+      <span style="font-size:20px;font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">inkr</span>
+    </div>
+    <div style="max-width:760px;margin:0 auto;padding:48px 32px 80px;">
+      <div id="art-cat" style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:16px;"></div>
+      <h1 id="art-title" style="font-size:clamp(28px,4vw,48px);font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin-bottom:24px;"></h1>
+      <img id="art-img" src="" alt="" style="width:100%;border-radius:16px;margin-bottom:32px;object-fit:cover;max-height:400px;background:rgba(255,255,255,.05);"/>
+      <p id="art-excerpt" style="font-size:18px;line-height:1.75;color:rgba(255,255,255,.7);"></p>
+    </div>
   </div>
 </div>
 
@@ -869,6 +931,28 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
     </svg>
   </div>
   <div class="dermo-sub">Chargement de votre espace…</div>
+</div>
+
+<div class="mo" id="mo-eventDetail">
+  <div class="profile-modal" style="max-width:520px">
+    <button class="pm-close" onclick="closeMo('eventDetail')">✕</button>
+    <div style="padding:28px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--g3);text-transform:uppercase;margin-bottom:8px;">Événement</div>
+      <h2 id="evdTitle" style="font-size:24px;font-weight:700;letter-spacing:-1px;margin-bottom:8px;"></h2>
+      <div id="evdMeta" style="font-size:13px;color:var(--g3);margin-bottom:20px;"></div>
+      <p id="evdDesc" style="font-size:15px;line-height:1.7;color:var(--g2);margin-bottom:24px;"></p>
+      <div style="display:flex;gap:10px;">
+        <button id="evdGoing" class="pm-follow-btn" onclick="toggleEventFromModal()" style="flex:1">Je participe</button>
+        <button onclick="showToast('🎟','Redirection vers la billetterie...')" style="flex:1;padding:12px;background:var(--grad);border:none;border-radius:12px;color:white;font-weight:700;font-size:14px;cursor:pointer;">🎟 Acheter des billets →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="shortlist-panel" id="shortlistPanel">
+  <div class="sl-title"><span>💜 Ma shortlist · <span id="slCount"></span></span><button onclick="document.getElementById('shortlistPanel').classList.remove('show')" style="background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer">✕</button></div>
+  <div class="sl-list" id="slList"></div>
+  <button onclick="openMo('login')" style="width:100%;margin-top:12px;padding:8px;background:var(--grad);border:none;border-radius:8px;color:white;font-weight:700;font-size:13px;cursor:pointer;">Sauvegarder mon compte →</button>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -989,10 +1073,11 @@ function renderArtists(){
   }
   document.getElementById('artistGrid').innerHTML=list.map((a,i)=>`
     <div class="ac r rd${(i%4)+1}" onclick="openProfile(${a.id})">
-      <div class="ac-img">
+      <div class="ac-img" style="position:relative">
         ${artistAvatarDiv(a)}
         ${a.flash?'<div class="fl-badge">⚡ Flash</div>':''}
         ${a.instagram?`<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);border-radius:6px;padding:3px 7px;font-size:10px;font-weight:700;color:rgba(255,255,255,.7);">📸 IG</div>`:''}
+        <button class="ac-shortlist ${isShortlisted(a.id)?'saved':''}" onclick="toggleShortlist(${a.id},'${a.name.replace(/'/g,"\\'")}',event)" title="Ajouter à ma shortlist">${isShortlisted(a.id)?'♥':'♡'}</button>
       </div>
       <div class="ac-body">
         <div class="ac-name">${a.name}</div>
@@ -1002,6 +1087,7 @@ function renderArtists(){
       </div>
     </div>`).join('');
   observe();
+  renderShortlistPanel();
 }
 
 // ═══════════════════ RENDER FLASH ═══════════════════
@@ -1037,7 +1123,7 @@ function filterEvCity(city,btn){
 function renderEvents(){
   const filtered=activeEvCity==='all'?EVENTS:EVENTS.filter(e=>e.city===activeEvCity);
   document.getElementById('eventsGrid').innerHTML=filtered.map(ev=>`
-    <div class="ev-card">
+    <div class="ev-card" onclick="openEventDetail(${ev.id})">
       <div class="ev-card-img"><img src="${tattooImg(ev.img,600,400,'convention,tattoo')}" alt="${ev.title}" loading="lazy"/><div class="ev-date-badge">${ev.date}</div></div>
       <div class="ev-card-body">
         <div class="ev-card-type">${ev.type} · ${ev.city}</div>
@@ -1045,7 +1131,7 @@ function renderEvents(){
         <div class="ev-card-venue">📍 ${ev.venue}</div>
         <div class="ev-card-footer">
           <span class="ev-artists-count">${ev.artists} artiste${ev.artists>1?'s':''}</span>
-          <button class="ev-btn ${ev.going?'going':'interested'}" id="evbtn-${ev.id}" onclick="toggleEvent(${ev.id},this)">${ev.going?'✓ Je viens !':'Je participe'}</button>
+          <button class="ev-btn ${ev.going?'going':'interested'}" id="evbtn-${ev.id}" onclick="event.stopPropagation();toggleEvent(${ev.id},this)">${ev.going?'✓ Je viens !':'Je participe'}</button>
         </div>
       </div>
     </div>`).join('');
@@ -1055,6 +1141,30 @@ function toggleEvent(id,btn){
   btn.className=`ev-btn ${ev.going?'going':'interested'}`;
   btn.textContent=ev.going?'✓ Je viens !':'Je participe';
   if(ev.going)showToast('✓',`Tu participes à "${ev.title}" — rappel 24h avant !`);
+}
+
+// ═══════════════════ EVENT DETAIL MODAL ═══════════════════
+let currentEventId = null;
+function openEventDetail(id){
+  currentEventId = id;
+  const ev = EVENTS.find(e=>e.id===id);
+  if(!ev) return;
+  document.getElementById('evdTitle').textContent = ev.title;
+  document.getElementById('evdMeta').textContent = `${ev.type} · ${ev.city} · ${ev.date} · ${ev.venue}`;
+  document.getElementById('evdDesc').textContent = `${ev.title} est l'un des rendez-vous incontournables du tatouage en France. Organisé à ${ev.venue} à ${ev.city}, cet événement réunit ${ev.artists} artistes tatoueurs reconnus pour ${ev.date}. L'occasion parfaite pour découvrir de nouveaux styles, prendre rendez-vous sur place, et trouver l'inspiration pour votre prochain tatouage.`;
+  document.getElementById('evdGoing').className = `pm-follow-btn ${ev.going?'following':''}`;
+  document.getElementById('evdGoing').textContent = ev.going?'✓ Je participe !':'Je participe';
+  openMo('eventDetail');
+}
+function toggleEventFromModal(){
+  if(currentEventId===null) return;
+  const ev = EVENTS.find(e=>e.id===currentEventId);
+  if(!ev) return;
+  ev.going = !ev.going;
+  document.getElementById('evdGoing').className = `pm-follow-btn ${ev.going?'following':''}`;
+  document.getElementById('evdGoing').textContent = ev.going?'✓ Je participe !':'Je participe';
+  if(ev.going) showToast('✓',`Tu participes à "${ev.title}" — rappel 24h avant !`);
+  renderEvents();
 }
 
 // ═══════════════════ TOURNEE WITH CITY FILTER ═══════════════════
@@ -1130,6 +1240,15 @@ async function followArtist(artistId,name,btn){
   showToast('🔔',`Tu suis ${name} — notif dès qu'il/elle est dans ta ville !`);
 }
 
+// ═══════════════════ TOURNEE ARTIST SEARCH ═══════════════════
+function filterTrArtist(q){
+  const ql = q.toLowerCase().trim();
+  document.querySelectorAll('.tr-card').forEach(card=>{
+    const name = card.querySelector('.tr-card-name')?.textContent.toLowerCase()||'';
+    card.style.display = (!ql || name.includes(ql)) ? '' : 'none';
+  });
+}
+
 // ═══════════════════ BLOG ═══════════════════
 function renderBlogPreview(){
   document.getElementById('blogPreview').innerHTML=BLOG_ARTICLES.slice(0,3).map(a=>`
@@ -1144,6 +1263,15 @@ function renderBlogPreview(){
     </div>`).join('');
   observe();
 }
+function openArticle(slug){
+  const art = BLOG_ARTICLES.find(a=>a.slug===slug);
+  if(!art){ window.location.href=`/blog/${slug}.html`; return; }
+  document.getElementById('art-title').textContent = art.title;
+  document.getElementById('art-cat').textContent = art.cat + ' · ' + art.date;
+  document.getElementById('art-excerpt').textContent = art.excerpt;
+  document.getElementById('art-img').src = tattooImg(art.img,1200,600,'tattoo,ink');
+  showView('article');
+}
 function renderBlogFull(){
   document.getElementById('blogGrid').innerHTML=BLOG_ARTICLES.map(a=>`
     <div class="bc r" onclick="openArticle('${a.slug}')">
@@ -1157,7 +1285,6 @@ function renderBlogFull(){
     </div>`).join('');
   observe();
 }
-function openArticle(slug){window.location.href=`/blog/${slug}.html`;}
 
 // ═══════════════════ MAP ═══════════════════
 let leafletMap,mapMarkers=[];
@@ -1333,6 +1460,64 @@ document.querySelectorAll('.fp').forEach(btn=>{
     });
   });
 });
+
+// ═══ FILTRES AVANCÉS ═══
+let afStarMin = 0;
+function applyAdvFilters(){
+  const ville = document.getElementById('af-ville')?.value.trim() || '';
+  const styles = [...document.querySelectorAll('.af-check input:checked')].map(i=>i.value);
+  annuaireFilter.ville = ville;
+  annuaireFilter.style = styles.length === 1 ? styles[0] : '';
+  loadArtists(true).then(()=>renderArtists());
+}
+function setStarFilter(v, el){
+  afStarMin = v;
+  document.querySelectorAll('.af-star').forEach(s=>s.classList.remove('on'));
+  el.classList.add('on');
+  applyAdvFilters();
+}
+function resetAdvFilters(){
+  document.getElementById('af-ville').value='';
+  document.querySelectorAll('.af-check input').forEach(i=>i.checked=false);
+  afStarMin=0;
+  document.querySelectorAll('.af-star').forEach(s=>s.classList.remove('on'));
+  document.querySelector('.af-star[data-v="0"]').classList.add('on');
+  annuaireFilter={ville:'',style:'',q:''};
+  loadArtists(true).then(()=>renderArtists());
+}
+// ═══ SHORTLIST ═══
+function getShortlist(){ return JSON.parse(localStorage.getItem('inkr_shortlist')||'[]'); }
+function isShortlisted(id){ return getShortlist().some(x=>String(x.id)===String(id)); }
+function toggleShortlist(id, name, e){
+  e.stopPropagation();
+  let sl = getShortlist();
+  const sid = String(id);
+  if(sl.some(x=>String(x.id)===sid)){
+    sl = sl.filter(x=>String(x.id)!==sid);
+    showToast('♡',`${name} retiré de ta shortlist`);
+  } else {
+    const a = ARTISTS.find(x=>String(x.id)===sid);
+    sl.push({id:sid, name, city:a?.city||''});
+    showToast('♥',`${name} ajouté à ta shortlist !`);
+  }
+  localStorage.setItem('inkr_shortlist', JSON.stringify(sl));
+  renderArtists();
+  renderShortlistPanel();
+}
+function renderShortlistPanel(){
+  const sl = getShortlist();
+  const panel = document.getElementById('shortlistPanel');
+  if(!panel) return;
+  if(!sl.length){ panel.classList.remove('show'); return; }
+  panel.classList.add('show');
+  document.getElementById('slCount').textContent = sl.length + ' artiste' + (sl.length>1?'s':'');
+  document.getElementById('slList').innerHTML = sl.map(x=>`
+    <div class="sl-item">
+      <div class="sl-av" style="background:${artistGradient(x.name)};display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:rgba(255,255,255,.7);">${artistInitials(x.name)}</div>
+      <div style="flex:1"><div style="font-weight:600">${x.name}</div><div style="color:var(--g3);font-size:11px">${x.city}</div></div>
+      <button onclick="toggleShortlist('${x.id}','${x.name}',event)" style="background:none;border:none;color:rgba(255,255,255,.4);cursor:pointer;font-size:16px;">✕</button>
+    </div>`).join('');
+}
 
 // ═══════════════════ MODALS ═══════════════════
 function openMo(id){document.getElementById('mo-'+id).classList.add('open');}
