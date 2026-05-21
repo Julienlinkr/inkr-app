@@ -874,20 +874,40 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 // ═══════════════════ DATA ═══════════════════
-const ARTISTS=[
-  {id:1,name:'Sofia Reyes',city:'Paris',lat:48.856,lng:2.352,style:['Fine Line','Minimaliste'],sk:['fineline'],rating:4.9,reviews:47,price:'dès 150€',flash:true,img:5,instagram:'@sofiatattoo_paris',bio:'Spécialisée en fine line et botanico depuis 8 ans. Basée à Paris 11e, je travaille en séance sur-mesure uniquement. Mon travail s\'inspire du monde végétal et des tracés architecturaux.',avail:true},
-  {id:2,name:'Yuki Tanaka',city:'Lyon',lat:45.764,lng:4.836,style:['Japonais','Irezumi'],sk:['japonais'],rating:5.0,reviews:89,price:'dès 200€',flash:false,img:6,instagram:'@yuki_irezumi',bio:'Maître irezumi formé à Osaka pendant 5 ans. Spécialiste des grandes compositions japonaises traditionnelles. Liste d\'attente 4-6 mois.',avail:true},
-  {id:3,name:'Marc Lefèvre',city:'Bordeaux',lat:44.838,lng:-0.579,style:['Réalisme','Portrait'],sk:['realisme'],rating:4.8,reviews:62,price:'dès 180€',flash:true,img:7,instagram:'@marc.tattoo.realism',bio:'Réalisme noir & gris ou couleur. Spécialiste portraits animaliers et humains. Chaque tatouage est une photographie permanente.',avail:true},
-  {id:4,name:'Emma Voss',city:'Nantes',lat:47.218,lng:-1.554,style:['Blackwork','Géométrique'],sk:['blackwork','geometrique'],rating:4.9,reviews:38,price:'dès 120€',flash:false,img:8,instagram:'@emmavoss.ink',bio:'Blackwork et géométrie sacrée. Traits épais, silhouettes fortes, contrastes radicaux.',avail:false},
-  {id:5,name:'Nico Barros',city:'Toulouse',lat:43.605,lng:1.444,style:['Aquarelle','New School'],sk:['aquarelle'],rating:4.7,reviews:29,price:'dès 160€',flash:false,img:9,instagram:'@nico.watercolor',bio:'Aquarelle et new school depuis 6 ans. Couleurs vives, dégradés explosifs.',avail:true},
-  {id:6,name:'Lola Pinto',city:'Marseille',lat:43.297,lng:5.370,style:['Fine Line','Botanico'],sk:['fineline'],rating:4.9,reviews:71,price:'dès 130€',flash:true,img:10,instagram:'@lola.botanico',bio:'Fine line floral et botanico. Studio à Marseille, guest spots réguliers à Paris.',avail:true},
-  {id:7,name:'Tom Seve',city:'Lille',lat:50.629,lng:3.057,style:['Old School','Américain'],sk:['old-school'],rating:4.8,reviews:44,price:'dès 100€',flash:false,img:11,instagram:'@tomseve.oldschool',bio:'Traditionnel américain old school. Ancres, roses, aigles, serpents. Le tatouage dans sa forme la plus pure.',avail:true},
-  {id:8,name:'Iris Müller',city:'Strasbourg',lat:48.573,lng:7.752,style:['Néo-Trad','Couleur'],sk:['neo-trad'],rating:5.0,reviews:55,price:'dès 170€',flash:false,img:12,instagram:'@iris.neotrad',bio:'Néo-traditionnel européen avec forte influence ornementale. Liste d\'attente 2-3 mois.',avail:true},
-  {id:9,name:'Karim Hadj',city:'Nice',lat:43.710,lng:7.262,style:['Réalisme','Portrait'],sk:['realisme'],rating:4.8,reviews:33,price:'dès 200€',flash:true,img:13,instagram:'@karimhadj.tattoo',bio:'Réaliste couleur et noir & gris. Basé à Nice, passages réguliers à Monaco et Milan.',avail:true},
-  {id:10,name:'Zoé Lambert',city:'Paris',lat:48.874,lng:2.295,style:['Géométrique','Dotwork'],sk:['geometrique'],rating:4.9,reviews:61,price:'dès 140€',flash:false,img:14,instagram:'@zoe.geo.tattoo',bio:'Géométrie et dotwork. Mandalas, fleurs de vie. Studio dans le 17e.',avail:true},
-  {id:11,name:'Alex Morin',city:'Lyon',lat:45.748,lng:4.849,style:['Blackwork'],sk:['blackwork'],rating:4.7,reviews:22,price:'dès 110€',flash:true,img:15,instagram:'@alex.blackwork.lyon',bio:'Blackwork minimaliste et linework fin. Spécialiste petits formats.',avail:true},
-  {id:12,name:'Clara Vidal',city:'Montpellier',lat:43.611,lng:3.877,style:['Fine Line','Aquarelle'],sk:['fineline','aquarelle'],rating:4.9,reviews:48,price:'dès 145€',flash:false,img:16,instagram:'@clara.vidal.ink',bio:'Fine line délicate avec touches aquarelle. Compositions florales et projets poétiques.',avail:true},
-];
+// ═══════════════════ ANNUAIRE — CHARGEMENT DYNAMIQUE ═══════════════════
+let ARTISTS = [];
+let annuaireTotal = 0;
+let annuaireOffset = 0;
+let annuaireFilter = { ville:'', style:'', q:'' };
+
+async function loadArtists(reset=true){
+  if(reset){ ARTISTS=[]; annuaireOffset=0; }
+  const p=new URLSearchParams({ limit:48, offset:annuaireOffset, ...Object.fromEntries(Object.entries(annuaireFilter).filter(([,v])=>v)) });
+  try{
+    const r=await fetch('/api/annuaire?'+p);
+    const d=await r.json();
+    ARTISTS=[...ARTISTS,...(d.artists||[])];
+    annuaireTotal=d.total||0;
+    annuaireOffset+=d.artists?.length||0;
+    // Met à jour le compteur si présent
+    const el=document.getElementById('stat-artists');
+    if(el&&annuaireTotal>0)el.textContent=annuaireTotal.toLocaleString('fr-FR')+' tatoueurs';
+  }catch(e){ console.warn('Annuaire API unavailable, using empty list'); }
+  return ARTISTS;
+}
+
+async function searchAnnuaire(q){
+  annuaireFilter.q=q;
+  await loadArtists(true);
+  renderArtists();
+  if(leafletMap&&mapInited)rebuildMapMarkers();
+}
+async function filterAnnuaireVille(v){
+  annuaireFilter.ville=v;
+  await loadArtists(true);
+  renderArtists();
+  if(leafletMap&&mapInited)rebuildMapMarkers();
+}
 
 const EVENTS=[
   {id:1,title:'Convention Tattoo Paris 2025',type:'Convention',date:'14-16 juin',city:'Paris',venue:'Grande Halle de la Villette',artists:12,img:21,going:false},
@@ -922,8 +942,24 @@ const BLOG_ARTICLES=[
   {slug:'tatouage-soleil-protection-conseils',title:'Tatouage et soleil : comment protéger son tatouage',cat:'Soins',excerpt:'SPF 50+, ombre, vêtements — les bons réflexes pour garder un tatouage éclatant.',img:49,date:'25 mars 2025'},
 ];
 
-// ═══════════════════ IMAGES ═══════════════════
-function tattooImg(lock,w,h,kw){return `https://loremflickr.com/${w||400}/${h||500}/tattoo,${kw||'art'}?lock=${lock}`;}
+// ═══════════════════ AVATAR GRADIENT (remplace les fausses photos) ═══════════════════
+const GRAD_PALETTES=[
+  ['#667eea','#a855f7'],['#a855f7','#ec4899'],['#ec4899','#f97316'],
+  ['#f97316','#eab308'],['#2ECC71','#4A9EFF'],['#4A9EFF','#667eea'],
+  ['#e11d48','#7c3aed'],['#0891b2','#2ECC71'],
+];
+function artistGradient(name){
+  const i=(name||'A').charCodeAt(0)%GRAD_PALETTES.length;
+  return `linear-gradient(135deg,${GRAD_PALETTES[i][0]},${GRAD_PALETTES[i][1]})`;
+}
+function artistInitials(name){
+  return (name||'?').split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+}
+function artistAvatarDiv(a,fontSize='52px'){
+  return `<div style="width:100%;height:100%;background:${artistGradient(a.name)};display:flex;align-items:center;justify-content:center;font-size:${fontSize};font-weight:900;color:rgba(255,255,255,0.25);letter-spacing:-2px;">${artistInitials(a.name)}</div>`;
+}
+// Garde la compat avec l'ancien code (img ignoré si null)
+function tattooImg(lock,w,h,kw){return lock?`https://loremflickr.com/${w||400}/${h||500}/tattoo,${kw||'art'}?lock=${lock}`:null;}
 
 // ═══════════════════ VIEWS ═══════════════════
 let mapInited=false;
@@ -946,17 +982,23 @@ function goFlash(){showView('home');setTimeout(()=>document.getElementById('flas
 
 // ═══════════════════ RENDER ARTISTS ═══════════════════
 function renderArtists(){
-  document.getElementById('artistGrid').innerHTML=ARTISTS.slice(0,8).map((a,i)=>`
+  const list=ARTISTS.slice(0,8);
+  if(!list.length){
+    document.getElementById('artistGrid').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--g3);font-size:15px;">Aucun résultat — essayez une autre ville ou un autre style.</div>`;
+    observe();return;
+  }
+  document.getElementById('artistGrid').innerHTML=list.map((a,i)=>`
     <div class="ac r rd${(i%4)+1}" onclick="openProfile(${a.id})">
       <div class="ac-img">
-        <img src="${tattooImg(a.img,400,500,'ink')}" alt="${a.name}" loading="lazy"/>
+        ${artistAvatarDiv(a)}
         ${a.flash?'<div class="fl-badge">⚡ Flash</div>':''}
+        ${a.instagram?`<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);border-radius:6px;padding:3px 7px;font-size:10px;font-weight:700;color:rgba(255,255,255,.7);">📸 IG</div>`:''}
       </div>
       <div class="ac-body">
         <div class="ac-name">${a.name}</div>
         <div class="ac-city">${a.city}</div>
-        <div class="ac-tags">${a.style.map(s=>`<span class="ac-tag">${s}</span>`).join('')}</div>
-        <div class="ac-meta"><span class="ac-rating">★ ${a.rating}</span><span class="ac-price">${a.price}</span></div>
+        <div class="ac-tags">${a.style.length?a.style.map(s=>`<span class="ac-tag">${s}</span>`).join(''):'<span class="ac-tag" style="opacity:.5;">Tous styles</span>'}</div>
+        <div class="ac-meta"><span class="ac-rating">${a.instagram?`📸 ${a.instagram.replace('@','')}`:''}</span><span class="ac-price" style="font-size:11px;color:var(--g3);">${a.telephone||a.email?'✓ Contact':''}  </span></div>
       </div>
     </div>`).join('');
   observe();
@@ -1122,12 +1164,25 @@ let leafletMap,mapMarkers=[];
 function initMap(){
   leafletMap=L.map('leaflet-map').setView([46.5,2.5],6);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:19}).addTo(leafletMap);
-  ARTISTS.forEach(a=>{
-    const icon=L.divIcon({className:'',html:`<div style="width:40px;height:40px;border-radius:50%;overflow:hidden;border:2.5px solid white;box-shadow:0 2px 12px rgba(0,0,0,.4);"><img src="${tattooImg(a.img,80,80,'tattoo')}" style="width:100%;height:100%;object-fit:cover"/></div>`,iconSize:[40,40],iconAnchor:[20,20]});
+  addMapMarkers(ARTISTS);
+}
+function addMapMarkers(artists){
+  artists.forEach(a=>{
+    if(!a.lat||!a.lng)return;
+    const grad=artistGradient(a.name);
+    const inits=artistInitials(a.name);
+    const icon=L.divIcon({className:'',html:`<div style="width:40px;height:40px;border-radius:50%;background:${grad};border:2.5px solid white;box-shadow:0 2px 12px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:rgba(255,255,255,.8);">${inits}</div>`,iconSize:[40,40],iconAnchor:[20,20]});
     const marker=L.marker([a.lat,a.lng],{icon}).addTo(leafletMap);
-    marker.bindPopup(`<div><div class="map-popup-img"><img src="${tattooImg(a.img,400,300,'tattoo,ink')}"/></div><div class="map-popup-body"><div class="map-popup-name">${a.name}</div><div class="map-popup-city">📍 ${a.city} · ★ ${a.rating}</div><div class="map-popup-tags">${a.style.map(s=>`<span class="map-popup-tag">${s}</span>`).join('')}</div><button class="map-popup-btn" onclick="openProfile(${a.id})">Voir le profil →</button></div></div>`,{maxWidth:210});
+    const styles=a.style?.length?a.style.map(s=>`<span class="map-popup-tag">${s}</span>`).join(''):'';
+    const igLine=a.instagram?`<div style="font-size:11px;color:#a78bfa;margin-top:2px;">📸 ${a.instagram}</div>`:'';
+    marker.bindPopup(`<div><div style="width:100%;height:80px;background:${grad};display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:rgba(255,255,255,.25);border-radius:4px 4px 0 0;">${inits}</div><div class="map-popup-body"><div class="map-popup-name">${a.name}</div><div class="map-popup-city">📍 ${a.city}</div>${igLine}<div class="map-popup-tags" style="margin-top:6px;">${styles}</div><button class="map-popup-btn" onclick="openProfile(${a.id})">Voir le profil →</button></div></div>`,{maxWidth:210});
     mapMarkers.push({marker,a});
   });
+}
+function rebuildMapMarkers(){
+  mapMarkers.forEach(({marker})=>marker.remove());
+  mapMarkers=[];
+  addMapMarkers(ARTISTS);
 }
 function filterMap(btn,filter){
   document.querySelectorAll('.mf').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
@@ -1149,31 +1204,45 @@ function filterMapQ(q){
 let currentArtistId=null;
 function openProfile(id){
   currentArtistId=id;
-  const a=ARTISTS.find(x=>x.id===id);if(!a)return;
+  const a=ARTISTS.find(x=>String(x.id)===String(id));if(!a)return;
   const subs=JSON.parse(localStorage.getItem('inkr_subs')||'[]');
-  const following=subs.includes(id);
+  const following=subs.includes(String(id));
+  const grad=artistGradient(a.name);
+  const inits=artistInitials(a.name);
+  const stylesHtml=a.style?.length?a.style.map(s=>`<span class="pm-tag">${s}</span>`).join(''):'';
+  const igLink=a.instagram?`<a href="https://instagram.com/${a.instagram.replace('@','')}" target="_blank" style="color:#a78bfa;text-decoration:none;">📸 ${a.instagram}</a>`:'';
+  const siteLink=a.site_web?`<a href="${a.site_web}" target="_blank" style="color:#a78bfa;text-decoration:none;font-size:12px;">🌐 Site web</a>`:'';
+  const telLine=a.telephone?`<span style="font-size:12px;color:var(--g3);">📞 ${a.telephone}</span>`:'';
   document.getElementById('pmHeader').innerHTML=`
-    <div class="pm-photo"><img src="${tattooImg(a.img,300,300,'tattoo,artist')}" alt="${a.name}"/></div>
+    <div class="pm-photo" style="overflow:hidden;border-radius:16px;">${artistAvatarDiv(a,'64px')}</div>
     <div class="pm-info">
       <div class="pm-name">${a.name}</div>
-      <div class="pm-location">📍 ${a.city}</div>
-      <div class="pm-tags">${a.style.map(s=>`<span class="pm-tag">${s}</span>`).join('')}</div>
-      <div class="pm-meta"><span class="pm-rating">★ ${a.rating}</span><span class="pm-reviews">${a.reviews} avis</span><span class="pm-insta">📸 ${a.instagram}</span></div>
+      <div class="pm-location">📍 ${a.city}${a.cp?' ('+a.cp+')':''}</div>
+      <div class="pm-tags">${stylesHtml}</div>
+      <div class="pm-meta" style="gap:10px;flex-wrap:wrap;">${igLink}${telLine}${siteLink}</div>
     </div>
     <div class="pm-actions">
-      <button class="pm-book-btn" onclick="openBooking(${a.id},'${a.name}')">📅 Prendre RDV</button>
-      <button class="pm-follow-btn ${following?'following':''}" id="pm-follow-${id}" onclick="pmFollow(${id},'${a.name}',this)">${following?'✓ Abonné(e)':'+ Suivre'}</button>
+      <button class="pm-book-btn" onclick="openBooking(${a.id},'${a.name.replace(/'/g,"\\'")}')">📅 Prendre RDV</button>
+      <button class="pm-follow-btn ${following?'following':''}" id="pm-follow-${id}" onclick="pmFollow('${id}','${a.name.replace(/'/g,"\\'")}',this)">${following?'✓ Abonné(e)':'+ Suivre'}</button>
     </div>`;
   const days=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],dates=[16,17,18,19,20,21,22],full=[18,21];
+  const bioText=a.bio||`Studio de tatouage basé à ${a.city}. ${a.adresse?'Adresse : '+a.adresse+'. ':''}Contactez via Instagram ou par téléphone pour prendre rendez-vous.`;
+  const portfolioSection=a.instagram?
+    `<div class="pm-section"><div class="pm-section-title">Portfolio</div><div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:12px;padding:20px;text-align:center;color:var(--g3);font-size:14px;">Voir les œuvres sur Instagram : <a href="https://instagram.com/${a.instagram.replace('@','')}" target="_blank" style="color:#a78bfa;font-weight:600;">@${a.instagram.replace('@','')}</a></div></div>`
+    :`<div class="pm-section"><div class="pm-section-title">Portfolio</div><div style="background:var(--off);border-radius:12px;padding:20px;text-align:center;color:var(--g3);font-size:14px;">Photos de travaux à venir</div></div>`;
   document.getElementById('pmBody').innerHTML=`
-    <div class="pm-section"><div class="pm-section-title">À propos</div><div class="pm-bio">${a.bio}</div></div>
-    <div class="pm-section"><div class="pm-section-title">Portfolio · ${a.instagram}</div><div class="pm-grid">${[50,51,52,53,54,55].map(n=>`<div class="pm-grid-item"><img src="${tattooImg(n,300,300,'tattoo,ink')}" alt="" loading="lazy"/></div>`).join('')}</div></div>
-    <div class="pm-section"><div class="pm-section-title">Disponibilités — Juin 2025</div><div class="pm-avail">${days.map((d,i)=>`<div class="pm-day ${full.includes(dates[i])?'full':'avail'}" onclick="selectDay(this,${dates[i]})"><div class="pm-day-name">${d}</div><div class="pm-day-num">${dates[i]}</div></div>`).join('')}</div><p style="font-size:13px;color:var(--g3);margin-top:10px;">${a.avail?'✅ Accepte de nouvelles demandes':'🔴 Complet — liste d\'attente possible'}</p></div>
-    <div class="pm-section"><div class="pm-section-title">Avis (${a.reviews})</div><div class="reviews-list">
-      <div class="review"><div class="review-av"><img src="${tattooImg(60,80,80,'woman,portrait')}" alt=""/></div><div class="review-content"><div class="review-header"><span class="review-name">Marie L.</span><span class="review-stars">★★★★★</span><span class="review-date">Il y a 2 semaines</span></div><div class="review-text">Travail absolument magnifique. Très à l'écoute, le résultat dépasse mes attentes. Je recommande sans hésiter.</div></div></div>
-      <div class="review"><div class="review-av"><img src="${tattooImg(61,80,80,'man,portrait')}" alt=""/></div><div class="review-content"><div class="review-header"><span class="review-name">Antoine B.</span><span class="review-stars">★★★★★</span><span class="review-date">Il y a 1 mois</span></div><div class="review-text">Deuxième séance et toujours aussi impressionné. Le trait est parfait, l'hygiène irréprochable.</div></div></div>
-      <div class="review"><div class="review-av"><img src="${tattooImg(62,80,80,'person')}" alt=""/></div><div class="review-content"><div class="review-header"><span class="review-name">Julie M.</span><span class="review-stars">★★★★☆</span><span class="review-date">Il y a 6 semaines</span></div><div class="review-text">Super expérience. Petit délai d'attente mais ça valait vraiment le coup.</div></div></div>
-    </div></div>`;
+    <div class="pm-section"><div class="pm-section-title">À propos</div><div class="pm-bio">${bioText}</div></div>
+    ${portfolioSection}
+    <div class="pm-section"><div class="pm-section-title">Disponibilités</div><div class="pm-avail">${days.map((d,i)=>`<div class="pm-day ${full.includes(dates[i])?'full':'avail'}" onclick="selectDay(this,${dates[i]})"><div class="pm-day-name">${d}</div><div class="pm-day-num">${dates[i]}</div></div>`).join('')}</div><p style="font-size:13px;color:var(--g3);margin-top:10px;">✅ Contactez l'artiste pour confirmer ses disponibilités</p></div>
+    <div class="pm-section"><div class="pm-section-title">Informations de contact</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:14px;">
+        ${a.adresse?`<div>📍 ${a.adresse}${a.cp?' — '+a.cp:''}, ${a.city}</div>`:`<div>📍 ${a.city}</div>`}
+        ${a.telephone?`<div>📞 <a href="tel:${a.telephone}" style="color:inherit;">${a.telephone}</a></div>`:''}
+        ${a.email?`<div>✉️ <a href="mailto:${a.email}" style="color:#a78bfa;">${a.email}</a></div>`:''}
+        ${a.instagram?`<div>📸 <a href="https://instagram.com/${a.instagram.replace('@','')}" target="_blank" style="color:#a78bfa;">${a.instagram}</a></div>`:''}
+        ${a.site_web?`<div>🌐 <a href="${a.site_web}" target="_blank" style="color:#a78bfa;">${a.site_web}</a></div>`:''}
+      </div>
+    </div>`;
   openMo('profile');
 }
 function selectDay(el,date){
@@ -1182,9 +1251,10 @@ function selectDay(el,date){
   document.getElementById('bk-date').value=`2025-06-${String(date).padStart(2,'0')}`;
 }
 function pmFollow(id,name,btn){
-  let subs=JSON.parse(localStorage.getItem('inkr_subs')||'[]');
-  if(subs.includes(id)){subs=subs.filter(s=>s!==id);btn.textContent='+ Suivre';btn.className='pm-follow-btn';}
-  else{subs.push(id);btn.textContent='✓ Abonné(e)';btn.className='pm-follow-btn following';showToast('🔔',`Tu suis ${name} !`);}
+  const sid=String(id);
+  let subs=JSON.parse(localStorage.getItem('inkr_subs')||'[]').map(String);
+  if(subs.includes(sid)){subs=subs.filter(s=>s!==sid);btn.textContent='+ Suivre';btn.className='pm-follow-btn';}
+  else{subs.push(sid);btn.textContent='✓ Abonné(e)';btn.className='pm-follow-btn following';showToast('🔔',`Tu suis ${name} !`);}
   localStorage.setItem('inkr_subs',JSON.stringify(subs));
 }
 
@@ -1217,16 +1287,18 @@ function submitBooking(){
   setTimeout(()=>{
     // Open messenger
     document.getElementById('mmName').textContent=a.name;
-    document.getElementById('mmAvatarImg').src=tattooImg(a.img,80,80,'tattoo');
+    const mmAvImg=document.getElementById('mmAvatarImg');
+    if(mmAvImg){mmAvImg.style.display='none';const mmAvWrap=mmAvImg.parentElement;if(mmAvWrap&&!mmAvWrap.querySelector('.mm-av-grad')){const gd=document.createElement('div');gd.className='mm-av-grad';gd.style=`width:100%;height:100%;background:${artistGradient(a.name)};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:rgba(255,255,255,.7);border-radius:50%;`;gd.textContent=artistInitials(a.name);mmAvWrap.appendChild(gd);}}
     document.getElementById('mmSummary').innerHTML=`<strong>Demande envoyée</strong> — ${document.getElementById('bk-style').value}, ${document.getElementById('bk-zone').value}, ${document.getElementById('bk-taille').value}. Date : ${document.getElementById('bk-date').value||'à définir'}`;
     const msgs=document.getElementById('mmMessages');
+    const avDiv=`<div style="width:32px;height:32px;border-radius:50%;background:${artistGradient(a.name)};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:rgba(255,255,255,.7);flex-shrink:0;">${artistInitials(a.name)}</div>`;
     msgs.innerHTML=`
       <div class="msg in">
-        <div class="mm-avatar"><img src="${tattooImg(a.img,64,64,'tattoo')}" alt=""/></div>
+        <div class="mm-avatar">${avDiv}</div>
         <div><div class="msg-time">${a.name}</div><div class="msg-bubble">Bonjour ${prenom} ! J'ai bien reçu ta demande 🎨 Je reviendrai vers toi dans les 48h pour qu'on discute de ton projet. Tu peux m'envoyer d'autres références ici si tu en as.</div></div>
       </div>
       <div class="msg in">
-        <div class="mm-avatar"><img src="${tattooImg(a.img,64,64,'tattoo')}" alt=""/></div>
+        <div class="mm-avatar">${avDiv}</div>
         <div><div class="msg-bubble">À très vite ! ✌️</div></div>
       </div>`;
     openMo('messenger');
@@ -1242,7 +1314,9 @@ function sendMsg(){
   setTimeout(()=>{
     const replies=['Super, je prends note 👍','C\'est noté ! On en parlera lors de la prise de rdv.','Parfait, ça m\'aide beaucoup. Je reviens vers toi vite !','Merci pour les détails, le projet est super intéressant 🔥'];
     const a=bookingArtist;
-    msgs.innerHTML+=`<div class="msg in"><div class="mm-avatar"><img src="${tattooImg(a?.img||5,64,64,'tattoo')}" alt=""/></div><div><div class="msg-bubble">${replies[Math.floor(Math.random()*replies.length)]}</div></div></div>`;
+    const ra=bookingArtist;
+    const ravDiv=ra?`<div style="width:32px;height:32px;border-radius:50%;background:${artistGradient(ra.name)};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:rgba(255,255,255,.7);flex-shrink:0;">${artistInitials(ra.name)}</div>`:'<div class="mm-avatar" style="width:32px;height:32px;border-radius:50%;background:#333;"></div>';
+    msgs.innerHTML+=`<div class="msg in"><div class="mm-avatar">${ravDiv}</div><div><div class="msg-bubble">${replies[Math.floor(Math.random()*replies.length)]}</div></div></div>`;
     msgs.scrollTop=msgs.scrollHeight;
   },1200);
 }
@@ -1348,8 +1422,13 @@ function showSwipeHint() {
 }
 
 // ═══════════════════ INIT ═══════════════════
-renderArtists();
-renderDeals();
+loadArtists(true).then(()=>{
+  renderArtists();
+  renderDeals();
+}).catch(()=>{
+  renderArtists(); // affiche "aucun résultat" proprement
+  renderDeals();
+});
 renderBlogPreview();
 renderEventCityBar();
 renderEvents();

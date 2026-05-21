@@ -100,6 +100,27 @@ db.exec(`
     FOREIGN KEY (user_id) REFERENCES users(id)
   );
 
+  CREATE TABLE IF NOT EXISTS tatoueurs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nom TEXT NOT NULL,
+    nom_commercial TEXT DEFAULT '',
+    siren TEXT DEFAULT '',
+    adresse TEXT DEFAULT '',
+    cp TEXT DEFAULT '',
+    ville TEXT NOT NULL,
+    telephone TEXT DEFAULT '',
+    email TEXT DEFAULT '',
+    instagram TEXT DEFAULT '',
+    site_web TEXT DEFAULT '',
+    styles TEXT DEFAULT '[]',
+    bio TEXT DEFAULT '',
+    lat REAL DEFAULT 0,
+    lng REAL DEFAULT 0,
+    source TEXT DEFAULT 'import',
+    statut TEXT DEFAULT 'active',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
   CREATE TABLE IF NOT EXISTS tournee_dates (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
