@@ -115,7 +115,7 @@ router.post('/import', (req, res) => {
   if (!list.length) return res.status(400).json({ error: 'Aucun artiste fourni' });
 
   const stmt = db.prepare(`
-    INSERT OR IGNORE INTO tatoueurs
+    INSERT INTO tatoueurs
       (nom, nom_commercial, siren, adresse, cp, ville, telephone, email, instagram, site_web, styles, bio, lat, lng, source)
     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
   `);
