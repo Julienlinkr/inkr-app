@@ -124,7 +124,8 @@ router.post('/import', (req, res) => {
   let inserted = 0, skipped = 0, errors = 0;
 
   for (const a of list) {
-    if (!a.nom || !a.ville) { skipped++; continue; }
+    // Seul `nom` est obligatoire — `ville` est optionnelle (certaines sources ne la fournissent pas)
+    if (!a.nom) { skipped++; continue; }
     try {
       const styles = JSON.stringify(Array.isArray(a.styles) ? a.styles : []);
       const r = db.prepare(sql).run(
