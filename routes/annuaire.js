@@ -107,6 +107,7 @@ router.get('/:id', (req, res) => {
 
 // ─── POST /api/annuaire/import ─────────────────────────────────
 // Corps : { secret, artists: [{nom, ville, instagram, ...}] }
+// Note dev : INSERT simple sans transaction pour compatibilité node:sqlite et better-sqlite3
 router.post('/import', (req, res) => {
   const secret = process.env.IMPORT_SECRET || 'inkr_import_2025';
   if (req.body.secret !== secret) return res.status(401).json({ error: 'Unauthorized' });
@@ -114,46 +115,43 @@ router.post('/import', (req, res) => {
   const list = req.body.artists || [];
   if (!list.length) return res.status(400).json({ error: 'Aucun artiste fourni' });
 
-  const stmt = db.prepare(`
+  const sql = `
     INSERT INTO tatoueurs
       (nom, nom_commercial, siren, adresse, cp, ville, telephone, email, instagram, site_web, styles, bio, lat, lng, source)
     VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-  `);
+  `;
 
-  let inserted = 0, skipped = 0;
-  try {
-    db.exec('BEGIN');
-    for (const a of list) {
-      if (!a.nom || !a.ville) { skipped++; continue; }
-      const styles = Array.isArray(a.styles) ? JSON.stringify(a.styles) : (a.styles || '[]');
-      try {
-        const r = stmt.run(
-          (a.nom||'').slice(0,200),
-          (a.nom_commercial||'').slice(0,200),
-          (a.siren||'').slice(0,20),
-          (a.adresse||'').slice(0,300),
-          (a.cp||'').slice(0,10),
-          (a.ville||'').slice(0,100),
-          (a.telephone||'').slice(0,30),
-          (a.email||'').slice(0,200),
-          (a.instagram||'').slice(0,100),
-          (a.site_web||'').slice(0,300),
-          styles,
-          (a.bio||'').slice(0,1000),
-          parseFloat(a.lat)||0,
-          parseFloat(a.lng)||0,
-          (a.source||'import').slice(0,50)
-        );
-        if (r.changes > 0) inserted++; else skipped++;
-      } catch(rowErr) { skipped++; }
+  let inserted = 0, skipped = 0, errors = 0;
+
+  for (const a of list) {
+    if (!a.nom || !a.ville) { skipped++; continue; }
+    try {
+      const styles = JSON.stringify(Array.isArray(a.styles) ? a.styles : []);
+      const r = db.prepare(sql).run(
+        (a.nom||'').slice(0,200),
+        (a.nom_commercial||'').slice(0,200),
+        (a.siren||'').slice(0,20),
+        (a.adresse||'').slice(0,300),
+        (a.cp||'').slice(0,10),
+        (a.ville||'').slice(0,100),
+        (a.telephone||'').slice(0,30),
+        (a.email||'').slice(0,200),
+        (a.instagram||'').slice(0,100),
+        (a.site_web||'').slice(0,300),
+        styles,
+        (a.bio||'').slice(0,1000),
+        parseFloat(a.lat)||0,
+        parseFloat(a.lng)||0,
+        (a.source||'import').slice(0,50)
+      );
+      if (r.changes > 0) inserted++; else skipped++;
+    } catch(e) {
+      console.error('Import row error:', e.message, a.nom);
+      errors++;
     }
-    db.exec('COMMIT');
-    res.json({ inserted, skipped, total: list.length });
-  } catch(e) {
-    try { db.exec('ROLLBACK'); } catch(_) {}
-    console.error('Import error:', e);
-    res.status(500).json({ error: e.message });
   }
+
+  res.json({ inserted, skipped, errors, total: list.length });
 });
 
 module.exports = router;

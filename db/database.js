@@ -1,8 +1,10 @@
-const Database = require('better-sqlite3');
+// Utilise node:sqlite intégré à Node.js 22+ (pas de dépendance native à compiler)
+// Doc : https://nodejs.org/api/sqlite.html
+const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'inkr.db');
-const db = new Database(DB_PATH);
+const db = new DatabaseSync(DB_PATH);
 
 // Activation WAL pour meilleures performances
 db.exec('PRAGMA journal_mode = WAL');
