@@ -882,6 +882,223 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   .sb-cta { margin: 0; border-radius: 0 0 18px 18px; padding: 18px; text-align: center; }
   .hero-city-dd { left: 0; right: 0; top: calc(100% + 6px); }
 }
+
+/* ═══════════════════ STYLE CARDS — PARTIE 2 ═══════════════════ */
+
+/* Section style cards (entre hero et résultats) */
+.styles-section {
+  background: white;
+  padding: 32px 32px 0;
+  border-bottom: 1px solid #EBEBEB;
+}
+.styles-section-i {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.styles-section-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #717171;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+/* Scroll horizontal sur mobile, flex wrap sur desktop */
+.styles-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+  scrollbar-width: none;
+}
+.styles-row::-webkit-scrollbar { display: none; }
+.style-card {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 18px 12px;
+  border-radius: 14px;
+  border: 1.5px solid #EBEBEB;
+  background: white;
+  cursor: pointer;
+  transition: all .18s;
+  min-width: 90px;
+  text-align: center;
+}
+.style-card:hover {
+  border-color: #AAAAAA;
+  box-shadow: 0 2px 10px rgba(0,0,0,.07);
+  transform: translateY(-2px);
+}
+.style-card.sc-active {
+  border-color: #1A1A1A;
+  background: #1A1A1A;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,0,0,.15);
+}
+.sc-emoji { font-size: 22px; line-height: 1; }
+.sc-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1A1A1A;
+  white-space: nowrap;
+}
+.style-card.sc-active .sc-name { color: white; }
+
+/* ═══════════════════ SPLIT LAYOUT (liste + carte) — PARTIE 2 ═══════════════════ */
+
+/* Section résultats */
+.discover-split {
+  background: #F7F7F7;
+}
+
+/* Bascule liste/carte mobile */
+.split-toggle {
+  display: none;
+  gap: 8px;
+  padding: 16px 20px 12px;
+  justify-content: center;
+}
+.st-btn {
+  flex: 1;
+  max-width: 160px;
+  padding: 10px 16px;
+  border-radius: 980px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1.5px solid #DDDDDD;
+  background: white;
+  color: #717171;
+  cursor: pointer;
+  transition: all .18s;
+}
+.st-btn.st-active {
+  background: #1A1A1A;
+  border-color: #1A1A1A;
+  color: white;
+}
+
+/* Grid split 2 colonnes */
+.split-wrap {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  min-height: 80vh;
+}
+@media (max-width: 1100px) { .split-wrap { grid-template-columns: 1fr 320px; } }
+
+/* Panneau gauche : filters + cards */
+.split-left {
+  padding: 28px 24px 60px 32px;
+  min-width: 0;
+}
+.split-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+.split-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -.4px;
+  color: #1A1A1A;
+}
+.split-count {
+  font-size: 13px;
+  color: #717171;
+  white-space: nowrap;
+}
+/* Barre de filtre compacte (dans split-left) */
+.split-filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.split-filters input {
+  flex: 1;
+  min-width: 160px;
+  padding: 9px 15px;
+  border: 1.5px solid #DDDDDD;
+  border-radius: 980px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  background: white;
+  transition: border-color .15s;
+}
+.split-filters input:focus { border-color: #1A1A1A; }
+.split-filters select {
+  padding: 9px 32px 9px 15px;
+  border: 1.5px solid #DDDDDD;
+  border-radius: 980px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  background: white;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23999' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  background-size: 12px;
+}
+.split-filters select:focus { border-color: #1A1A1A; }
+/* Reset filters link */
+.split-reset {
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: #717171;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  white-space: nowrap;
+  align-self: center;
+}
+.split-reset:hover { color: #1A1A1A; }
+
+/* Panneau droit : carte sticky */
+.split-right {
+  position: sticky;
+  top: var(--nav);
+  height: calc(100vh - var(--nav));
+  border-left: 1px solid #EBEBEB;
+}
+#home-map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Bouton charger plus */
+.split-more {
+  text-align: center;
+  padding: 24px 0 8px;
+}
+
+/* Responsive mobile */
+@media (max-width: 900px) {
+  .split-toggle { display: flex; }
+  .split-wrap { grid-template-columns: 1fr; }
+  .split-right {
+    position: relative;
+    top: auto;
+    height: 65vh;
+    border-left: none;
+    border-top: 1px solid #EBEBEB;
+    display: none;
+  }
+  .split-right.show-mobile { display: block; }
+  .split-left { padding: 16px 16px 60px; }
+  .split-left.hide-mobile { display: none; }
+  .styles-section { padding: 20px 16px 0; }
+  .styles-row { gap: 8px; }
+  .style-card { min-width: 80px; padding: 12px 14px 10px; }
+}
 </style>
 </head>
 <body>
@@ -992,43 +1209,79 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
     </div>
   </section>
 
-  <section class="discover" id="discover">
-    <div class="discover-i">
-      <div class="r"><span class="stag">Explorer</span></div>
-      <h2 class="sh2 r rd1">Tous les styles.<br>Tous les artistes.</h2>
-      <p class="sh2-sub r rd2">Filtre par style, ville ou budget.</p>
-      <div class="adv-filters r rd3" id="advFilters">
-  <!-- Recherche ville -->
-  <div class="af-row">
-    <input class="af-input" type="text" id="af-ville" placeholder="🏙 Ville (ex: Paris, Lyon...)" oninput="applyAdvFilters()"/>
-  </div>
-  <!-- Styles multi-select -->
-  <div class="af-row af-styles">
-    <span class="af-label">Style :</span>
-    <label class="af-check"><input type="checkbox" value="fineline" onchange="applyAdvFilters()"> Fine Line</label>
-    <label class="af-check"><input type="checkbox" value="japonais" onchange="applyAdvFilters()"> Japonais</label>
-    <label class="af-check"><input type="checkbox" value="realisme" onchange="applyAdvFilters()"> Réalisme</label>
-    <label class="af-check"><input type="checkbox" value="blackwork" onchange="applyAdvFilters()"> Blackwork</label>
-    <label class="af-check"><input type="checkbox" value="geometrique" onchange="applyAdvFilters()"> Géométrique</label>
-    <label class="af-check"><input type="checkbox" value="old-school" onchange="applyAdvFilters()"> Old School</label>
-    <label class="af-check"><input type="checkbox" value="aquarelle" onchange="applyAdvFilters()"> Aquarelle</label>
-    <label class="af-check"><input type="checkbox" value="tribal" onchange="applyAdvFilters()"> Tribal</label>
-  </div>
-  <!-- Étoiles -->
-  <div class="af-row">
-    <span class="af-label">Note min :</span>
-    <div class="af-stars" id="afStars">
-      <span class="af-star" data-v="0" onclick="setStarFilter(0,this)" style="opacity:.3">Toutes</span>
-      <span class="af-star" data-v="3" onclick="setStarFilter(3,this)">★★★+</span>
-      <span class="af-star" data-v="4" onclick="setStarFilter(4,this)">★★★★+</span>
-      <span class="af-star" data-v="5" onclick="setStarFilter(5,this)">★★★★★</span>
+  <!-- ════════════════════════════════════════
+       STYLE CARDS — filtres visuels par style
+       ════════════════════════════════════════ -->
+  <section class="styles-section">
+    <div class="styles-section-i">
+      <div class="styles-section-label">Explorer par style</div>
+      <!-- Rendu dynamique par renderStyleCards() -->
+      <div class="styles-row" id="stylesGrid"></div>
     </div>
-  </div>
-  <button class="af-reset" onclick="resetAdvFilters()">✕ Réinitialiser</button>
-</div>
-      <div class="ag" id="artistGrid"></div>
-      <div class="r" style="text-align:center"><button class="btn-more" onclick="showView('map')">🗺 Voir tous sur la carte</button></div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       RÉSULTATS SPLIT : liste gauche + carte droite
+       Mobile : boutons toggle Liste / Carte
+       ════════════════════════════════════════ -->
+  <section class="discover-split" id="discover">
+
+    <!-- Toggle mobile uniquement -->
+    <div class="split-toggle" id="splitToggle">
+      <button class="st-btn st-active" id="st-list" onclick="showSplit('list')">☰ Liste</button>
+      <button class="st-btn" id="st-map" onclick="showSplit('map')">🗺 Carte</button>
     </div>
+
+    <div class="split-wrap">
+
+      <!-- ── Panneau gauche : filtres + grille artistes ── -->
+      <div class="split-left" id="splitLeft">
+
+        <div class="split-head">
+          <span class="split-title">Tatoueurs</span>
+          <span class="split-count" id="splitCount"></span>
+        </div>
+
+        <!-- Filtres compacts ville + style -->
+        <div class="split-filters">
+          <input
+            type="text"
+            id="af-ville"
+            placeholder="🏙 Ville, département..."
+            oninput="applyAdvFilters()"
+            autocomplete="off"
+          />
+          <select id="af-style-sel" onchange="applyAdvFiltersSelect(this.value)">
+            <option value="">Tous les styles</option>
+            <option value="fineline">Fine Line</option>
+            <option value="japonais">Japonais</option>
+            <option value="realisme">Réalisme</option>
+            <option value="blackwork">Blackwork</option>
+            <option value="geometrique">Géométrique</option>
+            <option value="old-school">Old School</option>
+            <option value="aquarelle">Aquarelle</option>
+            <option value="tribal">Tribal</option>
+            <option value="neo-traditionnel">Néo-trad</option>
+          </select>
+          <button class="split-reset" onclick="resetSplitFilters()">✕ Réinitialiser</button>
+        </div>
+
+        <!-- Grille artistes (4 colonnes desktop → 2 mobile) -->
+        <div class="ag" id="artistGrid"></div>
+
+        <!-- Charger plus -->
+        <div class="split-more" id="splitMore" style="display:none">
+          <button class="btn-more" onclick="loadMoreArtists()">Charger plus d'artistes</button>
+        </div>
+
+      </div><!-- /split-left -->
+
+      <!-- ── Panneau droit : carte sticky ── -->
+      <div class="split-right" id="splitRight">
+        <div id="home-map"></div>
+      </div>
+
+    </div><!-- /split-wrap -->
   </section>
 
   <section class="feat">
@@ -1318,6 +1571,208 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// ════════════════════════════════════════════════════════════════
+// PARTIE 2 — Style cards + Split liste/carte
+// ════════════════════════════════════════════════════════════════
+
+// ─── Style cards data ───────────────────────────────────────────
+const STYLES_DATA = [
+  { slug:'',             name:'Tous',         emoji:'✨' },
+  { slug:'fineline',     name:'Fine Line',    emoji:'✒️' },
+  { slug:'japonais',     name:'Japonais',     emoji:'🌸' },
+  { slug:'realisme',     name:'Réalisme',     emoji:'🎨' },
+  { slug:'blackwork',    name:'Blackwork',    emoji:'◼️' },
+  { slug:'geometrique',  name:'Géométrique',  emoji:'⬡' },
+  { slug:'aquarelle',    name:'Aquarelle',    emoji:'💧' },
+  { slug:'old-school',   name:'Old School',   emoji:'⚓' },
+  { slug:'tribal',       name:'Tribal',       emoji:'🔱' },
+];
+let activeStyleCard = ''; // slug du style actif (vide = tous)
+
+/**
+ * renderStyleCards — affiche les pills de style dans #stylesGrid.
+ * Appelle filterByStyleCard() au clic.
+ */
+function renderStyleCards() {
+  const grid = document.getElementById('stylesGrid');
+  if (!grid) return;
+  grid.innerHTML = STYLES_DATA.map(s =>
+    `<div class="style-card ${activeStyleCard === s.slug ? 'sc-active' : ''}"
+          onclick="filterByStyleCard('${s.slug}', this)"
+          data-slug="${s.slug}">
+       <span class="sc-emoji">${s.emoji}</span>
+       <span class="sc-name">${s.name}</span>
+     </div>`
+  ).join('');
+}
+
+/**
+ * filterByStyleCard — active la pill choisie, filtre l'annuaire,
+ * met à jour le select de la barre de filtres, et scroll vers les résultats.
+ */
+function filterByStyleCard(slug, el) {
+  activeStyleCard = slug;
+  // Mettre à jour les pills visuellement
+  document.querySelectorAll('.style-card').forEach(c => c.classList.remove('sc-active'));
+  el.classList.add('sc-active');
+  // Sync avec le select du panneau gauche
+  const sel = document.getElementById('af-style-sel');
+  if (sel) sel.value = slug;
+  // Appliquer le filtre
+  annuaireFilter.style = slug;
+  annuaireFilter.ville = '';
+  const afVille = document.getElementById('af-ville');
+  if (afVille) afVille.value = '';
+  loadArtists(true).then(() => {
+    renderArtists();
+    updateSplitCount();
+    rebuildHomeMapMarkers();
+    document.getElementById('discover').scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+// ─── Filtres panneau gauche ──────────────────────────────────────
+
+/**
+ * applyAdvFiltersSelect — appelé quand on change le select style dans split-left.
+ */
+function applyAdvFiltersSelect(val) {
+  annuaireFilter.style = val;
+  activeStyleCard = val;
+  // Sync pills style cards
+  document.querySelectorAll('.style-card').forEach(c => {
+    c.classList.toggle('sc-active', c.dataset.slug === val);
+  });
+  loadArtists(true).then(() => { renderArtists(); updateSplitCount(); rebuildHomeMapMarkers(); });
+}
+
+/**
+ * resetSplitFilters — remet tout à zéro (ville, style, pills).
+ */
+function resetSplitFilters() {
+  const afVille = document.getElementById('af-ville');
+  const afSel   = document.getElementById('af-style-sel');
+  if (afVille) afVille.value = '';
+  if (afSel)   afSel.value   = '';
+  activeStyleCard = '';
+  annuaireFilter  = { ville:'', style:'', q:'' };
+  document.querySelectorAll('.style-card').forEach(c => c.classList.remove('sc-active'));
+  const allCard = document.querySelector('.style-card[data-slug=""]');
+  if (allCard) allCard.classList.add('sc-active');
+  loadArtists(true).then(() => { renderArtists(); updateSplitCount(); rebuildHomeMapMarkers(); });
+}
+
+/**
+ * updateSplitCount — met à jour le compteur de résultats.
+ */
+function updateSplitCount() {
+  const el = document.getElementById('splitCount');
+  if (!el) return;
+  el.textContent = annuaireTotal > 0 ? `${annuaireTotal.toLocaleString('fr-FR')} résultats` : '';
+}
+
+/**
+ * loadMoreArtists — charge la page suivante de résultats.
+ */
+function loadMoreArtists() {
+  loadArtists(false).then(() => { renderArtists(); updateSplitCount(); rebuildHomeMapMarkers(); });
+}
+
+// ─── Bouton "Charger plus" ───────────────────────────────────────
+function updateLoadMoreBtn() {
+  const btn = document.getElementById('splitMore');
+  if (!btn) return;
+  btn.style.display = (annuaireTotal > annuaireOffset) ? 'block' : 'none';
+}
+
+// ─── Toggle liste / carte (mobile) ─────────────────────────────
+
+/**
+ * showSplit — bascule entre liste et carte sur mobile.
+ */
+function showSplit(panel) {
+  const left    = document.getElementById('splitLeft');
+  const right   = document.getElementById('splitRight');
+  const btnList = document.getElementById('st-list');
+  const btnMap  = document.getElementById('st-map');
+  if (!left || !right) return;
+
+  if (panel === 'map') {
+    left.classList.add('hide-mobile');
+    right.classList.add('show-mobile');
+    btnMap.classList.add('st-active');
+    btnList.classList.remove('st-active');
+    // Init ou redimensionne la carte
+    if (!homeMapInited) initHomeMap();
+    else setTimeout(() => homeMap.invalidateSize(), 120);
+  } else {
+    left.classList.remove('hide-mobile');
+    right.classList.remove('show-mobile');
+    btnList.classList.add('st-active');
+    btnMap.classList.remove('st-active');
+  }
+}
+
+// ─── Carte embedded dans split-right ────────────────────────────
+let homeMap, homeMapMarkers = [], homeMapInited = false;
+
+/**
+ * initHomeMap — crée l'instance Leaflet dans #home-map (fond clair).
+ * Appelé une seule fois (lazy init quand le panneau devient visible).
+ */
+function initHomeMap() {
+  if (homeMapInited) return;
+  const el = document.getElementById('home-map');
+  if (!el) return;
+  homeMap = L.map('home-map', { zoomControl: true }).setView([46.5, 2.5], 6);
+  // Tuiles Carto Light (blanc / fond clair pour correspondre au design)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CARTO',
+    maxZoom: 19
+  }).addTo(homeMap);
+  addHomeMapMarkers(ARTISTS);
+  homeMapInited = true;
+}
+
+function addHomeMapMarkers(artists) {
+  if (!homeMap) return;
+  artists.forEach(a => {
+    if (!a.lat || !a.lng) return;
+    const grad  = artistGradient(a.name);
+    const inits = artistInitials(a.name);
+    const icon  = L.divIcon({
+      className: '',
+      html: `<div style="width:34px;height:34px;border-radius:50%;background:${grad};border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:rgba(255,255,255,.85);">${inits}</div>`,
+      iconSize: [34, 34],
+      iconAnchor: [17, 17]
+    });
+    const marker = L.marker([a.lat, a.lng], { icon }).addTo(homeMap);
+    const styles = a.style?.length ? a.style.map(s => `<span style="font-size:10px;padding:2px 6px;border-radius:5px;background:#F7F7F7;color:#555;font-weight:500;">${s}</span>`).join(' ') : '';
+    marker.bindPopup(`
+      <div style="font-family:-apple-system,sans-serif;">
+        <div style="width:100%;height:70px;background:${grad};display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:900;color:rgba(255,255,255,.25);border-radius:4px 4px 0 0;">${inits}</div>
+        <div style="padding:11px 13px;">
+          <div style="font-size:14px;font-weight:700;color:#1A1A1A;margin-bottom:2px;">${a.name}</div>
+          <div style="font-size:12px;color:#717171;margin-bottom:6px;">📍 ${a.city}</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;">${styles}</div>
+          <button onclick="openProfile(${a.id})" style="display:block;width:100%;padding:8px;border-radius:8px;font-size:13px;font-weight:600;background:#1A1A1A;color:white;border:none;cursor:pointer;">Voir le profil →</button>
+        </div>
+      </div>`, { maxWidth: 200 });
+    homeMapMarkers.push({ marker, a });
+  });
+}
+
+function rebuildHomeMapMarkers() {
+  if (!homeMapInited) return;
+  homeMapMarkers.forEach(({ marker }) => marker.remove());
+  homeMapMarkers = [];
+  addHomeMapMarkers(ARTISTS);
+}
+
+// ════════════════════════════════════════════════════════════════
+// FIN PARTIE 2
+// ════════════════════════════════════════════════════════════════
+
 // ═══════════════════ DATA ═══════════════════
 // ═══════════════════ ANNUAIRE — CHARGEMENT DYNAMIQUE ═══════════════════
 let ARTISTS = [];
@@ -1701,7 +2156,11 @@ function goFlash(){showView('home');setTimeout(()=>document.getElementById('flas
 
 // ═══════════════════ RENDER ARTISTS ═══════════════════
 function renderArtists(){
-  const list=ARTISTS.slice(0,8);
+  // Affiche tous les artistes chargés (pas de troncature à 8)
+  const list=ARTISTS;
+  // Mise à jour compteur et bouton "charger plus"
+  updateSplitCount();
+  updateLoadMoreBtn();
   if(!list.length){
     document.getElementById('artistGrid').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--g3);font-size:15px;">Aucun résultat — essayez une autre ville ou un autre style.</div>`;
     observe();return;
@@ -2097,29 +2556,14 @@ document.querySelectorAll('.fp').forEach(btn=>{
 });
 
 // ═══ FILTRES AVANCÉS ═══
-let afStarMin = 0;
+// applyAdvFilters — appelé à chaque frappe dans le champ ville (split-left)
 function applyAdvFilters(){
   const ville = document.getElementById('af-ville')?.value.trim() || '';
-  const styles = [...document.querySelectorAll('.af-check input:checked')].map(i=>i.value);
   annuaireFilter.ville = ville;
-  annuaireFilter.style = styles.length === 1 ? styles[0] : '';
-  loadArtists(true).then(()=>renderArtists());
+  loadArtists(true).then(()=>{ renderArtists(); updateSplitCount(); updateLoadMoreBtn(); rebuildHomeMapMarkers(); });
 }
-function setStarFilter(v, el){
-  afStarMin = v;
-  document.querySelectorAll('.af-star').forEach(s=>s.classList.remove('on'));
-  el.classList.add('on');
-  applyAdvFilters();
-}
-function resetAdvFilters(){
-  document.getElementById('af-ville').value='';
-  document.querySelectorAll('.af-check input').forEach(i=>i.checked=false);
-  afStarMin=0;
-  document.querySelectorAll('.af-star').forEach(s=>s.classList.remove('on'));
-  document.querySelector('.af-star[data-v="0"]').classList.add('on');
-  annuaireFilter={ville:'',style:'',q:''};
-  loadArtists(true).then(()=>renderArtists());
-}
+// resetAdvFilters — alias pour compatibilité avec ancien code
+function resetAdvFilters(){ resetSplitFilters(); }
 // ═══ SHORTLIST ═══
 function getShortlist(){ return JSON.parse(localStorage.getItem('inkr_shortlist')||'[]'); }
 function isShortlisted(id){ return getShortlist().some(x=>String(x.id)===String(id)); }
@@ -2244,19 +2688,29 @@ function showSwipeHint() {
 }
 
 // ═══════════════════ INIT ═══════════════════
-loadArtists(true).then(()=>{
-  renderArtists();
-  renderDeals();
-}).catch(()=>{
-  renderArtists(); // affiche "aucun résultat" proprement
-  renderDeals();
-});
+// Rendu des composants synchrones (données statiques)
+renderStyleCards();     // pills de style
 renderBlogPreview();
 renderEventCityBar();
 renderEvents();
 renderTourneeCityBar();
 renderTournees();
 observe();
+
+// Chargement asynchrone de l'annuaire depuis l'API
+loadArtists(true).then(() => {
+  renderArtists();
+  renderDeals();
+  updateSplitCount();
+  updateLoadMoreBtn();
+  // Init de la carte split (desktop uniquement, lazy)
+  if (window.innerWidth > 900) {
+    setTimeout(initHomeMap, 300);
+  }
+}).catch(() => {
+  renderArtists();
+  renderDeals();
+});
 </script>
 </body>
 </html>
