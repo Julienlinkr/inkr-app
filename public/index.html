@@ -885,10 +885,10 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 
 /* ═══════════════════ STYLE CARDS — PARTIE 2 ═══════════════════ */
 
-/* Section style cards (entre hero et résultats) */
+/* Section style cards photo */
 .styles-section {
   background: white;
-  padding: 32px 32px 0;
+  padding: 40px 32px 36px;
   border-bottom: 1px solid #EBEBEB;
 }
 .styles-section-i {
@@ -897,55 +897,95 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 }
 .styles-section-label {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: #717171;
-  letter-spacing: .4px;
+  letter-spacing: .5px;
   text-transform: uppercase;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 }
-/* Scroll horizontal sur mobile, flex wrap sur desktop */
+/* Grille de cartes photo — scroll horizontal sur mobile */
 .styles-row {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 20px;
-  scrollbar-width: none;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 12px;
 }
-.styles-row::-webkit-scrollbar { display: none; }
+/* Carte photo style tatouage */
 .style-card {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 14px 18px 12px;
-  border-radius: 14px;
-  border: 1.5px solid #EBEBEB;
-  background: white;
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
   cursor: pointer;
-  transition: all .18s;
-  min-width: 90px;
-  text-align: center;
+  aspect-ratio: 3/4;
+  background: #111;
+  transition: transform .22s, box-shadow .22s;
+  border: 3px solid transparent;
 }
 .style-card:hover {
-  border-color: #AAAAAA;
-  box-shadow: 0 2px 10px rgba(0,0,0,.07);
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.18);
 }
 .style-card.sc-active {
   border-color: #1A1A1A;
-  background: #1A1A1A;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(0,0,0,.15);
+  box-shadow: 0 0 0 3px #1A1A1A, 0 8px 24px rgba(0,0,0,.2);
+  transform: translateY(-4px);
 }
-.sc-emoji { font-size: 22px; line-height: 1; }
+/* Photo de fond */
+.sc-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform .4s;
+  opacity: .88;
+}
+.style-card:hover .sc-photo { transform: scale(1.07); opacity: 1; }
+/* Gradient overlay + nom */
+.sc-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.75) 0%, rgba(0,0,0,.1) 55%, transparent 100%);
+}
 .sc-name {
-  font-size: 12px;
-  font-weight: 600;
-  color: #1A1A1A;
-  white-space: nowrap;
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: .2px;
+  text-shadow: 0 1px 4px rgba(0,0,0,.4);
 }
-.style-card.sc-active .sc-name { color: white; }
+/* Carte "Tous" — fond dégradé inkr */
+.style-card-all {
+  background: linear-gradient(135deg,#667eea,#a855f7,#ec4899,#f97316);
+}
+.sc-all-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.sc-all-emoji { font-size: 28px; }
+
+/* Responsive — scroll horizontal sous 900px */
+@media (max-width: 900px) {
+  .styles-row {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    grid-template-columns: unset;
+  }
+  .styles-row::-webkit-scrollbar { display: none; }
+  .style-card { flex-shrink: 0; width: 120px; aspect-ratio: 3/4; }
+  .styles-section { padding: 24px 16px 20px; }
+}
 
 /* ═══════════════════ SPLIT LAYOUT (liste + carte) — PARTIE 2 ═══════════════════ */
 
@@ -1575,35 +1615,51 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 // PARTIE 2 — Style cards + Split liste/carte
 // ════════════════════════════════════════════════════════════════
 
-// ─── Style cards data ───────────────────────────────────────────
+// ─── Style cards data — photos réelles de chaque style de tatouage ─
+// Les photos viennent de loremflickr.com avec des mots-clés ciblés
+// pour montrer visuellement ce que chaque style représente.
 const STYLES_DATA = [
-  { slug:'',             name:'Tous',         emoji:'✨' },
-  { slug:'fineline',     name:'Fine Line',    emoji:'✒️' },
-  { slug:'japonais',     name:'Japonais',     emoji:'🌸' },
-  { slug:'realisme',     name:'Réalisme',     emoji:'🎨' },
-  { slug:'blackwork',    name:'Blackwork',    emoji:'◼️' },
-  { slug:'geometrique',  name:'Géométrique',  emoji:'⬡' },
-  { slug:'aquarelle',    name:'Aquarelle',    emoji:'💧' },
-  { slug:'old-school',   name:'Old School',   emoji:'⚓' },
-  { slug:'tribal',       name:'Tribal',       emoji:'🔱' },
+  { slug:'fineline',    name:'Fine Line',    kw:'fineline,tattoo',      lock:101 },
+  { slug:'japonais',    name:'Japonais',     kw:'japanese,tattoo',      lock:102 },
+  { slug:'realisme',    name:'Réalisme',     kw:'realism,tattoo',       lock:103 },
+  { slug:'blackwork',   name:'Blackwork',    kw:'blackwork,tattoo',     lock:104 },
+  { slug:'geometrique', name:'Géométrique',  kw:'geometric,tattoo',     lock:105 },
+  { slug:'aquarelle',   name:'Aquarelle',    kw:'watercolor,tattoo',    lock:106 },
+  { slug:'old-school',  name:'Old School',   kw:'traditional,tattoo',   lock:107 },
+  { slug:'tribal',      name:'Tribal',       kw:'tribal,tattoo',        lock:108 },
 ];
-let activeStyleCard = ''; // slug du style actif (vide = tous)
+let activeStyleCard = ''; // slug actif ('' = tous)
 
 /**
- * renderStyleCards — affiche les pills de style dans #stylesGrid.
- * Appelle filterByStyleCard() au clic.
+ * renderStyleCards — cartes photo pour chaque style de tatouage.
+ * La carte "Tous" est un dégradé inkr, les autres ont une vraie photo.
  */
 function renderStyleCards() {
   const grid = document.getElementById('stylesGrid');
   if (!grid) return;
-  grid.innerHTML = STYLES_DATA.map(s =>
-    `<div class="style-card ${activeStyleCard === s.slug ? 'sc-active' : ''}"
-          onclick="filterByStyleCard('${s.slug}', this)"
-          data-slug="${s.slug}">
-       <span class="sc-emoji">${s.emoji}</span>
-       <span class="sc-name">${s.name}</span>
-     </div>`
-  ).join('');
+
+  // Carte "Tous" (dégradé inkr, pas de photo)
+  const allCard = `
+    <div class="style-card style-card-all ${activeStyleCard === '' ? 'sc-active' : ''}"
+         onclick="filterByStyleCard('', this)" data-slug="">
+      <div class="sc-all-inner">
+        <span class="sc-all-emoji">✨</span>
+        <span class="sc-name">Tous</span>
+      </div>
+    </div>`;
+
+  // Cartes photo pour chaque style
+  const styleCards = STYLES_DATA.map(s => `
+    <div class="style-card ${activeStyleCard === s.slug ? 'sc-active' : ''}"
+         onclick="filterByStyleCard('${s.slug}', this)" data-slug="${s.slug}">
+      <img class="sc-photo"
+           src="https://loremflickr.com/300/400/${s.kw}?lock=${s.lock}"
+           alt="${s.name}" loading="lazy"/>
+      <div class="sc-overlay"></div>
+      <span class="sc-name">${s.name}</span>
+    </div>`).join('');
+
+  grid.innerHTML = allCard + styleCards;
 }
 
 /**
