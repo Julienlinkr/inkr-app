@@ -227,7 +227,7 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none;}
 /* MAP VIEW */
 .map-view{height:calc(100vh - var(--nav));margin-top:var(--nav);display:flex;flex-direction:column;}
 .map-bar{background:var(--black);border-bottom:1px solid rgba(255,255,255,.08);padding:12px 24px;display:flex;gap:10px;align-items:center;flex-shrink:0;}
-.map-search{flex:1;max-width:320px;display:flex;align-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:0 12px;gap:6px;}
+.map-search{flex:1;max-width:320px;display:flex;align-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:0 12px;gap:6px;position:relative;}
 .map-search input{flex:1;background:transparent;border:none;outline:none;font-family:inherit;font-size:14px;color:white;padding:9px 0;}
 .map-search input::placeholder{color:rgba(255,255,255,.35);}
 .map-filters{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;}
@@ -571,12 +571,323 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 .sl-list{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;}
 .sl-item{display:flex;align-items:center;gap:8px;font-size:12px;}
 .sl-av{width:28px;height:28px;border-radius:50%;flex-shrink:0;}
+
+/* ══════════ RESPONSIVE MOBILE / TABLET ══════════ */
+@media (max-width: 768px) {
+  :root { --nav: 56px; }
+
+  /* Nav mobile */
+  .nav-i { padding: 0 16px; gap: 0; overflow-x: auto; scrollbar-width: none; }
+  .nav-i::-webkit-scrollbar { display: none; }
+  .nav-tab { padding: 8px 10px; font-size: 12px; white-space: nowrap; }
+  .logo { font-size: 18px; margin-right: 8px; }
+  .btn-out { display: none; }
+  .btn-artiste { padding: 6px 12px; font-size: 12px; }
+
+  /* Hero */
+  .hero { padding: calc(var(--nav) + 48px) 20px 60px; }
+  .hero-i { grid-template-columns: 1fr; gap: 40px; }
+  .hv-grid { display: none; }
+  .hero-h1 { font-size: clamp(36px, 9vw, 52px); }
+  .hero-sub { font-size: 15px; }
+  .hero-ctas { flex-direction: column; gap: 10px; }
+  .cta-w, .cta-ghost { width: 100%; text-align: center; }
+
+  /* Stats */
+  .stats-i { grid-template-columns: 1fr; }
+  .stat { padding: 28px 20px; }
+  .stat-n { font-size: 40px; }
+
+  /* Discover */
+  .discover { padding: 60px 16px; }
+  .adv-filters { padding: 14px 16px; }
+  .af-row { gap: 8px; }
+  .af-check { font-size: 12px; padding: 4px 8px; }
+  .ag { grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+
+  /* Artist cards */
+  .ac-img { height: 200px !important; }
+  .ac-body { padding: 12px !important; }
+  .ac-name { font-size: 14px !important; }
+
+  /* Features */
+  .feat-i { grid-template-columns: 1fr !important; gap: 32px; }
+  .feat-vis { display: none; }
+  .feat-h { font-size: 32px !important; }
+
+  /* Flash deals */
+  .fscroll { gap: 12px; padding: 0 16px; }
+  .fc { min-width: 240px !important; }
+
+  /* Events */
+  .events-grid { grid-template-columns: 1fr !important; padding: 16px !important; }
+  .ev-hero { padding: 100px 20px 40px !important; }
+  .ev-hero h1 { font-size: 36px !important; }
+
+  /* Tournée */
+  .tournee-grid { grid-template-columns: 1fr !important; padding: 16px !important; gap: 16px !important; }
+  .tr-hero { padding: 100px 20px 40px !important; }
+  .tr-hero h1 { font-size: 36px !important; }
+  .tr-card { flex-direction: column; }
+
+  /* Blog */
+  .bv-grid { grid-template-columns: 1fr !important; padding: 16px !important; gap: 16px !important; }
+  .bv-hero { padding: 100px 20px 40px !important; }
+  .bv-hero h1 { font-size: 36px !important; }
+
+  /* Testimonials */
+  .tg { grid-template-columns: 1fr !important; }
+
+  /* CTA section */
+  .acta { padding: 60px 20px !important; }
+  .acta-h { font-size: clamp(36px, 9vw, 52px) !important; }
+
+  /* Footer */
+  .footer-top { grid-template-columns: 1fr 1fr !important; gap: 32px; }
+
+  /* Map bar */
+  .map-bar { flex-direction: column; gap: 8px; padding: 10px 12px; }
+  .map-filters { gap: 6px; }
+  .mf { padding: 6px 12px; font-size: 12px; }
+
+  /* Profile modal */
+  .profile-modal { max-width: 100vw !important; max-height: 100vh !important; border-radius: 20px 20px 0 0 !important; position: fixed; bottom: 0; top: auto !important; }
+  .pm-header { flex-direction: column; gap: 12px; }
+  .pm-photo { width: 80px !important; height: 80px !important; }
+
+  /* Booking modal */
+  .booking-modal { max-width: 100vw !important; border-radius: 20px 20px 0 0 !important; position: fixed !important; bottom: 0; top: auto !important; }
+  .frow { flex-direction: column; }
+
+  /* Shortlist panel */
+  .shortlist-panel { bottom: 0; right: 0; left: 0; max-width: 100%; border-radius: 16px 16px 0 0; }
+}
+
+@media (max-width: 480px) {
+  .ag { grid-template-columns: 1fr !important; }
+  .nav-tab { font-size: 11px; padding: 8px 8px; }
+  .hero-h1 { font-size: clamp(32px, 10vw, 44px); letter-spacing: -1.5px; }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Tablet */
+  .hero-i { gap: 40px; }
+  .hero-h1 { font-size: clamp(40px, 5vw, 60px); }
+  .hv-grid { height: 380px; }
+  .stats-i { grid-template-columns: repeat(3, 1fr); }
+  .ag { grid-template-columns: repeat(2, 1fr) !important; }
+  .feat-i { grid-template-columns: 1fr 1fr !important; }
+  .footer-top { grid-template-columns: 1fr 1fr; }
+}
+
+/* ═══════════════════ HERO BLANC — PARTIE 1 ═══════════════════ */
+
+/* Hero blanc centré (remplace l'ancien hero sombre) */
+.hero-white {
+  min-height: 100vh;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: calc(var(--nav) + 80px) 32px 80px;
+  position: relative;
+  text-align: center;
+}
+.hero-white::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(102,126,234,.05), transparent);
+  pointer-events: none;
+}
+
+/* Badge "N°1" */
+.hw-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #F7F7F7;
+  border: 1px solid #E8E8E8;
+  color: #555;
+  padding: 7px 16px;
+  border-radius: 980px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+/* H1 */
+.hw-h1 {
+  font-size: clamp(46px, 6.5vw, 84px);
+  font-weight: 700;
+  letter-spacing: -3.5px;
+  line-height: 1.02;
+  color: #1A1A1A;
+  margin-bottom: 20px;
+  max-width: 820px;
+}
+
+/* Subtitle */
+.hw-sub {
+  font-size: 17px;
+  color: #717171;
+  line-height: 1.65;
+  margin-bottom: 44px;
+  max-width: 460px;
+}
+
+/* Barre de recherche style Airbnb */
+.search-bar {
+  display: flex;
+  align-items: stretch;
+  background: #fff;
+  border: 1.5px solid #DDDDDD;
+  border-radius: 980px;
+  box-shadow: 0 4px 32px rgba(0,0,0,.10), 0 1px 4px rgba(0,0,0,.06);
+  max-width: 800px;
+  width: 100%;
+  position: relative;
+}
+.sb-field {
+  flex: 1;
+  padding: 14px 22px;
+  cursor: text;
+  position: relative;
+  min-width: 0;
+}
+.sb-field:hover { background: #F7F7F7; }
+.sb-field:first-child:hover { border-radius: 980px 0 0 980px; }
+.sb-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1A1A1A;
+  letter-spacing: .3px;
+  margin-bottom: 2px;
+  user-select: none;
+}
+.sb-input-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.sb-field input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: #1A1A1A;
+  background: transparent;
+  padding: 0;
+  font-weight: 400;
+  min-width: 0;
+}
+.sb-field input::placeholder { color: #ADADAD; }
+.sb-field select {
+  width: 100%;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 14px;
+  color: #717171;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.sb-geo {
+  background: none;
+  border: none;
+  font-size: 15px;
+  cursor: pointer;
+  padding: 3px 5px;
+  border-radius: 50%;
+  transition: background .15s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.sb-geo:hover { background: #EBEBEB; }
+.sb-divider {
+  width: 1px;
+  background: #DDDDDD;
+  align-self: stretch;
+  flex-shrink: 0;
+  margin: 8px 0;
+}
+.sb-cta {
+  padding: 14px 26px;
+  margin: 6px;
+  border-radius: 980px;
+  font-size: 14px;
+  font-weight: 700;
+  background: #1A1A1A;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sb-cta:hover { background: #333; transform: scale(1.02); }
+
+/* Dropdown autocomplete ville (hero) */
+.hero-city-dd {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  left: -1.5px;
+  right: -1.5px;
+  background: white;
+  border: 1.5px solid #DDDDDD;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.12);
+  z-index: 10000;
+  overflow: hidden;
+}
+.hero-city-item {
+  padding: 12px 18px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  transition: background .12s;
+  border-bottom: 1px solid #F7F7F7;
+}
+.hero-city-item:last-child { border-bottom: none; }
+.hero-city-item:hover { background: #F7F7F7; }
+.hero-city-name { font-weight: 500; color: #1A1A1A; }
+.hero-city-cp { font-size: 12px; color: #ADADAD; }
+
+/* Responsive search bar (mobile) */
+@media (max-width: 768px) {
+  .hero-white {
+    padding: calc(var(--nav) + 48px) 20px 60px;
+    text-align: left;
+    align-items: flex-start;
+  }
+  .hw-h1 { font-size: clamp(36px, 10vw, 56px); letter-spacing: -2px; }
+  .hw-sub { font-size: 15px; margin-bottom: 32px; }
+  .search-bar {
+    flex-direction: column;
+    border-radius: 20px;
+  }
+  .sb-field { padding: 14px 18px; }
+  .sb-field:first-child:hover { border-radius: 18px 18px 0 0; }
+  .sb-divider { width: auto; height: 1px; margin: 0; }
+  .sb-cta { margin: 0; border-radius: 0 0 18px 18px; padding: 18px; text-align: center; }
+  .hero-city-dd { left: 0; right: 0; top: calc(100% + 6px); }
+}
 </style>
 </head>
 <body>
 
 <!-- NAV -->
-<nav class="nav dark" id="nav">
+<nav class="nav light" id="nav">
   <div class="nav-i">
     <span class="logo" onclick="showView('home')">inkr</span>
     <button class="nav-tab active" onclick="showView('home')" id="tab-home">Explorer</button>
@@ -601,27 +912,76 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 
 <!-- ══ HOME ══ -->
 <div class="view active" id="view-home">
-  <section class="hero">
-    <div class="hero-i">
-      <div>
-        <div class="hero-badge"><span class="hero-dot"></span>Plateforme N°1 en Europe · Annuaire tatouage</div>
-        <h1 class="hero-h1">Ton prochain<br>tatouage,<br><span class="grad-text">commence ici.</span></h1>
-        <p class="hero-sub">4 200 tatoueurs référencés en France. Tous les styles, toutes les villes.</p>
-        <div class="hero-ctas">
-          <button class="cta-w" onclick="showView('map')">🗺 Trouver sur la carte</button>
-          <button class="cta-ghost" onclick="document.getElementById('discover').scrollIntoView({behavior:'smooth'})">Voir les artistes</button>
-        </div>
-      </div>
-      <div>
-        <div class="hv-grid">
-          <div class="hv-img"><img src="https://loremflickr.com/400/500/tattoo,fineline?lock=1" alt="" loading="lazy"/></div>
-          <div class="hv-img"><img src="https://loremflickr.com/400/500/tattoo,japanese?lock=2" alt="" loading="lazy"/></div>
-          <div class="hv-img"><img src="https://loremflickr.com/400/500/tattoo,realism?lock=3" alt="" loading="lazy"/></div>
-          <div class="hv-img"><img src="https://loremflickr.com/400/500/tattoo,blackwork?lock=4" alt="" loading="lazy"/></div>
-        </div>
-      </div>
+  <!-- ════════════════════════════════════════════
+       HERO BLANC — version Airbnb/Doctolib
+       Fond blanc, centré, barre de recherche pill
+       ════════════════════════════════════════════ -->
+  <section class="hero-white">
+
+    <!-- Badge N°1 avec point vert animé -->
+    <div class="hw-badge r">
+      <span class="hero-dot"></span>
+      Plateforme N°1 en Europe · +4 200 artistes
     </div>
-    <div class="hero-scroll"><div class="scroll-line"></div>Scroll</div>
+
+    <!-- H1 principal -->
+    <h1 class="hw-h1 r rd1">
+      Ton prochain tatouage,<br>
+      <span class="grad-text">commence ici.</span>
+    </h1>
+
+    <!-- Sous-titre -->
+    <p class="hw-sub r rd2">
+      Trouve ton artiste parmi 4 200 tatoueurs référencés en France.<br>
+      Tous les styles, toutes les villes.
+    </p>
+
+    <!-- ── Barre de recherche (Airbnb-style pill) ── -->
+    <div class="search-bar r rd3" id="heroSearchBar">
+
+      <!-- Champ Ville avec géoloc -->
+      <div class="sb-field" id="sb-ville-field">
+        <div class="sb-label">Où</div>
+        <div class="sb-input-row">
+          <input
+            id="hero-ville"
+            type="text"
+            placeholder="Ville ou autour de moi"
+            oninput="showHeroCityDropdown(this.value)"
+            onkeydown="if(event.key==='Enter')handleHeroSearch()"
+            autocomplete="off"
+          />
+          <button class="sb-geo" onclick="geoLocate()" title="Me géolocaliser">📍</button>
+        </div>
+        <!-- Dropdown autocomplete villes françaises -->
+        <div class="hero-city-dd" id="hero-city-dd"></div>
+      </div>
+
+      <div class="sb-divider"></div>
+
+      <!-- Champ Style -->
+      <div class="sb-field">
+        <div class="sb-label">Style</div>
+        <select id="hero-style">
+          <option value="">Tous les styles</option>
+          <option value="fineline">Fine Line</option>
+          <option value="japonais">Japonais</option>
+          <option value="realisme">Réalisme</option>
+          <option value="blackwork">Blackwork</option>
+          <option value="geometrique">Géométrique</option>
+          <option value="old-school">Old School</option>
+          <option value="aquarelle">Aquarelle</option>
+          <option value="tribal">Tribal</option>
+          <option value="neo-traditionnel">Néo-trad</option>
+        </select>
+      </div>
+
+      <!-- Bouton CTA -->
+      <button class="sb-cta" onclick="handleHeroSearch()">
+        Trouver mon tatoueur →
+      </button>
+    </div>
+
   </section>
 
   <section class="stats">
@@ -762,7 +1122,8 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 <div class="view" id="view-map">
   <div class="map-view">
     <div class="map-bar">
-      <div class="map-search"><span style="color:rgba(255,255,255,.4)">🔍</span><input type="text" placeholder="Ville, style, artiste..." id="mapSearch" oninput="filterMapQ(this.value)"/></div>
+      <div class="map-search"><span style="color:rgba(255,255,255,.4)">🔍</span><input type="text" placeholder="Ville, style, artiste..." id="mapSearch" oninput="filterMapQ(this.value);showCityDropdown(this.value)" autocomplete="off"/>
+<div id="cityDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#1a1a2e;border:1px solid rgba(255,255,255,.15);border-radius:0 0 12px 12px;max-height:220px;overflow-y:auto;z-index:9999;"></div></div>
       <div class="map-filters">
         <button class="mf on" onclick="filterMap(this,'all')">Tous</button>
         <button class="mf" onclick="filterMap(this,'fineline')">Fine Line</button>
@@ -1045,6 +1406,279 @@ function artistAvatarDiv(a,fontSize='52px'){
 // Garde la compat avec l'ancien code (img ignoré si null)
 function tattooImg(lock,w,h,kw){return lock?`https://loremflickr.com/${w||400}/${h||500}/tattoo,${kw||'art'}?lock=${lock}`:null;}
 
+// ═══════════════════ VILLES FRANÇAISES — AUTOCOMPLETE ═══════════════════
+// Liste des principales villes FR avec code postal et département
+const VILLES_FR = [
+  {n:'Paris',cp:'75'},
+  {n:'Marseille',cp:'13'},
+  {n:'Lyon',cp:'69'},
+  {n:'Toulouse',cp:'31'},
+  {n:'Nice',cp:'06'},
+  {n:'Nantes',cp:'44'},
+  {n:'Montpellier',cp:'34'},
+  {n:'Strasbourg',cp:'67'},
+  {n:'Bordeaux',cp:'33'},
+  {n:'Lille',cp:'59'},
+  {n:'Rennes',cp:'35'},
+  {n:'Reims',cp:'51'},
+  {n:'Le Havre',cp:'76'},
+  {n:'Saint-Étienne',cp:'42'},
+  {n:'Toulon',cp:'83'},
+  {n:'Grenoble',cp:'38'},
+  {n:'Dijon',cp:'21'},
+  {n:'Angers',cp:'49'},
+  {n:'Nîmes',cp:'30'},
+  {n:'Villeurbanne',cp:'69'},
+  {n:'Le Mans',cp:'72'},
+  {n:'Clermont-Ferrand',cp:'63'},
+  {n:'Aix-en-Provence',cp:'13'},
+  {n:'Brest',cp:'29'},
+  {n:'Tours',cp:'37'},
+  {n:'Amiens',cp:'80'},
+  {n:'Limoges',cp:'87'},
+  {n:'Annecy',cp:'74'},
+  {n:'Perpignan',cp:'66'},
+  {n:'Boulogne-Billancourt',cp:'92'},
+  {n:'Metz',cp:'57'},
+  {n:'Besançon',cp:'25'},
+  {n:'Orléans',cp:'45'},
+  {n:'Rouen',cp:'76'},
+  {n:'Argenteuil',cp:'95'},
+  {n:'Mulhouse',cp:'68'},
+  {n:'Montreuil',cp:'93'},
+  {n:'Caen',cp:'14'},
+  {n:'Nancy',cp:'54'},
+  {n:'Saint-Denis',cp:'93'},
+  {n:'Avignon',cp:'84'},
+  {n:'Vitry-sur-Seine',cp:'94'},
+  {n:'Créteil',cp:'94'},
+  {n:'Dunkerque',cp:'59'},
+  {n:'Poitiers',cp:'86'},
+  {n:'Versailles',cp:'78'},
+  {n:'Pau',cp:'64'},
+  {n:'La Rochelle',cp:'17'},
+  {n:'Cannes',cp:'06'},
+  {n:'Antibes',cp:'06'},
+  {n:'Colmar',cp:'68'},
+  {n:'Lorient',cp:'56'},
+  {n:'Mérignac',cp:'33'},
+  {n:'Troyes',cp:'10'},
+  {n:'Valence',cp:'26'},
+  {n:'Ajaccio',cp:'2A'},
+  {n:'Bayonne',cp:'64'},
+  {n:'Biarritz',cp:'64'},
+  {n:'Quimper',cp:'29'},
+  {n:'Niort',cp:'79'},
+  {n:'Calais',cp:'62'},
+  {n:'Narbonne',cp:'11'},
+  {n:'Carcassonne',cp:'11'},
+  {n:'Albi',cp:'81'},
+  {n:'Castres',cp:'81'},
+  {n:'Montauban',cp:'82'},
+  {n:'Agen',cp:'47'},
+  {n:'Tarbes',cp:'65'},
+  {n:'Dax',cp:'40'},
+  {n:'Périgueux',cp:'24'},
+  {n:'Bergerac',cp:'24'},
+  {n:'Rodez',cp:'12'},
+  {n:'Millau',cp:'12'},
+  {n:'Auxerre',cp:'89'},
+  {n:'Nevers',cp:'58'},
+  {n:'Chalon-sur-Saône',cp:'71'},
+  {n:'Mâcon',cp:'71'},
+  {n:'Bourg-en-Bresse',cp:'01'},
+  {n:'Roanne',cp:'42'},
+  {n:'Vichy',cp:'03'},
+  {n:'Chartres',cp:'28'},
+  {n:'Évry',cp:'91'},
+  {n:'Cergy',cp:'95'},
+  {n:'Pontoise',cp:'95'},
+  {n:'Massy',cp:'91'},
+  {n:'Colombes',cp:'92'},
+  {n:'Rueil-Malmaison',cp:'92'},
+  {n:'Nanterre',cp:'92'},
+  {n:'Courbevoie',cp:'92'},
+  {n:'Levallois-Perret',cp:'92'},
+  {n:'Asnières-sur-Seine',cp:'92'},
+  {n:'Aulnay-sous-Bois',cp:'93'},
+  {n:'Noisy-le-Grand',cp:'93'},
+  {n:'Épinay-sur-Seine',cp:'93'},
+  {n:'Roubaix',cp:'59'},
+  {n:'Tourcoing',cp:'59'},
+  {n:'Lens',cp:'62'},
+  {n:'Arras',cp:'62'},
+  {n:'Valenciennes',cp:'59'},
+  {n:'Douai',cp:'59'},
+  {n:'Fort-de-France',cp:'972'},
+  {n:'Pointe-à-Pitre',cp:'971'},
+  {n:'Cayenne',cp:'973'},
+  {n:'Saint-Denis (Réunion)',cp:'974'},
+  {n:'Hyères',cp:'83'},
+  {n:'Fréjus',cp:'83'},
+  {n:'Draguignan',cp:'83'},
+  {n:'Arles',cp:'13'},
+  {n:'Martigues',cp:'13'},
+  {n:'Aubagne',cp:'13'},
+  {n:'Aix-les-Bains',cp:'73'},
+  {n:'Albertville',cp:'73'},
+  {n:'Chambéry',cp:'73'},
+  {n:'Gap',cp:'05'},
+  {n:'Briançon',cp:'05'},
+  {n:'Laval',cp:'53'},
+  {n:'Saint-Nazaire',cp:'44'},
+  {n:'La Baule',cp:'44'},
+  {n:'Vannes',cp:'56'},
+  {n:'Saint-Brieuc',cp:'22'},
+  {n:'Lannion',cp:'22'},
+  {n:'Cherbourg',cp:'50'},
+  {n:'Saint-Lô',cp:'50'},
+  {n:'Alençon',cp:'61'},
+  {n:'Évreux',cp:'27'},
+  {n:'Thionville',cp:'57'},
+  {n:'Forbach',cp:'57'},
+  {n:'Haguenau',cp:'67'},
+  {n:'Saint-Quentin',cp:'02'},
+  {n:'Soissons',cp:'02'},
+  {n:'Compiègne',cp:'60'},
+  {n:'Beauvais',cp:'60'},
+  {n:'Châlons-en-Champagne',cp:'51'},
+  {n:'Charleville-Mézières',cp:'08'},
+  {n:'Chaumont',cp:'52'},
+  {n:'Bar-le-Duc',cp:'55'},
+  {n:'Épinal',cp:'88'},
+  {n:'Montbéliard',cp:'25'},
+  {n:'Belfort',cp:'90'},
+  {n:'Béziers',cp:'34'},
+  {n:'Sète',cp:'34'},
+  {n:'Agde',cp:'34'},
+  {n:'Ales',cp:'30'},
+  {n:'Istres',cp:'13'},
+  {n:'Hossegor',cp:'40'},
+  {n:'Arcachon',cp:'33'},
+  {n:'Lourdes',cp:'65'},
+];
+
+function showCityDropdown(val) {
+  const dd = document.getElementById('cityDropdown');
+  if (!dd) return;
+  if (!val || val.length < 2) { dd.style.display = 'none'; return; }
+  const q = val.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+  const matches = VILLES_FR.filter(v => {
+    const n = v.n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+    return n.startsWith(q) || n.includes(q);
+  }).slice(0, 8);
+  if (!matches.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = matches.map(v => `
+    <div onclick="selectCity('${v.n}')" style="padding:10px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.06);transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.08)'" onmouseout="this.style.background=''">
+      <span style="color:white;font-size:14px;font-weight:500;">📍 ${v.n}</span>
+      <span style="color:rgba(255,255,255,.35);font-size:12px;">${v.cp}</span>
+    </div>`).join('');
+  dd.style.display = 'block';
+}
+function selectCity(name) {
+  const input = document.getElementById('mapSearch');
+  if (input) input.value = name;
+  const dd = document.getElementById('cityDropdown');
+  if (dd) dd.style.display = 'none';
+  filterMapQ(name);
+}
+// Ferme le dropdown si clic ailleurs
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.map-search')) {
+    const dd = document.getElementById('cityDropdown');
+    if (dd) dd.style.display = 'none';
+  }
+});
+
+// ═══════════════════ HERO SEARCH (barre de recherche homepage) ═══════════════════
+
+/**
+ * handleHeroSearch — déclenché par le bouton CTA ou la touche Entrée.
+ * Synchronise les filtres avec l'annuaire et scroll vers les résultats.
+ */
+function handleHeroSearch() {
+  const ville = (document.getElementById('hero-ville')?.value || '').trim();
+  const style = document.getElementById('hero-style')?.value || '';
+  // Sync avec le champ de filtre avancé de la section Discover
+  const afVille = document.getElementById('af-ville');
+  if (afVille) afVille.value = ville;
+  // Appliquer aux filtres globaux
+  annuaireFilter.ville = ville;
+  annuaireFilter.style = style;
+  annuaireFilter.q = '';
+  loadArtists(true).then(() => {
+    renderArtists();
+    // Scroll vers la section résultats
+    document.getElementById('discover').scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+/**
+ * showHeroCityDropdown — autocomplete des villes françaises dans le hero.
+ * Réutilise VILLES_FR défini plus bas dans le script.
+ */
+function showHeroCityDropdown(val) {
+  const dd = document.getElementById('hero-city-dd');
+  if (!dd) return;
+  if (!val || val.length < 2) { dd.style.display = 'none'; return; }
+  const q = val.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const matches = VILLES_FR.filter(v => {
+    const n = v.n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return n.startsWith(q) || n.includes(q);
+  }).slice(0, 8);
+  if (!matches.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = matches.map(v =>
+    `<div class="hero-city-item" onclick="selectHeroCity('${v.n.replace(/'/g, "\\'")}')">
+       <span class="hero-city-name">📍 ${v.n}</span>
+       <span class="hero-city-cp">${v.cp}</span>
+     </div>`
+  ).join('');
+  dd.style.display = 'block';
+}
+
+/**
+ * selectHeroCity — insère la ville choisie et ferme le dropdown.
+ */
+function selectHeroCity(name) {
+  const input = document.getElementById('hero-ville');
+  if (input) input.value = name;
+  const dd = document.getElementById('hero-city-dd');
+  if (dd) dd.style.display = 'none';
+}
+
+/**
+ * geoLocate — géolocalise l'utilisateur et remplit le champ ville.
+ * Utilise l'API Nominatim (OpenStreetMap) pour le reverse geocoding.
+ */
+function geoLocate() {
+  if (!navigator.geolocation) { showToast('⚠️', 'Géolocalisation non disponible'); return; }
+  showToast('📍', 'Localisation en cours...');
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude, longitude } = pos.coords;
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`)
+        .then(r => r.json())
+        .then(data => {
+          const city = data.address?.city || data.address?.town || data.address?.village || data.address?.municipality || '';
+          const input = document.getElementById('hero-ville');
+          if (input && city) { input.value = city; showToast('📍', `Ville : ${city}`); }
+          else showToast('📍', 'Position détectée');
+        })
+        .catch(() => showToast('⚠️', 'Impossible de récupérer la ville'));
+    },
+    () => showToast('⚠️', 'Impossible de vous localiser'),
+    { timeout: 8000 }
+  );
+}
+
+// Ferme le dropdown ville hero si l'utilisateur clique ailleurs
+document.addEventListener('click', e => {
+  if (!e.target.closest('#sb-ville-field')) {
+    const dd = document.getElementById('hero-city-dd');
+    if (dd) dd.style.display = 'none';
+  }
+});
+
 // ═══════════════════ VIEWS ═══════════════════
 let mapInited=false;
 function showView(id){
@@ -1054,9 +1688,10 @@ function showView(id){
   const t=document.getElementById('tab-'+id);if(t)t.classList.add('active');
   window.scrollTo(0,0);
   const nav=document.getElementById('nav');
-  const light=['tournee','blog'];
-  nav.classList.toggle('light',light.includes(id));
-  nav.classList.toggle('dark',!light.includes(id));
+  // Homepage et vues claires = nav blanche ; map & events = nav sombre
+  const darkViews=['map','events'];
+  nav.classList.toggle('light',!darkViews.includes(id));
+  nav.classList.toggle('dark',darkViews.includes(id));
   if(id==='map'&&!mapInited){setTimeout(initMap,120);mapInited=true;}
   if(id==='blog')renderBlogFull();
   if(id==='tournee')showSwipeHint();
@@ -1559,11 +2194,13 @@ function showToast(icon,msg){
 }
 
 // ═══════════════════ NAV SCROLL ═══════════════════
+// Sur la homepage, la nav reste TOUJOURS blanche (fond hero blanc)
+// Sur les autres vues, la nav est gérée par showView()
 window.addEventListener('scroll',()=>{
   if(!document.getElementById('view-home').classList.contains('active'))return;
   const nav=document.getElementById('nav');
-  nav.classList.toggle('dark',window.scrollY<window.innerHeight*.8);
-  nav.classList.toggle('light',window.scrollY>=window.innerHeight*.8);
+  nav.classList.remove('dark');
+  nav.classList.add('light');
 },{passive:true});
 
 // ═══════════════════ SCROLL REVEAL ═══════════════════
