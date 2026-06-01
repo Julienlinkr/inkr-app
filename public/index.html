@@ -709,17 +709,15 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 
 /* ═══════════════════ HERO BLANC — PARTIE 1 ═══════════════════ */
 
-/* Hero blanc centré (remplace l'ancien hero sombre) */
-/* ── Hero split : texte gauche + photos droite ── */
+/* ── Hero split : centré horizontalement, texte gauche + photo droite ── */
 .hero-white {
   min-height: 100vh;
   background: #fff;
   display: flex;
   align-items: center;
-  /* Le bandeau "N°1" au-dessus pousse déjà le hero sous la nav */
-  padding: 60px 56px 60px;
+  justify-content: center; /* centre horizontalement */
+  padding: 60px 56px;
   position: relative;
-  gap: 64px;
   overflow: hidden;
 }
 .hero-white::before {
@@ -729,11 +727,20 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   background: radial-gradient(ellipse 60% 70% at 70% 50%, rgba(102,126,234,.06), transparent);
   pointer-events: none;
 }
+/* Conteneur interne — limite la largeur + dispose les colonnes */
+.hw-inner {
+  max-width: 1200px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 72px;
+  position: relative;
+  z-index: 1;
+}
 /* Colonne gauche */
 .hw-left {
   flex: 1;
-  max-width: 580px;
-  z-index: 1;
+  max-width: 560px;
 }
 /* Colonne droite — une seule photo en noir & blanc
    Légère rotation au repos, se redresse au hover */
@@ -931,13 +938,14 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 
 /* Responsive hero + search bar */
 @media (max-width: 1024px) {
-  .hero-white { gap: 40px; padding-left: 32px; padding-right: 32px; }
+  .hero-white { padding: 60px 32px; }
+  .hw-inner { gap: 40px; }
   .hw-right { max-width: 360px; height: 460px; }
 }
 @media (max-width: 768px) {
-  .hero-white {
+  .hero-white { padding: 48px 20px 60px; }
+  .hw-inner {
     flex-direction: column;
-    padding: 48px 20px 60px;
     gap: 36px;
   }
   .hw-left { max-width: 100%; }
@@ -1146,13 +1154,12 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   color: white;
 }
 
-/* Grid split 2 colonnes */
+/* Grid split : 50 % liste / 50 % carte */
 .split-wrap {
   display: grid;
-  grid-template-columns: 1fr 400px;
+  grid-template-columns: 1fr 1fr;
   min-height: 80vh;
 }
-@media (max-width: 1100px) { .split-wrap { grid-template-columns: 1fr 320px; } }
 
 /* Panneau gauche : filters + cards */
 .split-left {
@@ -1306,6 +1313,9 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
        ══════════════════════════════════════════ -->
   <section class="hero-white">
 
+    <!-- Conteneur centré max 1200px -->
+    <div class="hw-inner">
+
     <!-- ── Colonne gauche ── -->
     <div class="hw-left">
 
@@ -1364,17 +1374,19 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 
     </div><!-- /hw-left -->
 
-    <!-- ── Colonne droite : une belle photo en noir & blanc ──
-         Remplacez src par votre propre photo une fois disponible.
-         La photo d'origine est celle d'un tatoueur au travail. -->
+    <!-- ── Colonne droite : photo en noir & blanc ──
+         Remplacez le src par votre propre photo (idéalement 600×720px).
+         Si l'image ne charge pas, le fond #111 reste visible. -->
     <div class="hw-right r rd2">
       <img
-        src="https://images.unsplash.com/photo-1542827474-8d697abaa2ad?w=600&h=720&fit=crop&q=85"
-        alt="Artiste tatoueur au travail"
+        src="https://images.unsplash.com/photo-1590236596-5e2d4b2f2e07?w=600&h=720&fit=crop&q=85"
+        alt="Tatouage artistique"
         loading="lazy"
+        onerror="this.style.display='none'"
       />
     </div><!-- /hw-right -->
 
+    </div><!-- /hw-inner -->
   </section>
 
   <section class="stats">
@@ -1420,13 +1432,19 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 
         <!-- Filtres compacts ville + style -->
         <div class="split-filters">
-          <input
-            type="text"
-            id="af-ville"
-            placeholder="🏙 Ville, département..."
-            oninput="applyAdvFilters()"
-            autocomplete="off"
-          />
+          <!-- Champ ville avec autocomplete Nominatim (même logique que le hero) -->
+          <div style="position:relative;flex:1;min-width:160px;">
+            <input
+              type="text"
+              id="af-ville"
+              placeholder="🏙 Ville, département..."
+              oninput="applyAdvFilters();showSplitCityDropdown(this.value)"
+              autocomplete="off"
+              style="width:100%;"
+            />
+            <!-- Dropdown autocomplete ville split -->
+            <div id="af-ville-dd" class="hero-city-dd" style="border-radius:12px;top:calc(100% + 6px);"></div>
+          </div>
           <select id="af-style-sel" onchange="applyAdvFiltersSelect(this.value)">
             <option value="">Tous les styles</option>
             <option value="fineline">Fine Line</option>
@@ -1940,10 +1958,10 @@ function initHomeMap() {
   const el = document.getElementById('home-map');
   if (!el) return;
   homeMap = L.map('home-map', { zoomControl: true }).setView([46.5, 2.5], 6);
-  // Tuiles Carto Light (fond clair pour correspondre au design)
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© OpenStreetMap © CARTO',
-    maxZoom: 19
+  // Tuiles OpenStreetMap France — labels en français (Normandie, Île-de-France, etc.)
+  L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+    attribution: '© Contributeurs OpenStreetMap',
+    maxZoom: 20
   }).addTo(homeMap);
   addHomeMapMarkers(ARTISTS);
   homeMapInited = true;
@@ -2399,13 +2417,102 @@ function geoLocate() {
   );
 }
 
-// Ferme le dropdown ville hero si l'utilisateur clique ailleurs
+// Ferme les deux dropdowns ville si clic ailleurs
 document.addEventListener('click', e => {
+  // Dropdown hero
   if (!e.target.closest('#sb-ville-field')) {
     const dd = document.getElementById('hero-city-dd');
     if (dd) dd.style.display = 'none';
   }
+  // Dropdown split-left
+  if (!e.target.closest('#af-ville') && !e.target.closest('#af-ville-dd')) {
+    const dd2 = document.getElementById('af-ville-dd');
+    if (dd2) dd2.style.display = 'none';
+  }
 });
+
+// ─── Autocomplete ville dans split-left (même logique que le hero) ──────────
+
+/**
+ * showSplitCityDropdown — suggestions de ville dans le champ #af-ville.
+ * Nominatim OpenStreetMap + fallback VILLES_FR local.
+ */
+function showSplitCityDropdown(val) {
+  clearTimeout(_citySearchTimer);
+  const dd = document.getElementById('af-ville-dd');
+  if (!dd) return;
+  if (!val || val.length < 2) { dd.style.display = 'none'; return; }
+
+  dd.innerHTML = `<div class="hero-city-item" style="color:#ADADAD;pointer-events:none;"><span>🔍 Recherche…</span></div>`;
+  dd.style.display = 'block';
+
+  _citySearchTimer = setTimeout(async () => {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&countrycodes=fr&format=json&limit=7&addressdetails=1`;
+      const res = await fetch(url, { headers: { 'Accept-Language': 'fr', 'User-Agent': 'inkr.club/1.0' } });
+      const data = await res.json();
+      if (!data.length) { _showSplitCityFallback(val); return; }
+
+      const seen = new Set();
+      const items = data.filter(d => {
+        const city = d.address?.city || d.address?.town || d.address?.village || d.address?.municipality || d.display_name.split(',')[0];
+        if (seen.has(city)) return false;
+        seen.add(city);
+        return true;
+      }).slice(0, 6);
+
+      dd.innerHTML = items.map(d => {
+        const city    = d.address?.city || d.address?.town || d.address?.village || d.address?.municipality || d.display_name.split(',')[0];
+        const cp      = d.address?.postcode?.slice(0,5) || '';
+        const escaped = city.replace(/'/g, "\\'");
+        return `<div class="hero-city-item" onclick="selectSplitCity('${escaped}')">
+          <span class="hero-city-name">📍 ${city}</span>
+          <span class="hero-city-cp">${cp}</span>
+        </div>`;
+      }).join('');
+      dd.style.display = 'block';
+    } catch (e) {
+      _showSplitCityFallback(val);
+    }
+  }, 350);
+}
+
+/** Fallback local VILLES_FR si Nominatim indisponible (split) */
+function _showSplitCityFallback(val) {
+  const dd = document.getElementById('af-ville-dd');
+  if (!dd) return;
+  const q = val.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const matches = VILLES_FR.filter(v => {
+    const n = v.n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return n.startsWith(q) || n.includes(q);
+  }).slice(0, 7);
+  if (!matches.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = matches.map(v =>
+    `<div class="hero-city-item" onclick="selectSplitCity('${v.n.replace(/'/g, "\\'")}')">
+       <span class="hero-city-name">📍 ${v.n}</span>
+       <span class="hero-city-cp">${v.cp}</span>
+     </div>`
+  ).join('');
+  dd.style.display = 'block';
+}
+
+/**
+ * selectSplitCity — sélectionne une ville depuis le dropdown split-left.
+ * Déclenche la recherche dans l'annuaire + met à jour la carte.
+ */
+function selectSplitCity(name) {
+  const input = document.getElementById('af-ville');
+  if (input) input.value = name;
+  const dd = document.getElementById('af-ville-dd');
+  if (dd) dd.style.display = 'none';
+  annuaireFilter.ville = name;
+  loadArtists(true).then(() => {
+    renderArtists();
+    updateSplitCount();
+    updateLoadMoreBtn();
+    rebuildHomeMapMarkers();
+  });
+}
 
 // ═══════════════════ VIEWS ═══════════════════
 let mapInited=false;
