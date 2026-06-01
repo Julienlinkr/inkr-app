@@ -1065,6 +1065,37 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
           <div class="form-group"><label>Photo du salon (URL)</label><input class="form-control" id="p-photo-salon" placeholder="https://..."></div>
           <div class="form-group"><label>Photo artiste (URL)</label><input class="form-control" id="p-photo-artiste" placeholder="https://..."></div>
         </div>
+
+        <!-- BIO — texte libre affiché sur la fiche publique inkr -->
+        <div class="form-group" style="margin-top:8px;">
+          <label>✍️ À propos — description affichée sur votre fiche inkr</label>
+          <textarea class="form-control" id="p-bio" style="min-height:100px;font-size:13px;line-height:1.7;" placeholder="Présente ton univers artistique, tes influences, ton studio... Écris librement !"></textarea>
+        </div>
+
+        <!-- STYLES — checkboxes des 9 styles inkr → connectés aux filtres de l'annuaire -->
+        <div class="form-group" style="margin-top:4px;">
+          <label style="display:flex;align-items:center;gap:7px;">
+            🎨 Mes styles
+            <span style="font-size:10px;color:var(--muted);background:var(--acl);padding:2px 7px;border-radius:20px;font-weight:600;">Apparaître dans les filtres de recherche</span>
+          </label>
+          <div class="rdv-style-grid" id="p-styles-grid" style="margin-top:8px;">
+            <label class="rdv-style-chip" data-style="Japonais"><input type="checkbox" value="Japonais"> 🎌 Japonais</label>
+            <label class="rdv-style-chip" data-style="Fine Line"><input type="checkbox" value="Fine Line"> Fine Line</label>
+            <label class="rdv-style-chip" data-style="Réalisme"><input type="checkbox" value="Réalisme"> 🎨 Réalisme</label>
+            <label class="rdv-style-chip" data-style="Géométrique"><input type="checkbox" value="Géométrique"> 🔷 Géométrique</label>
+            <label class="rdv-style-chip" data-style="Tribal"><input type="checkbox" value="Tribal"> Tribal</label>
+            <label class="rdv-style-chip" data-style="Old School"><input type="checkbox" value="Old School"> ⚓ Old School</label>
+            <label class="rdv-style-chip" data-style="Aquarelle"><input type="checkbox" value="Aquarelle"> 🎨 Aquarelle</label>
+            <label class="rdv-style-chip" data-style="Animaux"><input type="checkbox" value="Animaux"> 🐾 Animaux</label>
+            <label class="rdv-style-chip" data-style="Flash"><input type="checkbox" value="Flash"> ⚡ Flash</label>
+            <label class="rdv-style-chip" data-style="Blackwork"><input type="checkbox" value="Blackwork"> ◼ Blackwork</label>
+            <label class="rdv-style-chip" data-style="Néo-trad"><input type="checkbox" value="Néo-trad"> 🌸 Néo-trad</label>
+            <label class="rdv-style-chip" data-style="Lettering"><input type="checkbox" value="Lettering"> ✍️ Lettering</label>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px;">Les styles cochés te font apparaître dans les filtres de l'annuaire inkr.</div>
+        </div>
+
+        <!-- MESSAGE DE RÉPONSE AUTO -->
         <div class="form-group" style="margin-top:8px;">
           <label style="display:flex;align-items:center;gap:7px;">
             💬 Message de réponse automatique
@@ -1073,7 +1104,27 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
           <textarea class="form-control" id="p-auto-reply" style="min-height:90px;font-size:12px;line-height:1.6;" placeholder="Ex: Bonjour ! J'ai bien reçu votre demande 🎨 Je vous réponds dans les 48h..."></textarea>
           <div style="font-size:11px;color:var(--muted);margin-top:5px;">Ce texte apparaît automatiquement dès qu'un client vous envoie une demande via inkr.</div>
         </div>
+
         <div id="profil-save-msg" style="margin-top:9px;font-size:12px;display:none;color:var(--green);">✅ Profil mis à jour !</div>
+      </div>
+
+      <!-- GALERIE PHOTOS inkr — section séparée sous le formulaire -->
+      <div style="max-width:560px;margin-top:32px;border-top:1px solid var(--border);padding-top:24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <div style="font-size:14px;font-weight:800;">📸 Ma galerie inkr</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Tes photos de tatouage affichées sur ta fiche publique (grille style Instagram)</div>
+          </div>
+          <label class="btn btn-primary btn-sm" style="cursor:pointer;position:relative;">
+            + Ajouter
+            <input type="file" id="photo-upload-input" accept="image/*" multiple style="position:absolute;inset:0;opacity:0;cursor:pointer;" onchange="uploadArtistPhotos(this)">
+          </label>
+        </div>
+        <!-- Grille de prévisualisation -->
+        <div id="my-photos-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:3px;border-radius:8px;overflow:hidden;">
+          <div style="aspect-ratio:1;background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px;grid-column:1/-1;padding:30px 0;text-align:center;">Chargement…</div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;">Clique sur une photo pour la supprimer. Max 10 MB par image.</div>
       </div>
     </div>
   </div>
@@ -1387,6 +1438,15 @@ function populateUser(){
   document.getElementById('p-photo-salon').value=u.photo_salon||'';
   document.getElementById('p-photo-artiste').value=u.photo_artiste||'';
   document.getElementById('p-auto-reply').value=u.auto_reply||'';
+  document.getElementById('p-bio').value=u.bio||'';
+  // Cocher les styles de l'artiste
+  let userStyles=[];
+  try{userStyles=JSON.parse(u.styles||'[]');}catch(_){}
+  document.querySelectorAll('#p-styles-grid input[type=checkbox]').forEach(cb=>{
+    cb.checked=userStyles.includes(cb.value);
+  });
+  // Charger la galerie photos
+  loadMyPhotos();
 }
 async function logout(){
   await fetch('/api/auth/logout',{method:'POST',credentials:'include'});
@@ -2153,7 +2213,9 @@ async function saveProfil(){
     pinterest:document.getElementById('p-pinterest').value,
     photo_salon:document.getElementById('p-photo-salon').value.trim(),
     photo_artiste:document.getElementById('p-photo-artiste').value.trim(),
-    auto_reply:document.getElementById('p-auto-reply').value.trim()
+    auto_reply:document.getElementById('p-auto-reply').value.trim(),
+    bio:document.getElementById('p-bio').value.trim(),
+    styles:[...document.querySelectorAll('#p-styles-grid input[type=checkbox]:checked')].map(cb=>cb.value)
   };
   const res=await fetch('/api/auth/profile',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(res.ok){
@@ -2164,6 +2226,69 @@ async function saveProfil(){
     setTimeout(()=>msg.style.display='none',3000);
     showNotif('✅ Profil mis à jour !','success');
   }
+}
+
+// ======== GALERIE PHOTOS ARTISTE ========
+// Charge et affiche les photos uploadées par l'artiste connecté.
+// Les photos sont affichées dans une grille 3 colonnes carrées.
+
+async function loadMyPhotos(){
+  const grid=document.getElementById('my-photos-grid');
+  if(!grid)return;
+  try{
+    const r=await fetch('/api/artist-photos/me',{credentials:'include'});
+    const photos=r.ok?await r.json():[];
+    if(!photos.length){
+      grid.innerHTML=`<div style="aspect-ratio:unset;background:var(--card);grid-column:1/-1;padding:30px;text-align:center;color:var(--muted);font-size:13px;">
+        Aucune photo encore. Clique "+ Ajouter" pour commencer ! 🎨
+      </div>`;
+    } else {
+      grid.innerHTML=photos.map(p=>`
+        <div style="position:relative;aspect-ratio:1;overflow:hidden;cursor:pointer;background:#111;" onclick="deleteArtistPhoto(${p.id},this)" title="Cliquer pour supprimer">
+          <img src="${p.url}" alt="${p.caption||''}" style="width:100%;height:100%;object-fit:cover;display:block;transition:opacity .2s;" loading="lazy">
+          <div style="position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .2s;" class="ph-del-overlay">
+            <span style="color:white;font-size:22px;opacity:0;transition:opacity .2s;">🗑</span>
+          </div>
+        </div>`).join('');
+      // Hover overlay
+      grid.querySelectorAll('div[onclick]').forEach(el=>{
+        el.addEventListener('mouseenter',()=>{
+          el.querySelector('.ph-del-overlay').style.background='rgba(0,0,0,.5)';
+          el.querySelector('span').style.opacity='1';
+        });
+        el.addEventListener('mouseleave',()=>{
+          el.querySelector('.ph-del-overlay').style.background='rgba(0,0,0,0)';
+          el.querySelector('span').style.opacity='0';
+        });
+      });
+    }
+  }catch(e){console.error('[loadMyPhotos]',e);}
+}
+
+async function uploadArtistPhotos(input){
+  const files=[...input.files];
+  if(!files.length)return;
+  const btn=input.closest('label');
+  btn.style.opacity='.5';
+  for(const file of files){
+    const fd=new FormData();
+    fd.append('photo',file);
+    try{
+      const r=await fetch('/api/artist-photos/upload',{method:'POST',credentials:'include',body:fd});
+      if(!r.ok){const d=await r.json();showNotif('⚠️ '+d.error,'error');}
+    }catch(e){showNotif('⚠️ Erreur réseau','error');}
+  }
+  btn.style.opacity='1';
+  input.value='';
+  loadMyPhotos();
+  showNotif(`✅ ${files.length} photo${files.length>1?'s':''} ajoutée${files.length>1?'s':''}!`,'success');
+}
+
+async function deleteArtistPhoto(id,el){
+  if(!confirm('Supprimer cette photo ?'))return;
+  const r=await fetch(`/api/artist-photos/${id}`,{method:'DELETE',credentials:'include'});
+  if(r.ok){el.remove();showNotif('✅ Photo supprimée','success');}
+  else showNotif('⚠️ Erreur lors de la suppression','error');
 }
 
 // ======== MESSAGES ========

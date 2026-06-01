@@ -15,6 +15,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'inkr_secret_dev';
  'pinterest TEXT DEFAULT \'\'',
  'photo_salon TEXT DEFAULT \'\'',
  'photo_artiste TEXT DEFAULT \'\'',
+ 'bio TEXT DEFAULT \'\'',
+ 'styles TEXT DEFAULT \'[]\'',
 ].forEach(col => {
   try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch(_) {}
 });
@@ -94,7 +96,7 @@ router.get('/me', (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest, auto_reply, photo_salon, photo_artiste, avatar_seed, created_at FROM users WHERE id = ?').get(decoded.userId);
+    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest, auto_reply, bio, styles, photo_salon, photo_artiste, avatar_seed, created_at FROM users WHERE id = ?').get(decoded.userId);
     if (!user) return res.status(401).json({ error: 'Utilisateur introuvable' });
     res.json({ user });
   } catch {
@@ -108,23 +110,31 @@ router.put('/profile', (req, res) => {
   if (!token) return res.status(401).json({ error: 'Non connecté' });
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const { name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest, auto_reply } = req.body;
+    const { name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest, auto_reply, bio, styles } = req.body;
     if (!name) return res.status(400).json({ error: 'Nom requis' });
 
-    // Mise à jour du compte artiste
-    db.prepare(
-      'UPDATE users SET name=?, prenom=?, nom_artiste=?, studio_name=?, city=?, adresse=?, phone=?, instagram=?, pinterest=?, auto_reply=? WHERE id=?'
-    ).run(name, prenom||'', nom_artiste||'', studio_name||'', city||'', adresse||'', phone||'', instagram||'', pinterest||'', auto_reply||'', decoded.userId);
+    // styles est un tableau JSON envoyé depuis le dashboard
+    const stylesJson = Array.isArray(styles) ? JSON.stringify(styles) : (styles || '[]');
 
-    // Sync auto_reply vers la fiche tatoueur publique (correspondance par handle Instagram)
-    // Permet au filtre de style et à la messagerie publique d'utiliser la réponse personnalisée
+    // Mise à jour du compte artiste inkr Pro
+    db.prepare(
+      'UPDATE users SET name=?, prenom=?, nom_artiste=?, studio_name=?, city=?, adresse=?, phone=?, instagram=?, pinterest=?, auto_reply=?, bio=?, styles=? WHERE id=?'
+    ).run(name, prenom||'', nom_artiste||'', studio_name||'', city||'', adresse||'', phone||'', instagram||'', pinterest||'', auto_reply||'', bio||'', stylesJson, decoded.userId);
+
+    // ── Sync vers la fiche tatoueur publique (by Instagram handle) ────────────
+    // Quand l'artiste inkr Pro met à jour son profil, sa fiche publique dans
+    // l'annuaire est mise à jour : bio, styles, auto_reply synchronisés.
     if (instagram) {
       const igHandle = (instagram || '').replace('@', '').toLowerCase().trim();
       if (igHandle) {
         try {
-          db.prepare("UPDATE tatoueurs SET auto_reply=? WHERE LOWER(REPLACE(instagram,'@','')) = ?")
-            .run(auto_reply || '', igHandle);
-        } catch(_) { /* tatoueurs table peut ne pas avoir la colonne si migration non jouée */ }
+          db.prepare(`
+            UPDATE tatoueurs
+            SET auto_reply=?, bio=?, styles=?, nom=COALESCE(NULLIF(?,''), nom),
+                ville=COALESCE(NULLIF(?,''), ville), adresse=COALESCE(NULLIF(?,''), adresse)
+            WHERE LOWER(REPLACE(instagram,'@','')) = ?
+          `).run(auto_reply||'', bio||'', stylesJson, nom_artiste||name, city||'', adresse||'', igHandle);
+        } catch(_) { /* migration non encore jouée — sans impact */ }
       }
     }
 

@@ -1876,17 +1876,23 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 // ════════════════════════════════════════════════════════════════
 
 // ─── Style cards data — photos réelles de chaque style de tatouage ─
-// Les photos viennent de loremflickr.com avec des mots-clés ciblés
-// pour montrer visuellement ce que chaque style représente.
+// Images locales dans public/images/styles/{slug}.jpg
+// Pour mettre à jour une image : remplacer le fichier dans ce dossier et vider le cache.
+// ────────────────────────────────────────────────────────────────────────────
+// Correspondance slug ↔ fichier attendu dans public/images/styles/ :
+//   japonais.jpg   fineline.jpg   realisme.jpg   geometrique.jpg
+//   tribal.jpg     old-school.jpg aquarelle.jpg  animaux.jpg    flash.jpg
+// ────────────────────────────────────────────────────────────────────────────
 const STYLES_DATA = [
-  { slug:'fineline',    name:'Fine Line',    kw:'fineline,tattoo',      lock:101 },
-  { slug:'japonais',    name:'Japonais',     kw:'japanese,tattoo',      lock:102 },
-  { slug:'realisme',    name:'Réalisme',     kw:'realism,tattoo',       lock:103 },
-  { slug:'blackwork',   name:'Blackwork',    kw:'blackwork,tattoo',     lock:104 },
-  { slug:'geometrique', name:'Géométrique',  kw:'geometric,tattoo',     lock:105 },
-  { slug:'aquarelle',   name:'Aquarelle',    kw:'watercolor,tattoo',    lock:106 },
-  { slug:'old-school',  name:'Old School',   kw:'traditional,tattoo',   lock:107 },
-  { slug:'tribal',      name:'Tribal',       kw:'tribal,tattoo',        lock:108 },
+  { slug:'japonais',    name:'Japonais',     filter:'Japonais'    },
+  { slug:'fineline',    name:'Fine Line',    filter:'Fine Line'   },
+  { slug:'realisme',    name:'Réalisme',     filter:'Réalisme'    },
+  { slug:'geometrique', name:'Géométrique',  filter:'Géométrique' },
+  { slug:'tribal',      name:'Tribal',       filter:'Tribal'      },
+  { slug:'old-school',  name:'Old School',   filter:'Old School'  },
+  { slug:'aquarelle',   name:'Aquarelle',    filter:'Aquarelle'   },
+  { slug:'animaux',     name:'Animaux',      filter:'Animaux'     },
+  { slug:'flash',       name:'Flash',        filter:'Flash'       },
 ];
 // activeStyles : tableau des slugs sélectionnés (multi-select)
 // [] = tous les styles
@@ -1914,13 +1920,15 @@ function renderStyleCards() {
       <div class="sc-check">✓</div>
     </div>`;
 
-  // Cartes photo
+  // Cartes photo — images locales dans /images/styles/{slug}.jpg
+  // Si l'image locale n'existe pas encore, un fond dégradé inkr s'affiche.
   const styleCards = STYLES_DATA.map(s => `
     <div class="style-card ${activeStyles.includes(s.slug) ? 'sc-active' : ''}"
          onclick="filterByStyleCard('${s.slug}', this)" data-slug="${s.slug}">
       <img class="sc-photo"
-           src="https://loremflickr.com/300/400/${s.kw}?lock=${s.lock}"
-           alt="${s.name}" loading="lazy"/>
+           src="/images/styles/${s.slug}.jpg"
+           alt="${s.name}" loading="lazy"
+           onerror="this.style.display='none';this.nextElementSibling.style.background='linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)'"/>
       <div class="sc-overlay"></div>
       <span class="sc-name">${s.name}</span>
       <div class="sc-check">✓</div>
@@ -1958,8 +1966,10 @@ function filterByStyleCard(slug, el) {
   if (sel) sel.value = activeStyles.length === 1 ? activeStyles[0] : '';
 
   // Charger avec le premier style sélectionné comme filtre API
-  // Note : pas de scrollIntoView — l'utilisateur descend manuellement
-  annuaireFilter.style = activeStyles[0] || '';
+  // On passe le nom d'affichage du style (ex: "Fine Line") et non le slug (ex: "fineline")
+  // pour correspondre aux valeurs stockées dans la table tatoueurs.styles (JSON)
+  const firstStyle = STYLES_DATA.find(s => s.slug === activeStyles[0]);
+  annuaireFilter.style = firstStyle ? firstStyle.filter : (activeStyles[0] || '');
   loadArtists(true).then(() => {
     renderArtistsFiltered();
     updateSplitCount();
@@ -2962,18 +2972,23 @@ async function openProfile(id){
   const bioText=a.bio||`Studio de tatouage basé à ${a.city}. ${a.adresse?'Adresse : '+a.adresse+'. ':''}Contactez via Instagram ou par téléphone pour prendre rendez-vous.`;
   // Portfolio : skeleton loader pendant le fetch Instagram
   const igHandle = a.instagram ? a.instagram.replace('@','') : '';
+  // Portfolio : skeleton pendant le chargement
   const portfolioSection = `
     <div class="pm-section" id="pm-portfolio">
       <div class="pm-section-title">Portfolio</div>
       <div id="pm-portfolio-content">
-        ${igHandle
-          ? `<div class="ig-skeleton-wrap">${Array(9).fill('<div class="ig-skeleton-cell"></div>').join('')}</div>`
-          : `<div style="background:var(--off);border-radius:12px;padding:20px;text-align:center;color:var(--g3);font-size:14px;">Photos de travaux à venir</div>`
-        }
+        <div class="ig-skeleton-wrap">${Array(9).fill('<div class="ig-skeleton-cell"></div>').join('')}</div>
       </div>
     </div>`;
+
+  // Bio : texte saisi par l'artiste depuis inkr Pro, sinon texte généré
+  const bioDisplay = a.bio || bioText;
+
   document.getElementById('pmBody').innerHTML=`
-    <div class="pm-section"><div class="pm-section-title">À propos</div><div class="pm-bio">${bioText}</div></div>
+    <div class="pm-section">
+      <div class="pm-section-title">À propos</div>
+      <div class="pm-bio">${bioDisplay.replace(/\n/g,'<br>')}</div>
+    </div>
     ${portfolioSection}
     <div class="pm-section"><div class="pm-section-title">Disponibilités</div><div class="pm-avail">${days.map((d,i)=>`<div class="pm-day ${full.includes(dates[i])?'full':'avail'}" onclick="selectDay(this,${dates[i]})"><div class="pm-day-name">${d}</div><div class="pm-day-num">${dates[i]}</div></div>`).join('')}</div><p style="font-size:13px;color:var(--g3);margin-top:10px;">✅ Contactez l'artiste pour confirmer ses disponibilités</p></div>
     <div class="pm-section"><div class="pm-section-title">Informations de contact</div>
@@ -2986,64 +3001,93 @@ async function openProfile(id){
       </div>
     </div>`;
   openMo('profile');
-  // Lance le fetch des posts Instagram en arrière-plan si l'artiste a un compte
-  if (igHandle) loadInstagramPortfolio(igHandle);
+  // Chargement portfolio : inkr Pro photos en priorité, IG en fallback
+  loadPortfolio(igHandle);
 }
-// ═══════════════════ INSTAGRAM PORTFOLIO ════════════════════════════════════
+// ═══════════════════ PORTFOLIO — GRILLE INSTAGRAM-STYLE ═════════════════════
 /**
- * loadInstagramPortfolio(username)
+ * loadPortfolio(igHandle)
  *
- * Appelle GET /api/instagram/:username et remplace le skeleton loader
- * du portfolio par une grille 3 colonnes de photos Instagram.
+ * Stratégie en 2 temps :
+ *  1. Photos inkr Pro (uploadées par l'artiste via son dashboard)
+ *     → GET /api/artist-photos/by-instagram/:handle
+ *     → Affichées en priorité (grille 3 colonnes carrées, même DA qu'Instagram)
+ *  2. Si aucune photo inkr → photos Instagram (cache SQLite 24h)
+ *     → GET /api/instagram/:handle
+ *  3. Si tout échoue → lien vers profil Instagram
  *
- * Note dev : l'API backend (routes/instagram.js) gère le cache SQLite 24h.
- * Si Instagram bloque le fetch côté serveur, le status retourné sera 'error'
- * ou 'empty' et on affiche le lien de fallback.
+ * Note dev : routes/artist_photos.js + routes/instagram.js gèrent le backend.
  */
-async function loadInstagramPortfolio(username) {
+async function loadPortfolio(igHandle) {
   const container = document.getElementById('pm-portfolio-content');
   if (!container) return;
-  try {
-    const res  = await fetch(`/api/instagram/${encodeURIComponent(username)}`);
-    const data = await res.json();
 
-    if (!res.ok || !data.posts || data.posts.length === 0) {
-      // Fallback : lien Instagram classique
-      container.innerHTML = `
-        <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:12px;padding:20px;text-align:center;color:var(--g3);font-size:14px;">
-          Voir les œuvres sur Instagram :
-          <a href="https://instagram.com/${username}" target="_blank"
-             style="color:#a78bfa;font-weight:600;">@${username}</a>
-        </div>`;
-      return;
-    }
-
-    // Grille 3 colonnes
-    const igProfileUrl = `https://www.instagram.com/${username}/`;
-    container.innerHTML = `
-      <div class="ig-grid">
-        ${data.posts.map(p => `
-          <a class="ig-cell" href="${p.link}" target="_blank" rel="noopener" title="${p.caption ? p.caption.replace(/"/g,'&quot;') : '@'+username}">
-            <img src="${p.thumbnail}" alt="Post Instagram @${username}" loading="lazy"
-                 onerror="this.closest('.ig-cell').style.display='none'"/>
-            ${p.isVideo ? '<div class="ig-video-badge">▶</div>' : ''}
-          </a>`).join('')}
-      </div>
-      <div style="text-align:center;margin-top:10px;">
-        <a href="${igProfileUrl}" target="_blank" rel="noopener"
-           style="font-size:13px;color:#a78bfa;text-decoration:none;font-weight:600;">
-          📸 Voir tout le portfolio sur Instagram (@${username})
-        </a>
-      </div>`;
-  } catch (e) {
-    // Fallback silencieux en cas d'erreur réseau
-    if (container) container.innerHTML = `
-      <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:12px;padding:20px;text-align:center;color:var(--g3);font-size:14px;">
-        Voir les œuvres sur Instagram :
-        <a href="https://instagram.com/${username}" target="_blank"
-           style="color:#a78bfa;font-weight:600;">@${username}</a>
-      </div>`;
+  // ── Étape 1 : photos inkr Pro ──────────────────────────────────────────────
+  if (igHandle) {
+    try {
+      const r = await fetch(`/api/artist-photos/by-instagram/${encodeURIComponent(igHandle)}`);
+      const inkrPhotos = r.ok ? await r.json() : [];
+      if (inkrPhotos.length > 0) {
+        renderPhotoGrid(container, inkrPhotos.map(p => ({
+          thumbnail: p.url,
+          link:      p.url,
+          caption:   p.caption || '',
+          isVideo:   false,
+          source:    'inkr',
+        })), igHandle, true);
+        return;
+      }
+    } catch (_) {}
   }
+
+  // ── Étape 2 : photos Instagram via cache backend ───────────────────────────
+  if (igHandle) {
+    try {
+      const res  = await fetch(`/api/instagram/${encodeURIComponent(igHandle)}`);
+      const data = await res.json();
+      if (res.ok && data.posts && data.posts.length > 0) {
+        renderPhotoGrid(container, data.posts, igHandle, false);
+        return;
+      }
+    } catch (_) {}
+  }
+
+  // ── Étape 3 : fallback lien Instagram ─────────────────────────────────────
+  container.innerHTML = igHandle
+    ? `<div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:12px;padding:20px;text-align:center;color:var(--g3);font-size:14px;">
+        Voir les œuvres sur Instagram :
+        <a href="https://instagram.com/${igHandle}" target="_blank" style="color:#a78bfa;font-weight:600;">@${igHandle}</a>
+       </div>`
+    : `<div style="background:var(--off);border-radius:12px;padding:24px;text-align:center;color:var(--g3);font-size:14px;">Photos de travaux à venir</div>`;
+}
+
+/**
+ * renderPhotoGrid(container, photos, igHandle, isInkr)
+ *
+ * Affiche une grille 3 colonnes carrée style Instagram.
+ * isInkr = true → pas de lien Instagram affiché en bas
+ */
+function renderPhotoGrid(container, photos, igHandle, isInkr) {
+  const igProfileUrl = `https://www.instagram.com/${igHandle}/`;
+  container.innerHTML = `
+    <div class="ig-grid">
+      ${photos.map(p => `
+        <a class="ig-cell" href="${isInkr ? p.thumbnail : p.link}" target="_blank" rel="noopener"
+           title="${(p.caption || '').replace(/"/g,'&quot;') || '@'+igHandle}">
+          <img src="${p.thumbnail}" alt="Portfolio @${igHandle}" loading="lazy"
+               onerror="this.closest('.ig-cell').style.display='none'"/>
+          ${p.isVideo ? '<div class="ig-video-badge">▶</div>' : ''}
+        </a>`).join('')}
+    </div>
+    ${isInkr
+      ? `<div style="text-align:center;margin-top:10px;font-size:12px;color:var(--g4);">📸 Photos uploadées sur inkr</div>`
+      : `<div style="text-align:center;margin-top:10px;">
+           <a href="${igProfileUrl}" target="_blank" rel="noopener"
+              style="font-size:13px;color:#a78bfa;text-decoration:none;font-weight:600;">
+             📸 Voir tout le portfolio sur Instagram (@${igHandle})
+           </a>
+         </div>`
+    }`;
 }
 
 function selectDay(el,date){
