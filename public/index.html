@@ -447,7 +447,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 .mm-send{padding:10px 18px;border-radius:980px;font-size:13px;font-weight:600;background:var(--black);color:white;border:none;cursor:pointer;white-space:nowrap;transition:background .2s;}
 .mm-send:hover{background:var(--g1);}
 
-/* LOGIN MODAL */
+/* LOGIN MODAL (client + artiste) */
 .login-modal{background:white;border-radius:22px;width:100%;max-width:400px;padding:40px;position:relative;}
 .m-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;background:var(--off);border:none;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--g2);}
 .m-close:hover{background:var(--g5);}
@@ -455,6 +455,36 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 .m-sub{font-size:14px;color:var(--g3);margin-bottom:26px;}
 .m-sw{text-align:center;margin-top:16px;font-size:13px;color:var(--g3);}
 .m-sw a{color:var(--black);font-weight:600;cursor:pointer;text-decoration:underline;}
+
+/* ── Profil client — onglets ── */
+.cp-tab{padding:10px 18px;border:none;background:transparent;font-size:13px;font-weight:600;color:var(--g3);cursor:pointer;border-bottom:2.5px solid transparent;transition:all .2s;white-space:nowrap;}
+.cp-tab.active{color:var(--black);border-bottom-color:var(--black);}
+.cp-tab:hover:not(.active){color:var(--g2);}
+
+/* ── Avatar client (nav) ── */
+.client-avatar-btn{width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;font-size:13px;font-weight:700;color:white;display:flex;align-items:center;justify-content:center;transition:transform .2s;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+.client-avatar-btn:hover{transform:scale(1.08);}
+
+/* ── Card tatoueur suivi ── */
+.follow-card{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;background:var(--off);margin-bottom:8px;}
+.follow-card-info{flex:1;min-width:0;}
+.follow-card-name{font-size:14px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.follow-card-sub{font-size:12px;color:var(--g3);}
+
+/* ── Historique ── */
+.history-card{padding:14px;border-radius:12px;background:var(--off);margin-bottom:8px;border-left:3px solid var(--grad,#a855f7);}
+.history-card-title{font-size:14px;font-weight:600;color:var(--black);margin-bottom:2px;}
+.history-card-meta{font-size:12px;color:var(--g3);}
+
+/* ── Notification ── */
+.notif-item{display:flex;align-items:flex-start;gap:10px;padding:12px;border-radius:10px;margin-bottom:6px;transition:background .15s;}
+.notif-item.unread{background:rgba(168,85,247,.06);border-left:3px solid #a855f7;}
+.notif-item.read{background:transparent;border-left:3px solid #F0F0F0;}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:#a855f7;flex-shrink:0;margin-top:4px;}
+.notif-body{flex:1;}
+.notif-title{font-size:13px;font-weight:600;color:var(--black);margin-bottom:1px;}
+.notif-text{font-size:12px;color:var(--g3);}
+.notif-time{font-size:11px;color:var(--g4);margin-top:2px;}
 
 /* TOAST */
 .toast{position:fixed;bottom:24px;right:24px;z-index:99999;background:var(--black);color:white;padding:13px 18px;border-radius:13px;font-size:14px;font-weight:500;max-width:300px;box-shadow:0 8px 28px rgba(0,0,0,.22);transform:translateY(80px);opacity:0;transition:all .35s cubic-bezier(.25,.46,.45,.94);display:flex;align-items:center;gap:9px;}
@@ -717,82 +747,80 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   .footer-top { grid-template-columns: 1fr 1fr; }
 }
 
-/* ═══════════════════ HERO BLANC — PARTIE 1 ═══════════════════ */
+/* ═══════════════════ HERO PLEINE LARGEUR — cinématique ═══════════════════
+   Photo tatoueur en fond pleine largeur, texte + search overlayed à gauche.
+   Pour changer la photo : copier votre fichier dans public/images/hero-tatoueur.jpg
+   ══════════════════════════════════════════════════════════════════════════ */
 
-/* ── Hero split : centré horizontalement, texte gauche + photo droite ── */
+/* Section hero : occupe toute la largeur et hauteur d'écran */
 .hero-white {
+  position: relative;
+  width: 100%;
   min-height: 100vh;
-  background: #fff;
+  overflow: hidden;
   display: flex;
   align-items: center;
-  justify-content: center; /* centre horizontalement */
-  padding: 60px 56px;
-  position: relative;
-  overflow: hidden;
+  background: #0d0d0d; /* fallback si image absente */
 }
-.hero-white::before {
-  content: '';
+
+/* Photo de fond pleine largeur — chargée via <img> pour la SEO */
+.hw-bg {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 70% at 70% 50%, rgba(102,126,234,.06), transparent);
-  pointer-events: none;
-}
-/* Conteneur interne — limite la largeur + dispose les colonnes */
-.hw-inner {
-  max-width: 1200px;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 72px;
-  position: relative;
-  z-index: 1;
-}
-/* Colonne gauche */
-.hw-left {
-  flex: 1;
-  max-width: 560px;
-}
-/* Colonne droite — une seule photo en noir & blanc
-   Légère rotation au repos, se redresse au hover */
-.hw-right {
-  flex: 1;
-  max-width: 440px;
-  height: 560px;
-  border-radius: 32px;
-  overflow: hidden;
-  flex-shrink: 0;
-  position: relative;
-  background: #111;
-  box-shadow: 0 24px 80px rgba(0,0,0,.14);
-  transform: rotate(2deg);
-  transition: transform .8s cubic-bezier(.25,.46,.45,.94), box-shadow .8s;
-}
-.hw-right:hover {
-  transform: rotate(0deg);
-  box-shadow: 0 32px 100px rgba(0,0,0,.18);
-}
-.hw-right img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
-  /* Noir & blanc artistique — couleur au hover */
-  filter: grayscale(80%) contrast(1.08) brightness(.95);
-  transition: filter .5s ease, transform .5s ease;
-}
-.hw-right:hover img {
-  filter: grayscale(20%) contrast(1.04) brightness(1.02);
-  transform: scale(1.03);
+  object-position: 65% center;  /* sujet à droite, espace libre à gauche */
+  filter: grayscale(100%) contrast(1.12) brightness(0.72);
+  z-index: 0;
+  transition: filter 1s ease;
 }
 
-/* Badge "N°1" */
+/* Dégradé d'assombrissement : très sombre à gauche (lisibilité du texte),
+   transparent à droite (laisse voir la photo) */
+.hero-white::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(105deg,
+      rgba(0,0,0,.88) 0%,
+      rgba(0,0,0,.70) 30%,
+      rgba(0,0,0,.35) 55%,
+      rgba(0,0,0,.05) 80%,
+      transparent 100%
+    );
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Conteneur du contenu — large pour profiter de la pleine largeur */
+.hw-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* Colonne texte + search — plus large que l'ancienne version */
+.hw-left {
+  max-width: 820px;
+  width: 100%;
+}
+
+/* Badge "N°1" — verre frosted sur fond sombre */
 .hw-badge {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  background: #F7F7F7;
-  border: 1px solid #E8E8E8;
-  color: #555;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.22);
+  color: rgba(255,255,255,.80);
   padding: 7px 16px;
   border-radius: 980px;
   font-size: 11px;
@@ -800,39 +828,60 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   letter-spacing: .8px;
   text-transform: uppercase;
   margin-bottom: 28px;
+  backdrop-filter: blur(8px);
 }
 
-/* H1 */
+/* H1 — blanc sur fond sombre */
 .hw-h1 {
-  font-size: clamp(40px, 5.5vw, 72px);
+  font-size: clamp(42px, 6vw, 80px);
   font-weight: 700;
   letter-spacing: -3px;
-  line-height: 1.03;
-  color: #1A1A1A;
+  line-height: 1.02;
+  color: #fff;
   margin-bottom: 18px;
-  max-width: 560px;
+  max-width: 720px;
 }
 
-/* Subtitle */
+/* Sous-titre */
 .hw-sub {
-  font-size: 16px;
-  color: #717171;
+  font-size: 17px;
+  color: rgba(255,255,255,.72);
   line-height: 1.65;
   margin-bottom: 36px;
-  max-width: 440px;
+  max-width: 500px;
 }
 
-/* Barre de recherche style Airbnb */
+/* ── Barre de recherche : glass prismatique (Apple Vision Pro / Elements) ──
+   Technique : deux calques de background-clip pour créer une bordure gradient.
+   Le calque 1 (padding-box) = fond blanc. Le calque 2 (border-box) = gradient.
+   La bordure est "transparente" mais laisse voir le gradient derrière.
+   ─────────────────────────────────────────────────────────────────────────── */
 .search-bar {
   display: flex;
   align-items: stretch;
-  background: #fff;
-  border: 1.5px solid #DDDDDD;
   border-radius: 980px;
-  box-shadow: 0 4px 32px rgba(0,0,0,.10), 0 1px 4px rgba(0,0,0,.06);
-  max-width: 800px;
+  max-width: 860px;
   width: 100%;
   position: relative;
+  /* Fond blanc + bordure prismatique via double calque */
+  background:
+    linear-gradient(rgba(255,255,255,.98), rgba(255,255,255,.98)) padding-box,
+    conic-gradient(
+      from 200deg at 50% 120%,
+      #c084fc 0deg,
+      #818cf8 70deg,
+      #67e8f9 140deg,
+      #86efac 190deg,
+      #fde68a 250deg,
+      #fca5a5 300deg,
+      #f9a8d4 340deg,
+      #c084fc 360deg
+    ) border-box;
+  border: 1.5px solid transparent;
+  box-shadow:
+    0 8px 48px rgba(0,0,0,.28),
+    0 2px 8px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.9);
 }
 .sb-field {
   flex: 1;
@@ -907,15 +956,22 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   border-radius: 980px;
   font-size: 14px;
   font-weight: 700;
-  background: #1A1A1A;
+  /* Bouton CTA : gradient violet/rose comme la DA inkr */
+  background: linear-gradient(135deg, #a855f7, #ec4899);
   color: white;
   border: none;
   cursor: pointer;
-  transition: all .2s;
+  transition: all .25s;
   white-space: nowrap;
   flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(168,85,247,.4);
+  letter-spacing: .2px;
 }
-.sb-cta:hover { background: #333; transform: scale(1.02); }
+.sb-cta:hover {
+  background: linear-gradient(135deg, #9333ea, #db2777);
+  transform: scale(1.03);
+  box-shadow: 0 4px 20px rgba(168,85,247,.5);
+}
 
 /* Dropdown autocomplete ville (hero) */
 .hero-city-dd {
@@ -946,28 +1002,27 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 .hero-city-name { font-weight: 500; color: #1A1A1A; }
 .hero-city-cp { font-size: 12px; color: #ADADAD; }
 
-/* Responsive hero + search bar */
+/* Responsive hero pleine largeur */
+@media (max-width: 1200px) {
+  .hw-inner { padding: 0 48px; }
+}
 @media (max-width: 1024px) {
-  .hero-white { padding: 60px 32px; }
-  .hw-inner { gap: 40px; }
-  .hw-right { max-width: 360px; height: 460px; }
+  .hw-inner { padding: 0 40px; }
+  .hw-left { max-width: 680px; }
 }
 @media (max-width: 768px) {
-  .hero-white { padding: 48px 20px 60px; }
-  .hw-inner {
-    flex-direction: column;
-    gap: 36px;
-  }
+  .hw-inner { padding: 0 24px; }
   .hw-left { max-width: 100%; }
-  /* Sur mobile : image unique réduite et sans rotation */
-  .hw-right {
-    width: 100%;
-    max-width: 100%;
-    height: 300px;
-    transform: none;
-    border-radius: 20px;
+  .hero-white { min-height: 100svh; }
+  /* Sur mobile : dégradé plus fort pour que le texte reste lisible */
+  .hero-white::after {
+    background: linear-gradient(
+      160deg,
+      rgba(0,0,0,.90) 0%,
+      rgba(0,0,0,.80) 50%,
+      rgba(0,0,0,.55) 100%
+    );
   }
-  .hw-right:hover { transform: none; }
   .hw-h1 { font-size: clamp(36px, 10vw, 52px); letter-spacing: -2px; }
   .hw-sub { font-size: 15px; margin-bottom: 28px; }
   .search-bar { flex-direction: column; border-radius: 20px; }
@@ -1296,8 +1351,9 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
     <button class="nav-tab" onclick="showView('tournee')" id="tab-tournee">En tournée<span class="nav-new">✈</span></button>
     <button class="nav-tab" onclick="showView('blog')" id="tab-blog">Blog</button>
     <button class="nav-tab" onclick="goFlash()" id="tab-flash">Flash deals</button>
-    <div class="nav-r">
-      <button class="btn-out" onclick="openMo('login')">Se connecter</button>
+    <div class="nav-r" id="nav-right">
+      <!-- Bouton "Se connecter" — remplacé par l'avatar client si connecté (JS) -->
+      <button class="btn-out" id="btn-client-login" onclick="openMo('login')">Se connecter</button>
       <button class="btn-artiste" onclick="goToDashboard()">🎨 Espace artiste</button>
     </div>
   </div>
@@ -1314,19 +1370,26 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   <!-- Bandeau marketing — placé ici (dans #view-home) pour n'apparaître
        que sur la homepage. margin-top pousse sous la nav fixe. -->
   <div style="margin-top:var(--nav);background:linear-gradient(90deg,#667eea,#a855f7,#ec4899);text-align:center;padding:8px;font-size:12px;font-weight:700;color:white;letter-spacing:.8px;">🏆 PLATEFORME N°1 DES TATOUEURS EN EUROPE · +4 200 ARTISTES RÉFÉRENCÉS</div>
-  <!-- ════════════════════════════════════════════
-       HERO BLANC — version Airbnb/Doctolib
-       Fond blanc, centré, barre de recherche pill
-       ════════════════════════════════════════════ -->
-  <!-- ══════════════════════════════════════════
-       HERO : texte gauche + photos droite
-       ══════════════════════════════════════════ -->
+  <!-- ══════════════════════════════════════════════════════════════
+       HERO PLEINE LARGEUR — photo de fond cinématique
+       Pour changer la photo : enregistrer votre fichier dans
+         public/images/hero-tatoueur.jpg
+       (l'image doit faire min. 1800px de large pour un rendu optimal)
+       ══════════════════════════════════════════════════════════════ -->
   <section class="hero-white">
 
-    <!-- Conteneur centré max 1200px -->
-    <div class="hw-inner">
+    <!-- Photo de fond pleine largeur en noir & blanc
+         src principal : votre photo locale (public/images/)
+         fallback onerror : Unsplash si le fichier est absent -->
+    <img class="hw-bg"
+      src="/images/hero-tatoueur.jpg"
+      alt="Tatoueur au travail"
+      loading="eager"
+      onerror="this.src='https://images.unsplash.com/photo-1598371839696-5c5bb00bdc28?w=1800&h=1000&fit=crop&q=90'"
+    />
 
-    <!-- ── Colonne gauche ── -->
+    <!-- Contenu texte + recherche — superposé sur la photo -->
+    <div class="hw-inner">
     <div class="hw-left">
 
       <div class="hw-badge r">
@@ -1344,7 +1407,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
         Tous les styles, toutes les villes.
       </p>
 
-      <!-- Barre de recherche pill -->
+      <!-- Barre de recherche pill — large, effet glass prismatique -->
       <div class="search-bar r rd3" id="heroSearchBar">
         <div class="sb-field" id="sb-ville-field">
           <div class="sb-label">Où</div>
@@ -1383,19 +1446,6 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
       </div>
 
     </div><!-- /hw-left -->
-
-    <!-- ── Colonne droite : photo en noir & blanc ──
-         Remplacez le src par votre propre photo (idéalement 600×720px).
-         Si l'image ne charge pas, le fond #111 reste visible. -->
-    <div class="hw-right r rd2">
-      <img
-        src="https://images.unsplash.com/photo-1590236596-5e2d4b2f2e07?w=600&h=720&fit=crop&q=85"
-        alt="Tatouage artistique"
-        loading="lazy"
-        onerror="this.style.display='none'"
-      />
-    </div><!-- /hw-right -->
-
     </div><!-- /hw-inner -->
   </section>
 
@@ -1689,28 +1739,91 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   </div>
 </div>
 
+<!-- ══ MODAL COMPTE CLIENT ══════════════════════════════════════════════════
+     Onglets : Connexion | Créer un compte
+     Séparé des comptes artistes (Espace artiste).
+     Backend : /api/client/* (routes/client_auth.js)
+     ═══════════════════════════════════════════════════════════════════════ -->
 <div class="mo" id="mo-login">
-  <div class="login-modal">
+  <div class="login-modal" style="max-width:440px;">
     <button class="m-close" onclick="closeMo('login')">✕</button>
-    <div class="m-title">Bon retour 👋</div>
-    <div class="m-sub">Connecte-toi à ton compte inkr</div>
-    <div class="fg"><label class="fl">Email</label><input class="fi" type="email" placeholder="ton@email.com" id="li-email"/></div>
-    <div class="fg"><label class="fl">Mot de passe</label><input class="fi" type="password" placeholder="••••••••" id="li-pw"/></div>
-    <button class="fsub" onclick="handleLogin()">Se connecter</button>
-    <div class="m-sw">Pas de compte ? <a onclick="switchMo('login','register')">Créer un compte</a></div>
+
+    <!-- Logo + titre -->
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:32px;margin-bottom:4px;">🎨</div>
+      <div class="m-title" style="margin-bottom:4px;">Mon compte inkr</div>
+      <div class="m-sub">Accède à tes tatoueurs favoris et ton historique</div>
+    </div>
+
+    <!-- Onglets Connexion / Créer un compte -->
+    <div style="display:flex;background:#F5F5F5;border-radius:12px;padding:4px;gap:4px;margin-bottom:24px;" id="client-tabs">
+      <button id="tab-login-btn" onclick="switchClientTab('login')"
+        style="flex:1;padding:10px;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;background:white;color:#1A1A1A;box-shadow:0 1px 4px rgba(0,0,0,.1);">
+        Se connecter
+      </button>
+      <button id="tab-register-btn" onclick="switchClientTab('register')"
+        style="flex:1;padding:10px;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;background:transparent;color:#717171;">
+        Créer un compte
+      </button>
+    </div>
+
+    <!-- Formulaire Connexion -->
+    <div id="panel-login">
+      <div class="fg"><label class="fl">Email</label>
+        <input class="fi" type="email" placeholder="ton@email.com" id="cl-email" autocomplete="email"/>
+      </div>
+      <div class="fg"><label class="fl">Mot de passe</label>
+        <input class="fi" type="password" placeholder="••••••••" id="cl-pw" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter')clientLogin()"/>
+      </div>
+      <button class="fsub" onclick="clientLogin()">Connexion →</button>
+    </div>
+
+    <!-- Formulaire Créer un compte -->
+    <div id="panel-register" style="display:none;">
+      <div style="display:flex;gap:10px;">
+        <div class="fg" style="flex:1;margin-bottom:14px;"><label class="fl">Prénom</label>
+          <input class="fi" type="text" placeholder="Alex" id="cr-prenom" autocomplete="given-name"/>
+        </div>
+        <div class="fg" style="flex:1;margin-bottom:14px;"><label class="fl">Nom</label>
+          <input class="fi" type="text" placeholder="Dubois" id="cr-nom" autocomplete="family-name"/>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Email</label>
+        <input class="fi" type="email" placeholder="ton@email.com" id="cr-email" autocomplete="email"/>
+      </div>
+      <div class="fg"><label class="fl">Téléphone <span style="font-weight:400;color:#ADADAD;">(optionnel)</span></label>
+        <input class="fi" type="tel" placeholder="06 12 34 56 78" id="cr-tel" autocomplete="tel"/>
+      </div>
+      <div class="fg"><label class="fl">Mot de passe <span style="font-weight:400;color:#ADADAD;">(6 car. min.)</span></label>
+        <input class="fi" type="password" placeholder="••••••••" id="cr-pw" autocomplete="new-password"
+          onkeydown="if(event.key==='Enter')clientRegister()"/>
+      </div>
+      <button class="fsub" onclick="clientRegister()">Créer mon compte →</button>
+      <p style="font-size:11px;color:#ADADAD;text-align:center;margin-top:10px;">En créant un compte tu acceptes les CGU inkr</p>
+    </div>
   </div>
 </div>
 
-<div class="mo" id="mo-register">
-  <div class="login-modal">
-    <button class="m-close" onclick="closeMo('register')">✕</button>
-    <div class="m-title">Rejoins inkr ✦</div>
-    <div class="m-sub">Rejoins la plateforme N°1 · inkr Pro</div>
-    <div class="fg"><label class="fl">Prénom &amp; nom</label><input class="fi" type="text" placeholder="Alex Dubois" id="reg-name"/></div>
-    <div class="fg"><label class="fl">Email</label><input class="fi" type="email" placeholder="ton@email.com" id="reg-email"/></div>
-    <div class="fg"><label class="fl">Mot de passe</label><input class="fi" type="password" placeholder="Min. 8 caractères" id="reg-pw"/></div>
-    <button class="fsub" onclick="handleRegister()">Créer mon compte</button>
-    <div class="m-sw">Déjà un compte ? <a onclick="switchMo('register','login')">Se connecter</a></div>
+<!-- ══ MODAL PROFIL CLIENT ══════════════════════════════════════════════════ -->
+<div class="mo" id="mo-client-profile">
+  <div class="profile-modal" style="max-width:560px;">
+    <button class="pm-close" onclick="closeMo('client-profile')">✕</button>
+    <div id="cp-header" style="padding:28px 28px 0;"></div>
+
+    <!-- Onglets profil -->
+    <div style="display:flex;gap:0;border-bottom:1px solid #F0F0F0;padding:0 28px;margin-top:16px;" id="cp-tabs">
+      <button class="cp-tab active" onclick="switchCPTab('suivis')" id="cptab-suivis">💜 Suivis</button>
+      <button class="cp-tab" onclick="switchCPTab('historique')" id="cptab-historique">🕐 Historique</button>
+      <button class="cp-tab" onclick="switchCPTab('notifs')" id="cptab-notifs">🔔 Notifications</button>
+      <button class="cp-tab" onclick="switchCPTab('infos')" id="cptab-infos">⚙ Infos</button>
+    </div>
+
+    <div id="cp-body" style="overflow-y:auto;flex:1;padding:24px 28px;min-height:300px;max-height:55vh;"></div>
+
+    <div style="padding:16px 28px;border-top:1px solid #F0F0F0;">
+      <button onclick="clientLogout()" style="width:100%;padding:12px;border:1.5px solid #E0E0E0;border-radius:12px;background:transparent;color:#717171;font-size:14px;font-weight:600;cursor:pointer;">Se déconnecter</button>
+    </div>
   </div>
 </div>
 
@@ -3063,16 +3176,292 @@ function switchMo(from,to){closeMo(from);openMo(to);}
 document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.mo.open').forEach(m=>m.classList.remove('open'));});
 
+// handleLogin / handleRegister : pour les ARTISTES (Espace artiste)
 async function handleLogin(){
-  const email=document.getElementById('li-email').value,pw=document.getElementById('li-pw').value;
+  const email=document.getElementById('li-email')?.value,pw=document.getElementById('li-pw')?.value;
   if(!email||!pw){showToast('⚠️','Remplis tous les champs');return;}
   try{const r=await fetch('/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pw})});const d=await r.json();if(d.token){closeMo('login');showToast('✓','Connecté(e) !');setTimeout(()=>location.href='/dashboard',800);}else showToast('⚠️',d.error||'Email ou mot de passe incorrect');}catch{showToast('⚠️','Erreur réseau');}
 }
 async function handleRegister(){
-  const name=document.getElementById('reg-name').value,email=document.getElementById('reg-email').value,pw=document.getElementById('reg-pw').value;
+  const name=document.getElementById('reg-name')?.value,email=document.getElementById('reg-email')?.value,pw=document.getElementById('reg-pw')?.value;
   if(!name||!email||!pw){showToast('⚠️','Remplis tous les champs');return;}
   try{const r=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password:pw})});const d=await r.json();if(d.token){closeMo('register');showToast('✓','Compte créé ! Bienvenue 🎉');setTimeout(()=>location.href='/dashboard',800);}else showToast('⚠️',d.error||'Erreur lors de la création');}catch{showToast('⚠️','Erreur réseau');}
 }
+
+// ═══════════════════ COMPTE CLIENT ═══════════════════════════════════════════
+/**
+ * Système de compte client inkr (grand public).
+ * Séparé des comptes artistes. Cookie : inkr_client_token (httpOnly, géré serveur).
+ * Backend : /api/client/* (routes/client_auth.js)
+ */
+let _clientUser = null; // données du client connecté
+
+// ── Onglets du modal client login ──────────────────────────────────────────
+function switchClientTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('panel-login').style.display = isLogin ? '' : 'none';
+  document.getElementById('panel-register').style.display = isLogin ? 'none' : '';
+  const btnL = document.getElementById('tab-login-btn');
+  const btnR = document.getElementById('tab-register-btn');
+  btnL.style.background = isLogin ? 'white' : 'transparent';
+  btnL.style.color = isLogin ? '#1A1A1A' : '#717171';
+  btnL.style.fontWeight = isLogin ? '700' : '600';
+  btnL.style.boxShadow = isLogin ? '0 1px 4px rgba(0,0,0,.1)' : 'none';
+  btnR.style.background = isLogin ? 'transparent' : 'white';
+  btnR.style.color = isLogin ? '#717171' : '#1A1A1A';
+  btnR.style.fontWeight = isLogin ? '600' : '700';
+  btnR.style.boxShadow = isLogin ? 'none' : '0 1px 4px rgba(0,0,0,.1)';
+}
+
+// ── Connexion client ─────────────────────────────────────────────────────────
+async function clientLogin() {
+  const email = document.getElementById('cl-email').value.trim();
+  const pw    = document.getElementById('cl-pw').value;
+  if (!email || !pw) { showToast('⚠️', 'Remplis tous les champs'); return; }
+  try {
+    const r = await fetch('/api/client/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pw }),
+    });
+    const d = await r.json();
+    if (!r.ok) { showToast('⚠️', d.error || 'Email ou mot de passe incorrect'); return; }
+    _clientUser = d.client;
+    updateClientNav();
+    closeMo('login');
+    showToast('✓', `Bienvenue ${d.client.prenom} ! 🎨`);
+  } catch { showToast('⚠️', 'Erreur réseau'); }
+}
+
+// ── Inscription client ───────────────────────────────────────────────────────
+async function clientRegister() {
+  const prenom = document.getElementById('cr-prenom').value.trim();
+  const nom    = document.getElementById('cr-nom').value.trim();
+  const email  = document.getElementById('cr-email').value.trim();
+  const tel    = document.getElementById('cr-tel').value.trim();
+  const pw     = document.getElementById('cr-pw').value;
+  if (!prenom || !nom || !email || !pw) { showToast('⚠️', 'Remplis les champs obligatoires'); return; }
+  if (pw.length < 6) { showToast('⚠️', 'Le mot de passe doit faire 6 caractères minimum'); return; }
+  try {
+    const r = await fetch('/api/client/register', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prenom, nom, email, telephone: tel, password: pw }),
+    });
+    const d = await r.json();
+    if (!r.ok) { showToast('⚠️', d.error || 'Erreur lors de la création'); return; }
+    _clientUser = d.client;
+    updateClientNav();
+    closeMo('login');
+    showToast('🎉', `Compte créé ! Bienvenue ${d.client.prenom} !`);
+  } catch { showToast('⚠️', 'Erreur réseau'); }
+}
+
+// ── Déconnexion client ───────────────────────────────────────────────────────
+async function clientLogout() {
+  try { await fetch('/api/client/logout', { method: 'POST' }); } catch {}
+  _clientUser = null;
+  updateClientNav();
+  closeMo('client-profile');
+  showToast('✓', 'Déconnecté(e)');
+}
+
+// ── Met à jour le bouton nav selon l'état de connexion ───────────────────────
+function updateClientNav() {
+  const btn = document.getElementById('btn-client-login');
+  if (!btn) return;
+  if (_clientUser) {
+    // Avatar avec initiales + couleur personnalisée
+    btn.innerHTML = `<span class="client-avatar-btn"
+      style="background:${_clientUser.avatar_color};width:34px;height:34px;"
+      title="${_clientUser.prenom} ${_clientUser.nom}">${_clientUser.initials}</span>`;
+    btn.className = '';
+    btn.style.cssText = 'background:none;border:none;padding:0;cursor:pointer;';
+    btn.onclick = () => openClientProfile();
+  } else {
+    btn.innerHTML = 'Se connecter';
+    btn.className = 'btn-out';
+    btn.style.cssText = '';
+    btn.onclick = () => openMo('login');
+  }
+}
+
+// ── Vérifie la session au chargement ─────────────────────────────────────────
+async function checkClientSession() {
+  try {
+    const r = await fetch('/api/client/me');
+    if (r.ok) { _clientUser = await r.json(); updateClientNav(); }
+  } catch {}
+}
+
+// ── Ouvre le profil client ───────────────────────────────────────────────────
+async function openClientProfile() {
+  if (!_clientUser) { openMo('login'); return; }
+  // Header
+  document.getElementById('cp-header').innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:${_clientUser.avatar_color};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:white;flex-shrink:0;">${_clientUser.initials}</div>
+      <div>
+        <div style="font-size:18px;font-weight:700;letter-spacing:-.3px;">${_clientUser.prenom} ${_clientUser.nom}</div>
+        <div style="font-size:13px;color:var(--g3);">${_clientUser.email}</div>
+      </div>
+    </div>`;
+  openMo('client-profile');
+  switchCPTab('suivis');
+}
+
+// ── Onglets du profil client ──────────────────────────────────────────────────
+async function switchCPTab(tab) {
+  document.querySelectorAll('.cp-tab').forEach(b => b.classList.remove('active'));
+  const active = document.getElementById(`cptab-${tab}`);
+  if (active) active.classList.add('active');
+  const body = document.getElementById('cp-body');
+  body.innerHTML = '<div style="text-align:center;padding:40px;color:var(--g3);">Chargement…</div>';
+
+  if (tab === 'suivis') {
+    const r = await fetch('/api/client/follows');
+    const data = r.ok ? await r.json() : [];
+    if (!data.length) {
+      body.innerHTML = `<div style="text-align:center;padding:40px;color:var(--g3);">
+        <div style="font-size:32px;margin-bottom:8px;">💜</div>
+        <div>Aucun tatoueur suivi pour l'instant.<br><span style="font-size:13px;">Explore les profils et clique "Suivre" !</span></div>
+      </div>`;
+    } else {
+      body.innerHTML = data.map(f => {
+        const nom = f.nom_commercial || f.nom || 'Artiste';
+        const ig = f.instagram ? `@${f.instagram.replace('@','')}` : '';
+        return `<div class="follow-card" onclick="closeMo('client-profile');openProfile(${f.tatoueur_id})">
+          <div style="width:40px;height:40px;border-radius:50%;background:${artistGradient(nom)};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0;">${artistInitials(nom)}</div>
+          <div class="follow-card-info">
+            <div class="follow-card-name">${nom}</div>
+            <div class="follow-card-sub">📍 ${f.ville||''}${ig?' · '+ig:''}</div>
+          </div>
+          <button onclick="event.stopPropagation();clientUnfollow(${f.tatoueur_id},this)" style="font-size:12px;padding:5px 10px;border:1px solid #E0E0E0;border-radius:8px;background:white;cursor:pointer;color:var(--g3);">Retirer</button>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  else if (tab === 'historique') {
+    const r = await fetch('/api/client/history');
+    const data = r.ok ? await r.json() : [];
+    body.innerHTML = `
+      <button onclick="openAddHistoryForm()" style="width:100%;padding:10px;border:1.5px dashed #D0D0D0;border-radius:12px;background:transparent;color:var(--g3);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:14px;">+ Ajouter une séance</button>
+      ${!data.length ? `<div style="text-align:center;padding:24px;color:var(--g3);font-size:14px;">Aucune séance enregistrée</div>` :
+        data.map(h => `<div class="history-card">
+          <div class="history-card-title">Chez ${h.tatoueur_nom}${h.zone_corps?' · '+h.zone_corps:''}</div>
+          <div class="history-card-meta">${h.date_seance||'Date non renseignée'}${h.description?' — '+h.description:''}</div>
+          <button onclick="deleteHistory(${h.id},this)" style="margin-top:6px;font-size:11px;color:#ADADAD;background:none;border:none;cursor:pointer;padding:0;">Supprimer</button>
+        </div>`).join('')
+      }`;
+  }
+
+  else if (tab === 'notifs') {
+    const r = await fetch('/api/client/notifications');
+    const { notifications=[], unread=0 } = r.ok ? await r.json() : {};
+    if (unread > 0) {
+      await fetch('/api/client/notifications/read-all', { method: 'PUT' });
+    }
+    body.innerHTML = !notifications.length
+      ? `<div style="text-align:center;padding:40px;color:var(--g3);"><div style="font-size:32px;margin-bottom:8px;">🔔</div><div>Aucune notification pour l'instant</div></div>`
+      : notifications.map(n => `
+        <div class="notif-item ${n.is_read?'read':'unread'}">
+          ${!n.is_read ? '<div class="notif-dot"></div>' : '<div style="width:8px;flex-shrink:0;"></div>'}
+          <div class="notif-body">
+            <div class="notif-title">${n.title}</div>
+            <div class="notif-text">${n.body||''}</div>
+            <div class="notif-time">${new Date(n.created_at).toLocaleDateString('fr-FR')}</div>
+          </div>
+        </div>`).join('');
+  }
+
+  else if (tab === 'infos') {
+    body.innerHTML = `
+      <div class="fg"><label class="fl">Prénom</label><input class="fi" type="text" id="cp-prenom" value="${_clientUser.prenom||''}"/></div>
+      <div class="fg"><label class="fl">Nom</label><input class="fi" type="text" id="cp-nom" value="${_clientUser.nom||''}"/></div>
+      <div class="fg"><label class="fl">Téléphone</label><input class="fi" type="tel" id="cp-tel" value="${_clientUser.telephone||''}"/></div>
+      <div class="fg"><label class="fl">Email</label><input class="fi" type="email" value="${_clientUser.email||''}" disabled style="color:var(--g3);"/></div>
+      <button class="fsub" onclick="saveClientProfile()" style="margin-top:6px;">Enregistrer</button>`;
+  }
+}
+
+// ── Actions profil client ─────────────────────────────────────────────────────
+async function clientUnfollow(tatoueurId, btn) {
+  const r = await fetch(`/api/client/follow/${tatoueurId}`, { method: 'DELETE' });
+  if (r.ok) { btn.closest('.follow-card').remove(); showToast('✓', 'Retiré de tes suivis'); }
+}
+
+async function deleteHistory(id, btn) {
+  const r = await fetch(`/api/client/history/${id}`, { method: 'DELETE' });
+  if (r.ok) { btn.closest('.history-card').remove(); showToast('✓', 'Séance supprimée'); }
+}
+
+async function saveClientProfile() {
+  const prenom = document.getElementById('cp-prenom').value.trim();
+  const nom    = document.getElementById('cp-nom').value.trim();
+  const tel    = document.getElementById('cp-tel').value.trim();
+  const r = await fetch('/api/client/profile', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prenom, nom, telephone: tel }),
+  });
+  if (r.ok) {
+    const d = await r.json();
+    _clientUser = d.client;
+    updateClientNav();
+    showToast('✓', 'Profil mis à jour !');
+  } else showToast('⚠️', 'Erreur lors de la sauvegarde');
+}
+
+function openAddHistoryForm() {
+  const body = document.getElementById('cp-body');
+  body.insertAdjacentHTML('afterbegin', `
+    <div id="add-history-form" style="background:var(--off);border-radius:12px;padding:14px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:700;margin-bottom:10px;">Nouvelle séance</div>
+      <div class="fg"><label class="fl">Nom du tatoueur *</label><input class="fi" type="text" id="ah-tnom" placeholder="Sophie Martin"/></div>
+      <div class="fg"><label class="fl">Date</label><input class="fi" type="date" id="ah-date"/></div>
+      <div class="fg"><label class="fl">Zone du corps</label><input class="fi" type="text" id="ah-zone" placeholder="Bras, dos, cheville…"/></div>
+      <div class="fg"><label class="fl">Description</label><input class="fi" type="text" id="ah-desc" placeholder="Fleur de lotus en fineline"/></div>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="fsub" style="flex:1;padding:10px;" onclick="submitHistory()">Ajouter</button>
+        <button onclick="document.getElementById('add-history-form').remove()" style="flex:1;padding:10px;border:1.5px solid #E0E0E0;border-radius:980px;background:transparent;cursor:pointer;font-size:13px;">Annuler</button>
+      </div>
+    </div>`);
+}
+
+async function submitHistory() {
+  const tatoueur_nom = document.getElementById('ah-tnom').value.trim();
+  const date_seance  = document.getElementById('ah-date').value;
+  const zone_corps   = document.getElementById('ah-zone').value.trim();
+  const description  = document.getElementById('ah-desc').value.trim();
+  if (!tatoueur_nom) { showToast('⚠️', 'Le nom du tatoueur est requis'); return; }
+  const r = await fetch('/api/client/history', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tatoueur_nom, date_seance, zone_corps, description }),
+  });
+  if (r.ok) { showToast('🎨', 'Séance ajoutée !'); switchCPTab('historique'); }
+  else showToast('⚠️', 'Erreur lors de l\'ajout');
+}
+
+// ── Suivre / Ne plus suivre un artiste depuis sa fiche ─────────────────────
+// (remplace ou complète pmFollow qui utilise localStorage)
+async function pmFollowClient(tatoueurId, tatoueurNom, btn) {
+  if (!_clientUser) {
+    openMo('login');
+    return;
+  }
+  // Toggle : si déjà suivi → unfollow, sinon follow
+  const isFollowing = btn.dataset.following === '1';
+  const method = isFollowing ? 'DELETE' : 'POST';
+  const r = await fetch(`/api/client/follow/${tatoueurId}`, { method });
+  if (r.ok) {
+    const d = await r.json();
+    btn.dataset.following = d.following ? '1' : '0';
+    btn.textContent = d.following ? '✓ Abonné(e)' : '+ Suivre';
+    btn.className = d.following ? 'pm-follow-btn following' : 'pm-follow-btn';
+    if (d.following) showToast('🔔', `Tu suis ${tatoueurNom} !`);
+  }
+}
+
+// ── Init au chargement de page ────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', checkClientSession);
 
 // ═══════════════════ DERMOGRAPHE → DASHBOARD ═══════════════════
 function goToDashboard(){

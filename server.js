@@ -22,6 +22,7 @@ app.use('/api/appointments', require('./routes/appointments'));
 app.use('/api/tournee', require('./routes/tournee'));
 app.use('/api/annuaire',   require('./routes/annuaire'));
 app.use('/api/instagram', require('./routes/instagram'));
+app.use('/api/client',    require('./routes/client_auth'));
 
 // ============ PAGES (no-cache pour forcer le rechargement) ============
 app.get('/', (req, res) => {
