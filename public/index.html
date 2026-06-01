@@ -1885,25 +1885,17 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 //      → Enregistre tes 9 photos dans ce dossier avec ces noms exacts
 //   2. Fallback : image Unsplash curated si le fichier local manque
 // ────────────────────────────────────────────────────────────────────────────
+// Images dans public/images/styles/{slug}.jpg — tes photos perso
 const STYLES_DATA = [
-  { slug:'japonais',    name:'Japonais',     filter:'Japonais',
-    fallback:'https://images.unsplash.com/photo-1519638831568-d9897f54ed69?w=300&h=400&fit=crop&q=80' },
-  { slug:'fineline',    name:'Fine Line',    filter:'Fine Line',
-    fallback:'https://images.unsplash.com/photo-1598476920014-aef79ceef14f?w=300&h=400&fit=crop&q=80' },
-  { slug:'realisme',    name:'Réalisme',     filter:'Réalisme',
-    fallback:'https://images.unsplash.com/photo-1574516149870-fd6b8b37b2e1?w=300&h=400&fit=crop&q=80' },
-  { slug:'geometrique', name:'Géométrique',  filter:'Géométrique',
-    fallback:'https://images.unsplash.com/photo-1590246815017-8e8e4b47b0db?w=300&h=400&fit=crop&q=80' },
-  { slug:'tribal',      name:'Tribal',       filter:'Tribal',
-    fallback:'https://images.unsplash.com/photo-1565058379802-bbe93b2f703a?w=300&h=400&fit=crop&q=80' },
-  { slug:'old-school',  name:'Old School',   filter:'Old School',
-    fallback:'https://images.unsplash.com/photo-1536743204816-0f3ec08acc0e?w=300&h=400&fit=crop&q=80' },
-  { slug:'aquarelle',   name:'Aquarelle',    filter:'Aquarelle',
-    fallback:'https://images.unsplash.com/photo-1590439471364-192aa70c0b53?w=300&h=400&fit=crop&q=80' },
-  { slug:'animaux',     name:'Animaux',      filter:'Animaux',
-    fallback:'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=300&h=400&fit=crop&q=80' },
-  { slug:'flash',       name:'Flash',        filter:'Flash',
-    fallback:'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?w=300&h=400&fit=crop&q=80' },
+  { slug:'japonais',    name:'Japonais',     filter:'Japonais'    },
+  { slug:'fineline',    name:'Fine Line',    filter:'Fine Line'   },
+  { slug:'realisme',    name:'Réalisme',     filter:'Réalisme'    },
+  { slug:'geometrique', name:'Géométrique',  filter:'Géométrique' },
+  { slug:'tribal',      name:'Tribal',       filter:'Tribal'      },
+  { slug:'old-school',  name:'Old School',   filter:'Old School'  },
+  { slug:'aquarelle',   name:'Aquarelle',    filter:'Aquarelle'   },
+  { slug:'animaux',     name:'Animaux',      filter:'Animaux'     },
+  { slug:'flash',       name:'Flash',        filter:'Flash'       },
 ];
 // activeStyles : tableau des slugs sélectionnés (multi-select)
 // [] = tous les styles
@@ -1939,7 +1931,7 @@ function renderStyleCards() {
       <img class="sc-photo"
            src="/images/styles/${s.slug}.jpg"
            alt="${s.name}" loading="lazy"
-           onerror="this.src='${s.fallback}';this.onerror=null;"/>
+           onerror="this.style.opacity='.15'"/>
       <div class="sc-overlay"></div>
       <span class="sc-name">${s.name}</span>
       <div class="sc-check">✓</div>
