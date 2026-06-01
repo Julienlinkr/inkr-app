@@ -370,6 +370,16 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none;}
 .pm-grid-item{border-radius:9px;overflow:hidden;aspect-ratio:1;background:var(--g5);cursor:pointer;}
 .pm-grid-item img{width:100%;height:100%;object-fit:cover;transition:transform .3s;}
 .pm-grid-item:hover img{transform:scale(1.05);}
+/* ── Grille Instagram Portfolio ───────────────────────────────── */
+.ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-radius:12px;overflow:hidden;}
+.ig-cell{display:block;position:relative;aspect-ratio:1;overflow:hidden;background:var(--g5);cursor:pointer;}
+.ig-cell img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s,filter .3s;}
+.ig-cell:hover img{transform:scale(1.05);filter:brightness(.85);}
+.ig-video-badge{position:absolute;top:6px;right:7px;background:rgba(0,0,0,.55);color:white;font-size:11px;padding:2px 5px;border-radius:5px;pointer-events:none;}
+/* Skeleton loader (3×3 grille animate) */
+.ig-skeleton-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-radius:12px;overflow:hidden;}
+.ig-skeleton-cell{aspect-ratio:1;background:linear-gradient(90deg,var(--g6) 25%,var(--off) 50%,var(--g6) 75%);background-size:200% 100%;animation:ig-shimmer 1.4s infinite;}
+@keyframes ig-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .reviews-list{display:flex;flex-direction:column;gap:12px;}
 .review{display:flex;gap:12px;padding:14px;background:var(--off);border-radius:12px;}
 .review-av{width:36px;height:36px;border-radius:50%;overflow:hidden;background:var(--g5);flex-shrink:0;}
@@ -2828,9 +2838,18 @@ function openProfile(id){
     </div>`;
   const days=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'],dates=[16,17,18,19,20,21,22],full=[18,21];
   const bioText=a.bio||`Studio de tatouage basé à ${a.city}. ${a.adresse?'Adresse : '+a.adresse+'. ':''}Contactez via Instagram ou par téléphone pour prendre rendez-vous.`;
-  const portfolioSection=a.instagram?
-    `<div class="pm-section"><div class="pm-section-title">Portfolio</div><div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:12px;padding:20px;text-align:center;color:var(--g3);font-size:14px;">Voir les œuvres sur Instagram : <a href="https://instagram.com/${a.instagram.replace('@','')}" target="_blank" style="color:#a78bfa;font-weight:600;">@${a.instagram.replace('@','')}</a></div></div>`
-    :`<div class="pm-section"><div class="pm-section-title">Portfolio</div><div style="background:var(--off);border-radius:12px;padding:20px;text-align:center;color:var(--g3);font-size:14px;">Photos de travaux à venir</div></div>`;
+  // Portfolio : skeleton loader pendant le fetch Instagram
+  const igHandle = a.instagram ? a.instagram.replace('@','') : '';
+  const portfolioSection = `
+    <div class="pm-section" id="pm-portfolio">
+      <div class="pm-section-title">Portfolio</div>
+      <div id="pm-portfolio-content">
+        ${igHandle
+          ? `<div class="ig-skeleton-wrap">${Array(9).fill('<div class="ig-skeleton-cell"></div>').join('')}</div>`
+          : `<div style="background:var(--off);border-radius:12px;padding:20px;text-align:center;color:var(--g3);font-size:14px;">Photos de travaux à venir</div>`
+        }
+      </div>
+    </div>`;
   document.getElementById('pmBody').innerHTML=`
     <div class="pm-section"><div class="pm-section-title">À propos</div><div class="pm-bio">${bioText}</div></div>
     ${portfolioSection}
@@ -2840,12 +2859,71 @@ function openProfile(id){
         ${a.adresse?`<div>📍 ${a.adresse}${a.cp?' — '+a.cp:''}, ${a.city}</div>`:`<div>📍 ${a.city}</div>`}
         ${a.telephone?`<div>📞 <a href="tel:${a.telephone}" style="color:inherit;">${a.telephone}</a></div>`:''}
         ${a.email?`<div>✉️ <a href="mailto:${a.email}" style="color:#a78bfa;">${a.email}</a></div>`:''}
-        ${a.instagram?`<div>📸 <a href="https://instagram.com/${a.instagram.replace('@','')}" target="_blank" style="color:#a78bfa;">${a.instagram}</a></div>`:''}
+        ${a.instagram?`<div>📸 <a href="https://instagram.com/${igHandle}" target="_blank" style="color:#a78bfa;">${a.instagram}</a></div>`:''}
         ${a.site_web?`<div>🌐 <a href="${a.site_web}" target="_blank" style="color:#a78bfa;">${a.site_web}</a></div>`:''}
       </div>
     </div>`;
   openMo('profile');
+  // Lance le fetch des posts Instagram en arrière-plan si l'artiste a un compte
+  if (igHandle) loadInstagramPortfolio(igHandle);
 }
+// ═══════════════════ INSTAGRAM PORTFOLIO ════════════════════════════════════
+/**
+ * loadInstagramPortfolio(username)
+ *
+ * Appelle GET /api/instagram/:username et remplace le skeleton loader
+ * du portfolio par une grille 3 colonnes de photos Instagram.
+ *
+ * Note dev : l'API backend (routes/instagram.js) gère le cache SQLite 24h.
+ * Si Instagram bloque le fetch côté serveur, le status retourné sera 'error'
+ * ou 'empty' et on affiche le lien de fallback.
+ */
+async function loadInstagramPortfolio(username) {
+  const container = document.getElementById('pm-portfolio-content');
+  if (!container) return;
+  try {
+    const res  = await fetch(`/api/instagram/${encodeURIComponent(username)}`);
+    const data = await res.json();
+
+    if (!res.ok || !data.posts || data.posts.length === 0) {
+      // Fallback : lien Instagram classique
+      container.innerHTML = `
+        <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:12px;padding:20px;text-align:center;color:var(--g3);font-size:14px;">
+          Voir les œuvres sur Instagram :
+          <a href="https://instagram.com/${username}" target="_blank"
+             style="color:#a78bfa;font-weight:600;">@${username}</a>
+        </div>`;
+      return;
+    }
+
+    // Grille 3 colonnes
+    const igProfileUrl = `https://www.instagram.com/${username}/`;
+    container.innerHTML = `
+      <div class="ig-grid">
+        ${data.posts.map(p => `
+          <a class="ig-cell" href="${p.link}" target="_blank" rel="noopener" title="${p.caption ? p.caption.replace(/"/g,'&quot;') : '@'+username}">
+            <img src="${p.thumbnail}" alt="Post Instagram @${username}" loading="lazy"
+                 onerror="this.closest('.ig-cell').style.display='none'"/>
+            ${p.isVideo ? '<div class="ig-video-badge">▶</div>' : ''}
+          </a>`).join('')}
+      </div>
+      <div style="text-align:center;margin-top:10px;">
+        <a href="${igProfileUrl}" target="_blank" rel="noopener"
+           style="font-size:13px;color:#a78bfa;text-decoration:none;font-weight:600;">
+          📸 Voir tout le portfolio sur Instagram (@${username})
+        </a>
+      </div>`;
+  } catch (e) {
+    // Fallback silencieux en cas d'erreur réseau
+    if (container) container.innerHTML = `
+      <div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.2);border-radius:12px;padding:20px;text-align:center;color:var(--g3);font-size:14px;">
+        Voir les œuvres sur Instagram :
+        <a href="https://instagram.com/${username}" target="_blank"
+           style="color:#a78bfa;font-weight:600;">@${username}</a>
+      </div>`;
+  }
+}
+
 function selectDay(el,date){
   document.querySelectorAll('.pm-day').forEach(d=>d.classList.remove('selected'));
   el.classList.add('selected');
