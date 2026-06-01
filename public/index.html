@@ -1053,13 +1053,16 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   text-transform: uppercase;
   margin-bottom: 18px;
 }
-/* Grille de cartes photo — scroll horizontal sur desktop */
+/* Grille de cartes photo — scroll horizontal */
 .styles-row {
   display: flex;
   gap: 12px;
   overflow-x: auto;
+  overflow-y: visible;
   scrollbar-width: none;
-  padding-bottom: 4px;
+  padding: 12px 2px 8px; /* espace vertical pour les animations hover/active */
+  margin: -12px 0 -8px; /* compense le padding pour l'alignement visuel */
+  align-items: flex-end; /* base commune en bas → cartes alignées sur leur fond */
 }
 .styles-row::-webkit-scrollbar { display: none; }
 .style-card { flex-shrink: 0; width: 130px; }
@@ -1087,11 +1090,10 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   z-index: 2;
 }
 
-/* Active (sélectionné) : ring blanc + checkmark */
+/* Active (sélectionné) : ring coloré + checkmark, sans déplacement vertical */
 .style-card.sc-active {
-  border-color: #fff;
-  box-shadow: 0 0 0 3px #1A1A1A, 0 10px 28px rgba(0,0,0,.22);
-  transform: translateY(-6px) scale(1.02);
+  border-color: #a855f7;
+  box-shadow: 0 0 0 2px #a855f7, 0 8px 24px rgba(168,85,247,.3);
   z-index: 2;
 }
 /* Badge ✓ en haut à droite quand sélectionné */
