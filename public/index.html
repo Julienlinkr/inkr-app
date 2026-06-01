@@ -716,7 +716,8 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   background: #fff;
   display: flex;
   align-items: center;
-  padding: calc(var(--nav) + 60px) 56px 60px;
+  /* Le bandeau "N°1" au-dessus pousse déjà le hero sous la nav */
+  padding: 60px 56px 60px;
   position: relative;
   gap: 64px;
   overflow: hidden;
@@ -734,37 +735,38 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   max-width: 580px;
   z-index: 1;
 }
-/* Colonne droite — grille de photos tatouage */
+/* Colonne droite — une seule photo en noir & blanc
+   Légère rotation au repos, se redresse au hover */
 .hw-right {
   flex: 1;
-  max-width: 460px;
-  height: 500px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 10px;
-  transform: rotate(-2.5deg);
-  transition: transform .9s cubic-bezier(.25,.46,.45,.94);
-  flex-shrink: 0;
-}
-.hw-right:hover { transform: rotate(0deg); }
-.hw-photo {
-  border-radius: 18px;
+  max-width: 440px;
+  height: 560px;
+  border-radius: 32px;
   overflow: hidden;
-  background: #ddd;
+  flex-shrink: 0;
+  position: relative;
+  background: #111;
+  box-shadow: 0 24px 80px rgba(0,0,0,.14);
+  transform: rotate(2deg);
+  transition: transform .8s cubic-bezier(.25,.46,.45,.94), box-shadow .8s;
 }
-.hw-photo:nth-child(1) { border-radius: 52px 18px 18px 18px; }
-.hw-photo:nth-child(2) { border-radius: 18px 52px 18px 18px; margin-top: 26px; }
-.hw-photo:nth-child(3) { border-radius: 18px 18px 18px 52px; margin-top: -26px; }
-.hw-photo:nth-child(4) { border-radius: 18px 18px 52px 18px; }
-.hw-photo img {
+.hw-right:hover {
+  transform: rotate(0deg);
+  box-shadow: 0 32px 100px rgba(0,0,0,.18);
+}
+.hw-right img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform .5s;
   display: block;
+  /* Noir & blanc artistique — couleur au hover */
+  filter: grayscale(80%) contrast(1.08) brightness(.95);
+  transition: filter .5s ease, transform .5s ease;
 }
-.hw-photo:hover img { transform: scale(1.07); }
+.hw-right:hover img {
+  filter: grayscale(20%) contrast(1.04) brightness(1.02);
+  transform: scale(1.03);
+}
 
 /* Badge "N°1" */
 .hw-badge {
@@ -930,25 +932,24 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 /* Responsive hero + search bar */
 @media (max-width: 1024px) {
   .hero-white { gap: 40px; padding-left: 32px; padding-right: 32px; }
-  .hw-right { max-width: 360px; height: 420px; }
+  .hw-right { max-width: 360px; height: 460px; }
 }
 @media (max-width: 768px) {
   .hero-white {
     flex-direction: column;
-    padding: calc(var(--nav) + 48px) 20px 60px;
+    padding: 48px 20px 60px;
     gap: 36px;
   }
   .hw-left { max-width: 100%; }
+  /* Sur mobile : image unique réduite et sans rotation */
   .hw-right {
     width: 100%;
     max-width: 100%;
-    height: 280px;
+    height: 300px;
     transform: none;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: 1fr;
+    border-radius: 20px;
   }
   .hw-right:hover { transform: none; }
-  .hw-photo { border-radius: 14px !important; margin: 0 !important; }
   .hw-h1 { font-size: clamp(36px, 10vw, 52px); letter-spacing: -2px; }
   .hw-sub { font-size: 15px; margin-bottom: 28px; }
   .search-bar { flex-direction: column; border-radius: 20px; }
@@ -1276,7 +1277,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
     <button class="nav-tab" onclick="showView('map')" id="tab-map">🗺 Carte</button>
     <button class="nav-tab" onclick="showView('events')" id="tab-events">Événements<span class="nav-new">NEW</span></button>
     <button class="nav-tab" onclick="showView('tournee')" id="tab-tournee">En tournée<span class="nav-new">✈</span></button>
-    <button class="nav-tab" onclick="showView('blog')" id="tab-blog">Blog SEO</button>
+    <button class="nav-tab" onclick="showView('blog')" id="tab-blog">Blog</button>
     <button class="nav-tab" onclick="goFlash()" id="tab-flash">Flash deals</button>
     <div class="nav-r">
       <button class="btn-out" onclick="openMo('login')">Se connecter</button>
@@ -1284,9 +1285,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
     </div>
   </div>
 </nav>
-<div style="background:linear-gradient(90deg,#667eea,#a855f7,#ec4899);text-align:center;padding:7px;font-size:12px;font-weight:700;color:white;letter-spacing:.8px;">🏆 PLATEFORME N°1 DES TATOUEURS EN EUROPE · +4 200 ARTISTES RÉFÉRENCÉS</div>
-
-<!-- NOTIF BANNER -->
+<!-- NOTIF BANNER (global — toutes vues) -->
 <div class="notif-banner" id="notifBanner">
   <span>🔔</span><span id="notifText"></span>
   <button class="notif-banner-close" onclick="this.parentElement.classList.remove('show')">✕</button>
@@ -1294,6 +1293,10 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 
 <!-- ══ HOME ══ -->
 <div class="view active" id="view-home">
+
+  <!-- Bandeau marketing — placé ici (dans #view-home) pour n'apparaître
+       que sur la homepage. margin-top pousse sous la nav fixe. -->
+  <div style="margin-top:var(--nav);background:linear-gradient(90deg,#667eea,#a855f7,#ec4899);text-align:center;padding:8px;font-size:12px;font-weight:700;color:white;letter-spacing:.8px;">🏆 PLATEFORME N°1 DES TATOUEURS EN EUROPE · +4 200 ARTISTES RÉFÉRENCÉS</div>
   <!-- ════════════════════════════════════════════
        HERO BLANC — version Airbnb/Doctolib
        Fond blanc, centré, barre de recherche pill
@@ -1361,20 +1364,15 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 
     </div><!-- /hw-left -->
 
-    <!-- ── Colonne droite : grille 4 photos tatouage ── -->
+    <!-- ── Colonne droite : une belle photo en noir & blanc ──
+         Remplacez src par votre propre photo une fois disponible.
+         La photo d'origine est celle d'un tatoueur au travail. -->
     <div class="hw-right r rd2">
-      <div class="hw-photo">
-        <img src="https://loremflickr.com/500/600/tattoo,fineline,art?lock=201" alt="Fine Line" loading="lazy"/>
-      </div>
-      <div class="hw-photo">
-        <img src="https://loremflickr.com/500/600/tattoo,japanese,irezumi?lock=202" alt="Japonais" loading="lazy"/>
-      </div>
-      <div class="hw-photo">
-        <img src="https://loremflickr.com/500/600/tattoo,realism,portrait?lock=203" alt="Réalisme" loading="lazy"/>
-      </div>
-      <div class="hw-photo">
-        <img src="https://loremflickr.com/500/600/tattoo,blackwork,geometric?lock=204" alt="Blackwork" loading="lazy"/>
-      </div>
+      <img
+        src="https://images.unsplash.com/photo-1542827474-8d697abaa2ad?w=600&h=720&fit=crop&q=85"
+        alt="Artiste tatoueur au travail"
+        loading="lazy"
+      />
     </div><!-- /hw-right -->
 
   </section>
@@ -1462,24 +1460,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
     </div><!-- /split-wrap -->
   </section>
 
-  <section class="feat">
-    <div class="feat-i">
-      <div>
-        <div class="feat-tag r">Portfolios authentiques</div>
-        <h3 class="feat-h r rd1">Un portfolio.<br>Pas des photos<br>de stock.</h3>
-        <p class="feat-txt r rd2">Chaque artiste présente son vrai travail. Ce que tu vois est ce que tu obtiens.</p>
-        <span class="feat-link r rd3" onclick="document.getElementById('discover').scrollIntoView({behavior:'smooth'})">Parcourir les portfolios</span>
-      </div>
-      <div class="feat-vis r rd2">
-        <div class="pg">
-          <div class="pg-item"><img src="https://loremflickr.com/300/300/tattoo,art?lock=10" alt=""/></div>
-          <div class="pg-item"><img src="https://loremflickr.com/300/300/tattoo,ink?lock=11" alt=""/></div>
-          <div class="pg-item"><img src="https://loremflickr.com/300/300/tattoo,design?lock=12" alt=""/></div>
-          <div class="pg-item"><img src="https://loremflickr.com/300/300/tattoo,body?lock=13" alt=""/></div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <!-- Section "Portfolio authentique" supprimée (pas de contenu réel disponible) -->
 
   <section class="feat dk rev" id="sect-tournee-feat">
     <div class="feat-i">
@@ -1509,8 +1490,8 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   <section class="blog-section" id="sect-blog">
     <div class="blog-section-i">
       <div class="blog-head r">
-        <div><span class="stag">Blog &amp; SEO</span><h2 class="sh2" style="margin-bottom:0">Tout savoir sur le tatouage.</h2></div>
-        <button class="btn-more" onclick="showView('blog')" style="font-size:13px;padding:10px 20px">Voir les 150 articles →</button>
+        <div><span class="stag">Blog</span><h2 class="sh2" style="margin-bottom:0">Tout savoir sur le tatouage.</h2></div>
+        <button class="btn-more" onclick="showView('blog')" style="font-size:13px;padding:10px 20px">Voir tous les articles →</button>
       </div>
       <div class="blog-grid" id="blogPreview"></div>
     </div>
@@ -1604,7 +1585,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   <div class="blog-view">
     <div class="bv-hero">
       <span class="stag">Blog tatouage</span>
-      <h1>150 articles pour<br><span class="grad-text">tout savoir sur le tatouage.</span></h1>
+      <h1>Le guide complet<br><span class="grad-text">du tatouage en France.</span></h1>
       <p>Guides pratiques, tendances, réglementation, styles — le contenu de référence sur le tatouage en France.</p>
     </div>
     <div class="bv-grid" id="blogGrid"></div>
@@ -1836,12 +1817,12 @@ function filterByStyleCard(slug, el) {
   if (sel) sel.value = activeStyles.length === 1 ? activeStyles[0] : '';
 
   // Charger avec le premier style sélectionné comme filtre API
+  // Note : pas de scrollIntoView — l'utilisateur descend manuellement
   annuaireFilter.style = activeStyles[0] || '';
   loadArtists(true).then(() => {
     renderArtistsFiltered();
     updateSplitCount();
     rebuildHomeMapMarkers();
-    document.getElementById('discover').scrollIntoView({ behavior: 'smooth' });
   });
 }
 
@@ -1959,13 +1940,15 @@ function initHomeMap() {
   const el = document.getElementById('home-map');
   if (!el) return;
   homeMap = L.map('home-map', { zoomControl: true }).setView([46.5, 2.5], 6);
-  // Tuiles Carto Light (blanc / fond clair pour correspondre au design)
+  // Tuiles Carto Light (fond clair pour correspondre au design)
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '© OpenStreetMap © CARTO',
     maxZoom: 19
   }).addTo(homeMap);
   addHomeMapMarkers(ARTISTS);
   homeMapInited = true;
+  // invalidateSize est crucial quand le conteneur est sticky/hidden au départ
+  setTimeout(() => homeMap.invalidateSize(), 200);
 }
 
 function addHomeMapMarkers(artists) {
