@@ -2,6 +2,14 @@ const express = require('express');
 const router  = express.Router();
 const { db }  = require('../db/database');
 
+// ── Migration : ajout des colonnes optionnelles si elles n'existent pas encore ─
+// SQLite ne supporte pas IF NOT EXISTS sur ALTER TABLE → try/catch
+['auto_reply TEXT DEFAULT \'\'', 'bio TEXT DEFAULT \'\'', 'telephone TEXT DEFAULT \'\'',
+ 'email TEXT DEFAULT \'\'', 'site_web TEXT DEFAULT \'\'', 'adresse TEXT DEFAULT \'\'',
+ 'cp TEXT DEFAULT \'\''].forEach(col => {
+  try { db.exec(`ALTER TABLE tatoueurs ADD COLUMN ${col}`); } catch(_) {}
+});
+
 // Normalise un texte pour la comparaison (accents → ASCII, lowercase)
 function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim(); }
 
@@ -37,6 +45,7 @@ function toFront(t){
     bio:        t.bio || '',
     avail:      true,
     source:     t.source || 'import',
+    auto_reply: t.auto_reply || '',
   };
 }
 

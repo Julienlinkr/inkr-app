@@ -2926,11 +2926,20 @@ function filterMapQ(q){
 
 // ═══════════════════ PROFILE ═══════════════════
 let currentArtistId=null;
-function openProfile(id){
+async function openProfile(id){
   currentArtistId=id;
   const a=ARTISTS.find(x=>String(x.id)===String(id));if(!a)return;
-  const subs=JSON.parse(localStorage.getItem('inkr_subs')||'[]');
-  const following=subs.includes(String(id));
+  // Statut "suivi" : serveur si connecté, localStorage sinon
+  let following=false;
+  if(_clientUser){
+    try{
+      const r=await fetch('/api/client/follows');
+      if(r.ok){const list=await r.json();following=list.some(f=>String(f.tatoueur_id)===String(id));}
+    }catch(_){}
+  } else {
+    const subs=JSON.parse(localStorage.getItem('inkr_subs')||'[]');
+    following=subs.includes(String(id));
+  }
   const grad=artistGradient(a.name);
   const inits=artistInitials(a.name);
   const stylesHtml=a.style?.length?a.style.map(s=>`<span class="pm-tag">${s}</span>`).join(''):'';
@@ -3042,20 +3051,48 @@ function selectDay(el,date){
   el.classList.add('selected');
   document.getElementById('bk-date').value=`2025-06-${String(date).padStart(2,'0')}`;
 }
-function pmFollow(id,name,btn){
-  const sid=String(id);
-  let subs=JSON.parse(localStorage.getItem('inkr_subs')||'[]').map(String);
-  if(subs.includes(sid)){subs=subs.filter(s=>s!==sid);btn.textContent='+ Suivre';btn.className='pm-follow-btn';}
-  else{subs.push(sid);btn.textContent='✓ Abonné(e)';btn.className='pm-follow-btn following';showToast('🔔',`Tu suis ${name} !`);}
-  localStorage.setItem('inkr_subs',JSON.stringify(subs));
+// pmFollow : si le client est connecté → appel API serveur, sinon localStorage
+async function pmFollow(id,name,btn){
+  if(_clientUser){
+    // Client connecté : toggle via API → persisté en base
+    await pmFollowClient(id, name, btn);
+    // Sync aussi le localStorage pour la cohérence locale
+    const sid=String(id);
+    let subs=JSON.parse(localStorage.getItem('inkr_subs')||'[]').map(String);
+    if(btn.dataset.following==='1'){if(!subs.includes(sid)){subs.push(sid);}}
+    else{subs=subs.filter(s=>s!==sid);}
+    localStorage.setItem('inkr_subs',JSON.stringify(subs));
+  } else {
+    // Pas connecté : localStorage seulement + invite à se connecter
+    const sid=String(id);
+    let subs=JSON.parse(localStorage.getItem('inkr_subs')||'[]').map(String);
+    if(subs.includes(sid)){
+      subs=subs.filter(s=>s!==sid);
+      btn.textContent='+ Suivre';btn.className='pm-follow-btn';
+    } else {
+      subs.push(sid);
+      btn.textContent='✓ Abonné(e)';btn.className='pm-follow-btn following';
+      showToast('🔔',`Tu suis ${name} — crée un compte pour sauvegarder !`);
+    }
+    localStorage.setItem('inkr_subs',JSON.stringify(subs));
+  }
 }
 
 // ═══════════════════ BOOKING ═══════════════════
 let bookingArtist=null;
+let activeConversationId=null; // ID de la conversation en cours (en base si client connecté)
+
 function openBooking(id,name){
   bookingArtist=ARTISTS.find(a=>a.id===id);
   document.getElementById('bookingArtistName').textContent='avec '+name;
   document.getElementById('bk-date').min=new Date().toISOString().split('T')[0];
+  // Pré-remplir prénom/email si le client est connecté
+  if(_clientUser){
+    const pInput=document.getElementById('bk-prenom');
+    const eInput=document.getElementById('bk-email');
+    if(pInput&&!pInput.value)pInput.value=_clientUser.prenom||_clientUser.nom?.split(' ')[0]||'';
+    if(eInput&&!eInput.value)eInput.value=_clientUser.email||'';
+  }
   closeMo('profile');
   setTimeout(()=>openMo('booking'),200);
 }
@@ -3068,49 +3105,81 @@ function handleFiles(input){
     list.appendChild(chip);
   });
 }
-function submitBooking(){
-  const prenom=document.getElementById('bk-prenom').value;
-  const nom=document.getElementById('bk-nom').value;
-  const email=document.getElementById('bk-email').value;
-  const tel=document.getElementById('bk-tel').value;
+async function submitBooking(){
+  const prenom=document.getElementById('bk-prenom').value.trim();
+  const nom=document.getElementById('bk-nom').value.trim();
+  const email=document.getElementById('bk-email').value.trim();
   if(!prenom||!email){showToast('⚠️','Remplis au minimum le prénom et l\'email');return;}
   const a=bookingArtist;
+  const style=document.getElementById('bk-style').value;
+  const zone=document.getElementById('bk-zone').value;
+  const taille=document.getElementById('bk-taille').value;
+  const date=document.getElementById('bk-date').value;
+  const desc=document.getElementById('bk-desc')?.value||'';
+
+  // Message de réponse personnalisé de l'artiste (si dispo dans ARTISTS)
+  const autoReply = a?.auto_reply || '';
+
+  // ── Si le client est connecté → stocker la conversation en base ──────────
+  activeConversationId = null;
+  if(_clientUser){
+    try{
+      const r=await fetch('/api/client/conversations',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          tatoueur_id:    a.id,
+          tatoueur_nom:   a.name,
+          booking_style:  style,
+          booking_zone:   zone,
+          booking_taille: taille,
+          booking_date:   date,
+          booking_desc:   desc,
+          auto_reply:     autoReply,
+        }),
+      });
+      if(r.ok){const d=await r.json();activeConversationId=d.id;}
+    }catch(e){console.warn('[booking] Erreur stockage conversation:',e.message);}
+  }
+
   closeMo('booking');
   setTimeout(()=>{
-    // Open messenger
+    // ── Ouvrir la messagerie ──────────────────────────────────────────────
     document.getElementById('mmName').textContent=a.name;
     const mmAvImg=document.getElementById('mmAvatarImg');
     if(mmAvImg){mmAvImg.style.display='none';const mmAvWrap=mmAvImg.parentElement;if(mmAvWrap&&!mmAvWrap.querySelector('.mm-av-grad')){const gd=document.createElement('div');gd.className='mm-av-grad';gd.style=`width:100%;height:100%;background:${artistGradient(a.name)};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:rgba(255,255,255,.7);border-radius:50%;`;gd.textContent=artistInitials(a.name);mmAvWrap.appendChild(gd);}}
-    document.getElementById('mmSummary').innerHTML=`<strong>Demande envoyée</strong> — ${document.getElementById('bk-style').value}, ${document.getElementById('bk-zone').value}, ${document.getElementById('bk-taille').value}. Date : ${document.getElementById('bk-date').value||'à définir'}`;
+    document.getElementById('mmSummary').innerHTML=`<strong>Demande envoyée</strong> — ${style}, ${zone}, ${taille}. Date : ${date||'à définir'}`;
     const msgs=document.getElementById('mmMessages');
     const avDiv=`<div style="width:32px;height:32px;border-radius:50%;background:${artistGradient(a.name)};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:rgba(255,255,255,.7);flex-shrink:0;">${artistInitials(a.name)}</div>`;
+    // Message de réponse : personnalisé si dispo, sinon message par défaut
+    const replyText = autoReply ||
+      `Bonjour ${prenom} ! J'ai bien reçu ta demande 🎨 Je reviendrai vers toi dans les 48h pour qu'on discute de ton projet. Tu peux m'envoyer d'autres références ici si tu en as.\n\nÀ très vite ! ✌️`;
     msgs.innerHTML=`
       <div class="msg in">
         <div class="mm-avatar">${avDiv}</div>
-        <div><div class="msg-time">${a.name}</div><div class="msg-bubble">Bonjour ${prenom} ! J'ai bien reçu ta demande 🎨 Je reviendrai vers toi dans les 48h pour qu'on discute de ton projet. Tu peux m'envoyer d'autres références ici si tu en as.</div></div>
-      </div>
-      <div class="msg in">
-        <div class="mm-avatar">${avDiv}</div>
-        <div><div class="msg-bubble">À très vite ! ✌️</div></div>
+        <div><div class="msg-time">${a.name}</div><div class="msg-bubble" style="white-space:pre-wrap;">${replyText.replace(/</g,'&lt;')}</div></div>
       </div>`;
     openMo('messenger');
     showToast('✓','Demande envoyée ! Réponse sous 48h via inkr messagerie.');
   },250);
 }
-function sendMsg(){
+async function sendMsg(){
   const input=document.getElementById('mmInput');
   const text=input.value.trim();if(!text)return;
   const msgs=document.getElementById('mmMessages');
-  msgs.innerHTML+=`<div class="msg out"><div><div class="msg-bubble">${text}</div></div></div>`;
+  msgs.innerHTML+=`<div class="msg out"><div><div class="msg-bubble">${text.replace(/</g,'&lt;')}</div></div></div>`;
   input.value='';msgs.scrollTop=msgs.scrollHeight;
-  setTimeout(()=>{
-    const replies=['Super, je prends note 👍','C\'est noté ! On en parlera lors de la prise de rdv.','Parfait, ça m\'aide beaucoup. Je reviens vers toi vite !','Merci pour les détails, le projet est super intéressant 🔥'];
-    const a=bookingArtist;
-    const ra=bookingArtist;
-    const ravDiv=ra?`<div style="width:32px;height:32px;border-radius:50%;background:${artistGradient(ra.name)};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:rgba(255,255,255,.7);flex-shrink:0;">${artistInitials(ra.name)}</div>`:'<div class="mm-avatar" style="width:32px;height:32px;border-radius:50%;background:#333;"></div>';
-    msgs.innerHTML+=`<div class="msg in"><div class="mm-avatar">${ravDiv}</div><div><div class="msg-bubble">${replies[Math.floor(Math.random()*replies.length)]}</div></div></div>`;
-    msgs.scrollTop=msgs.scrollHeight;
-  },1200);
+
+  // ── Persister le message en base si la conversation est sauvegardée ───────
+  if(activeConversationId && _clientUser){
+    try{
+      await fetch(`/api/client/conversations/${activeConversationId}/messages`,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({content:text,sender:'client'}),
+      });
+    }catch(e){console.warn('[sendMsg] Erreur stockage message:',e.message);}
+  }
 }
 
 // ═══════════════════ FILTERS ═══════════════════
@@ -3341,17 +3410,56 @@ async function switchCPTab(tab) {
   }
 
   else if (tab === 'historique') {
-    const r = await fetch('/api/client/history');
-    const data = r.ok ? await r.json() : [];
-    body.innerHTML = `
-      <button onclick="openAddHistoryForm()" style="width:100%;padding:10px;border:1.5px dashed #D0D0D0;border-radius:12px;background:transparent;color:var(--g3);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:14px;">+ Ajouter une séance</button>
-      ${!data.length ? `<div style="text-align:center;padding:24px;color:var(--g3);font-size:14px;">Aucune séance enregistrée</div>` :
-        data.map(h => `<div class="history-card">
+    // Charger en parallèle : conversations (demandes de RDV) + séances manuelles
+    const [rConv, rHist] = await Promise.all([
+      fetch('/api/client/conversations'),
+      fetch('/api/client/history'),
+    ]);
+    const convs = rConv.ok ? await rConv.json() : [];
+    const hist  = rHist.ok ? await rHist.json() : [];
+
+    // ── Section conversations (demandes envoyées) ──────────────────────────
+    const convsHtml = convs.length ? `
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--g3);margin-bottom:8px;">💬 Mes échanges avec les artistes</div>
+      ${convs.map(c => {
+        const dateLabel = c.booking_date ? new Date(c.booking_date).toLocaleDateString('fr-FR',{day:'numeric',month:'long'}) : '';
+        const details = [c.booking_style, c.booking_zone, c.booking_taille].filter(Boolean).join(' · ');
+        const preview = (c.last_message || '').slice(0, 80);
+        return `<div class="history-card" onclick="openConversation(${c.id},'${(c.tatoueur_nom||'').replace(/'/g,"\\'")}',${c.tatoueur_id||0})" style="cursor:pointer;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:38px;height:38px;border-radius:50%;background:${artistGradient(c.tatoueur_nom||'?')};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;flex-shrink:0;">${artistInitials(c.tatoueur_nom||'?')}</div>
+            <div style="flex:1;min-width:0;">
+              <div class="history-card-title" style="margin:0;">${c.tatoueur_nom}</div>
+              <div class="history-card-meta" style="margin:2px 0 0;">${details}${dateLabel?' · '+dateLabel:''}</div>
+              ${preview?`<div style="font-size:12px;color:var(--g3);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${preview}</div>`:''}
+            </div>
+            <div style="font-size:18px;color:var(--g4);">›</div>
+          </div>
+        </div>`;
+      }).join('')}
+    ` : '';
+
+    // ── Section séances manuelles ──────────────────────────────────────────
+    const histHtml = `
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--g3);margin:${convs.length?'18px':0} 0 8px;">📋 Séances enregistrées</div>
+      <button onclick="openAddHistoryForm()" style="width:100%;padding:10px;border:1.5px dashed #D0D0D0;border-radius:12px;background:transparent;color:var(--g3);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:14px;">+ Ajouter manuellement</button>
+      ${!hist.length ? `<div style="text-align:center;padding:12px;color:var(--g3);font-size:13px;">Aucune séance ajoutée manuellement</div>` :
+        hist.map(h => `<div class="history-card">
           <div class="history-card-title">Chez ${h.tatoueur_nom}${h.zone_corps?' · '+h.zone_corps:''}</div>
           <div class="history-card-meta">${h.date_seance||'Date non renseignée'}${h.description?' — '+h.description:''}</div>
           <button onclick="deleteHistory(${h.id},this)" style="margin-top:6px;font-size:11px;color:#ADADAD;background:none;border:none;cursor:pointer;padding:0;">Supprimer</button>
         </div>`).join('')
       }`;
+
+    if (!convs.length && !hist.length) {
+      body.innerHTML = `<div style="text-align:center;padding:32px 0;color:var(--g3);">
+        <div style="font-size:32px;margin-bottom:8px;">🎨</div>
+        <div>Aucun historique pour l'instant.<br><span style="font-size:13px;">Contacte un artiste pour commencer !</span></div>
+        <button onclick="openAddHistoryForm()" style="margin-top:16px;padding:10px 18px;border:1.5px dashed #D0D0D0;border-radius:12px;background:transparent;color:var(--g3);font-size:13px;font-weight:600;cursor:pointer;">+ Ajouter une séance</button>
+      </div>`;
+    } else {
+      body.innerHTML = convsHtml + histHtml;
+    }
   }
 
   else if (tab === 'notifs') {
@@ -3380,6 +3488,45 @@ async function switchCPTab(tab) {
       <div class="fg"><label class="fl">Téléphone</label><input class="fi" type="tel" id="cp-tel" value="${_clientUser.telephone||''}"/></div>
       <div class="fg"><label class="fl">Email</label><input class="fi" type="email" value="${_clientUser.email||''}" disabled style="color:var(--g3);"/></div>
       <button class="fsub" onclick="saveClientProfile()" style="margin-top:6px;">Enregistrer</button>`;
+  }
+}
+
+// ── Ouvrir une conversation existante dans la messagerie ──────────────────────
+async function openConversation(convId, tatoueurNom, tatoueurId) {
+  try {
+    const r = await fetch(`/api/client/conversations/${convId}`);
+    if (!r.ok) { showToast('⚠️', 'Impossible de charger la conversation'); return; }
+    const conv = await r.json();
+
+    // Trouver l'artiste dans ARTISTS si possible (pour gradient/initiales)
+    const a = ARTISTS.find(x => String(x.id) === String(tatoueurId)) || { name: tatoueurNom, id: tatoueurId };
+
+    bookingArtist = a;
+    activeConversationId = convId;
+
+    closeMo('client-profile');
+    setTimeout(() => {
+      document.getElementById('mmName').textContent = tatoueurNom;
+      const mmAvImg = document.getElementById('mmAvatarImg');
+      if (mmAvImg) { mmAvImg.style.display = 'none'; }
+      const avDiv = `<div style="width:32px;height:32px;border-radius:50%;background:${artistGradient(tatoueurNom)};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:rgba(255,255,255,.7);flex-shrink:0;">${artistInitials(tatoueurNom)}</div>`;
+      const details = [conv.booking_style, conv.booking_zone, conv.booking_taille].filter(Boolean).join(', ');
+      const dateLabel = conv.booking_date ? '. Date : ' + new Date(conv.booking_date).toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}) : '';
+      document.getElementById('mmSummary').innerHTML = `<strong>Demande envoyée</strong>${details ? ' — ' + details : ''}${dateLabel}`;
+      const msgs = document.getElementById('mmMessages');
+      msgs.innerHTML = (conv.messages || []).map(m => {
+        if (m.sender === 'artist') {
+          return `<div class="msg in"><div class="mm-avatar">${avDiv}</div><div><div class="msg-time">${tatoueurNom}</div><div class="msg-bubble" style="white-space:pre-wrap;">${(m.content||'').replace(/</g,'&lt;')}</div></div></div>`;
+        } else {
+          return `<div class="msg out"><div><div class="msg-bubble">${(m.content||'').replace(/</g,'&lt;')}</div></div></div>`;
+        }
+      }).join('');
+      msgs.scrollTop = msgs.scrollHeight;
+      openMo('messenger');
+    }, 200);
+  } catch (e) {
+    console.error('[openConversation]', e.message);
+    showToast('⚠️', 'Erreur réseau');
   }
 }
 

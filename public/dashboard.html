@@ -1065,6 +1065,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
           <div class="form-group"><label>Photo du salon (URL)</label><input class="form-control" id="p-photo-salon" placeholder="https://..."></div>
           <div class="form-group"><label>Photo artiste (URL)</label><input class="form-control" id="p-photo-artiste" placeholder="https://..."></div>
         </div>
+        <div class="form-group" style="margin-top:8px;">
+          <label style="display:flex;align-items:center;gap:7px;">
+            💬 Message de réponse automatique
+            <span style="font-size:10px;color:var(--muted);background:var(--acl);padding:2px 7px;border-radius:20px;font-weight:600;">Envoyé aux clients qui vous contactent</span>
+          </label>
+          <textarea class="form-control" id="p-auto-reply" style="min-height:90px;font-size:12px;line-height:1.6;" placeholder="Ex: Bonjour ! J'ai bien reçu votre demande 🎨 Je vous réponds dans les 48h..."></textarea>
+          <div style="font-size:11px;color:var(--muted);margin-top:5px;">Ce texte apparaît automatiquement dès qu'un client vous envoie une demande via inkr.</div>
+        </div>
         <div id="profil-save-msg" style="margin-top:9px;font-size:12px;display:none;color:var(--green);">✅ Profil mis à jour !</div>
       </div>
     </div>
@@ -1378,6 +1386,7 @@ function populateUser(){
   document.getElementById('p-pinterest').value=u.pinterest||'';
   document.getElementById('p-photo-salon').value=u.photo_salon||'';
   document.getElementById('p-photo-artiste').value=u.photo_artiste||'';
+  document.getElementById('p-auto-reply').value=u.auto_reply||'';
 }
 async function logout(){
   await fetch('/api/auth/logout',{method:'POST',credentials:'include'});
@@ -2143,7 +2152,8 @@ async function saveProfil(){
     instagram:document.getElementById('p-instagram').value,
     pinterest:document.getElementById('p-pinterest').value,
     photo_salon:document.getElementById('p-photo-salon').value.trim(),
-    photo_artiste:document.getElementById('p-photo-artiste').value.trim()
+    photo_artiste:document.getElementById('p-photo-artiste').value.trim(),
+    auto_reply:document.getElementById('p-auto-reply').value.trim()
   };
   const res=await fetch('/api/auth/profile',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(res.ok){

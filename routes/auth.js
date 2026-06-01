@@ -6,6 +6,19 @@ const { db, initDefaultAutomations } = require('../db/database');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'inkr_secret_dev';
 
+// ── Migration : ajout des colonnes optionnelles sur users ──────────────────────
+['auto_reply TEXT DEFAULT \'\'',
+ 'prenom TEXT DEFAULT \'\'',
+ 'nom_artiste TEXT DEFAULT \'\'',
+ 'adresse TEXT DEFAULT \'\'',
+ 'instagram TEXT DEFAULT \'\'',
+ 'pinterest TEXT DEFAULT \'\'',
+ 'photo_salon TEXT DEFAULT \'\'',
+ 'photo_artiste TEXT DEFAULT \'\'',
+].forEach(col => {
+  try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch(_) {}
+});
+
 // ============ INSCRIPTION ============
 router.post('/register', async (req, res) => {
   try {
@@ -81,7 +94,7 @@ router.get('/me', (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest, avatar_seed, created_at FROM users WHERE id = ?').get(decoded.userId);
+    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest, auto_reply, photo_salon, photo_artiste, avatar_seed, created_at FROM users WHERE id = ?').get(decoded.userId);
     if (!user) return res.status(401).json({ error: 'Utilisateur introuvable' });
     res.json({ user });
   } catch {
@@ -95,10 +108,26 @@ router.put('/profile', (req, res) => {
   if (!token) return res.status(401).json({ error: 'Non connecté' });
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const { name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest } = req.body;
+    const { name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest, auto_reply } = req.body;
     if (!name) return res.status(400).json({ error: 'Nom requis' });
-    db.prepare('UPDATE users SET name=?, prenom=?, nom_artiste=?, studio_name=?, city=?, adresse=?, phone=?, instagram=?, pinterest=? WHERE id=?')
-      .run(name, prenom||'', nom_artiste||'', studio_name||'', city||'', adresse||'', phone||'', instagram||'', pinterest||'', decoded.userId);
+
+    // Mise à jour du compte artiste
+    db.prepare(
+      'UPDATE users SET name=?, prenom=?, nom_artiste=?, studio_name=?, city=?, adresse=?, phone=?, instagram=?, pinterest=?, auto_reply=? WHERE id=?'
+    ).run(name, prenom||'', nom_artiste||'', studio_name||'', city||'', adresse||'', phone||'', instagram||'', pinterest||'', auto_reply||'', decoded.userId);
+
+    // Sync auto_reply vers la fiche tatoueur publique (correspondance par handle Instagram)
+    // Permet au filtre de style et à la messagerie publique d'utiliser la réponse personnalisée
+    if (instagram) {
+      const igHandle = (instagram || '').replace('@', '').toLowerCase().trim();
+      if (igHandle) {
+        try {
+          db.prepare("UPDATE tatoueurs SET auto_reply=? WHERE LOWER(REPLACE(instagram,'@','')) = ?")
+            .run(auto_reply || '', igHandle);
+        } catch(_) { /* tatoueurs table peut ne pas avoir la colonne si migration non jouée */ }
+      }
+    }
+
     res.json({ success: true });
   } catch {
     res.status(401).json({ error: 'Session expirée' });

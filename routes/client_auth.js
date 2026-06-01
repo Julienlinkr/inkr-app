@@ -94,6 +94,30 @@ db.exec(`
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (client_id) REFERENCES client_accounts(id) ON DELETE CASCADE
   );
+
+  CREATE TABLE IF NOT EXISTS client_conversations (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id       INTEGER NOT NULL,
+    tatoueur_id     INTEGER,
+    tatoueur_nom    TEXT    NOT NULL DEFAULT '',
+    booking_style   TEXT    DEFAULT '',
+    booking_zone    TEXT    DEFAULT '',
+    booking_taille  TEXT    DEFAULT '',
+    booking_date    TEXT    DEFAULT '',
+    booking_desc    TEXT    DEFAULT '',
+    status          TEXT    DEFAULT 'pending',
+    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (client_id) REFERENCES client_accounts(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS client_messages (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    conversation_id INTEGER NOT NULL,
+    sender          TEXT    NOT NULL DEFAULT 'client',
+    content         TEXT    NOT NULL DEFAULT '',
+    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (conversation_id) REFERENCES client_conversations(id) ON DELETE CASCADE
+  );
 `);
 
 // ── Middleware auth client ───────────────────────────────────────────────────
@@ -300,6 +324,117 @@ router.put('/notifications/read-all', requireClientAuth, (req, res) => {
   try {
     db.prepare('UPDATE client_notifications SET is_read=1 WHERE client_id=?').run(req.clientId);
     res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  CONVERSATIONS — Messagerie client ↔ artiste
+//
+//  Chaque demande de RDV crée une conversation.
+//  Les messages sont stockés par ordre chronologique dans client_messages.
+//  Le premier message (sender='artist') est la réponse automatique de l'artiste.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── POST /api/client/conversations ── Créer une conversation (demande de RDV) ─
+router.post('/conversations', requireClientAuth, (req, res) => {
+  try {
+    const {
+      tatoueur_id, tatoueur_nom,
+      booking_style, booking_zone, booking_taille, booking_date, booking_desc,
+      auto_reply,   // message de réponse automatique de l'artiste
+    } = req.body;
+
+    if (!tatoueur_nom) return res.status(400).json({ error: 'Nom du tatoueur requis' });
+
+    // Créer la conversation
+    const result = db.prepare(`
+      INSERT INTO client_conversations
+        (client_id, tatoueur_id, tatoueur_nom, booking_style, booking_zone, booking_taille, booking_date, booking_desc)
+      VALUES (?,?,?,?,?,?,?,?)
+    `).run(
+      req.clientId,
+      tatoueur_id || null,
+      tatoueur_nom,
+      booking_style  || '',
+      booking_zone   || '',
+      booking_taille || '',
+      booking_date   || '',
+      booking_desc   || '',
+    );
+
+    const convId = result.lastInsertRowid;
+
+    // Insérer la réponse automatique de l'artiste comme premier message
+    const replyText = auto_reply ||
+      `Bonjour ! J'ai bien reçu ta demande 🎨 Je reviendrai vers toi dans les 48h pour qu'on discute de ton projet. Tu peux m'envoyer d'autres références ici si tu en as.\n\nÀ très vite ! ✌️`;
+
+    db.prepare(`
+      INSERT INTO client_messages (conversation_id, sender, content) VALUES (?,?,?)
+    `).run(convId, 'artist', replyText);
+
+    res.json({ ok: true, id: convId });
+  } catch (e) {
+    console.error('[client/conversations POST]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── GET /api/client/conversations ── Lister les conversations du client ───────
+router.get('/conversations', requireClientAuth, (req, res) => {
+  try {
+    const convs = db.prepare(`
+      SELECT cc.*,
+             (SELECT content FROM client_messages
+              WHERE conversation_id=cc.id ORDER BY created_at DESC LIMIT 1) as last_message,
+             (SELECT COUNT(*) FROM client_messages WHERE conversation_id=cc.id) as msg_count
+      FROM client_conversations cc
+      WHERE cc.client_id = ?
+      ORDER BY cc.created_at DESC
+    `).all(req.clientId);
+    res.json(convs);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── GET /api/client/conversations/:id ── Détail d'une conversation + messages ─
+router.get('/conversations/:id', requireClientAuth, (req, res) => {
+  try {
+    const conv = db.prepare(
+      'SELECT * FROM client_conversations WHERE id=? AND client_id=?'
+    ).get(parseInt(req.params.id), req.clientId);
+    if (!conv) return res.status(404).json({ error: 'Conversation introuvable' });
+
+    const messages = db.prepare(
+      'SELECT * FROM client_messages WHERE conversation_id=? ORDER BY created_at ASC'
+    ).all(conv.id);
+
+    res.json({ ...conv, messages });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── POST /api/client/conversations/:id/messages ── Envoyer un message ─────────
+router.post('/conversations/:id/messages', requireClientAuth, (req, res) => {
+  try {
+    const convId = parseInt(req.params.id);
+    // Vérifier que la conversation appartient bien à ce client
+    const conv = db.prepare(
+      'SELECT id FROM client_conversations WHERE id=? AND client_id=?'
+    ).get(convId, req.clientId);
+    if (!conv) return res.status(404).json({ error: 'Conversation introuvable' });
+
+    const { content, sender = 'client' } = req.body;
+    if (!content || !content.trim()) return res.status(400).json({ error: 'Message vide' });
+
+    const result = db.prepare(
+      'INSERT INTO client_messages (conversation_id, sender, content) VALUES (?,?,?)'
+    ).run(convId, sender, content.trim());
+
+    res.json({ ok: true, id: result.lastInsertRowid });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
