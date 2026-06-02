@@ -629,7 +629,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
             <label class="rdv-style-chip"><input type="checkbox" value="Blackwork"> ◼ Blackwork</label>
             <label class="rdv-style-chip"><input type="checkbox" value="Old school"> ⚓ Old school</label>
             <label class="rdv-style-chip"><input type="checkbox" value="Géométrique"> 🔷 Géo</label>
-            <label class="rdv-style-chip"><input type="checkbox" value="Néo-trad"> 🌸 Néo-trad</label>
             <label class="rdv-style-chip"><input type="checkbox" value="Lettering"> ✍️ Lettering</label>
             <label class="rdv-style-chip"><input type="checkbox" value="Aquarelle"> 🎨 Aquarelle</label>
           </div>
@@ -1092,7 +1091,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
             <label class="rdv-style-chip"><input type="checkbox" value="Minimaliste"> Minimaliste</label>
             <label class="rdv-style-chip"><input type="checkbox" value="Lettering"> ✍️ Lettering</label>
             <label class="rdv-style-chip"><input type="checkbox" value="Chicano"> Chicano</label>
-            <label class="rdv-style-chip"><input type="checkbox" value="Néo-trad"> 🌸 Néo-trad</label>
             <label class="rdv-style-chip"><input type="checkbox" value="Dotwork"> Dotwork</label>
           </div>
           <div style="font-size:11px;color:var(--muted);margin-top:6px;">Les styles cochés te font apparaître dans les filtres de l'annuaire inkr.</div>
@@ -1915,10 +1913,10 @@ function renderClientCard(id, editMode=false){
         </div>
         <div class="crm-edit-section-title">Styles tatouage</div>
         <div class="crm-tag-grid" id="ce-tag-grid">
-          ${['fine line','flash','japonais','realisme','blackwork','old school','geometrique','neo-trad'].map(t=>`
+          ${['fine line','flash','japonais','realisme','blackwork','old school','geometrique','chicano','lettering','dotwork'].map(t=>`
           <label class="crm-tag-check ${tags.map(x=>x.toLowerCase()).includes(t)?'on':''}">
             <input type="checkbox" value="${t}" ${tags.map(x=>x.toLowerCase()).includes(t)?'checked':''} onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)">
-            ${{'fine line':'Fine line','flash':'Flash','japonais':'Japonais','realisme':'Réalisme','blackwork':'Blackwork','old school':'Old school','geometrique':'Géométrique','neo-trad':'Néo-trad'}[t]}
+            ${{'fine line':'Fine line','flash':'Flash','japonais':'Japonais','realisme':'Réalisme','blackwork':'Blackwork','old school':'Old school','geometrique':'Géométrique','chicano':'Chicano','lettering':'Lettering','dotwork':'Dotwork'}[t]}
           </label>`).join('')}
         </div>
         <div class="crm-edit-section-title">Notes</div>
