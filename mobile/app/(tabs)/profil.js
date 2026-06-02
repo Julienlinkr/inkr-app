@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../hooks/useAuth';
 import { apiFetch, EP } from '../../constants/Api';
+import AppHeader from '../../components/AppHeader';
 
 const ALL_STYLES = [
   'Japonais', 'Fine Line', 'Réalisme', 'Géométrique',
@@ -77,6 +78,7 @@ export default function ProfilScreen() {
 
   return (
     <SafeAreaView style={ss.root}>
+      <AppHeader title="Mon profil" />
       <ScrollView showsVerticalScrollIndicator={false}>
 
         {/* Avatar + infos rapides */}

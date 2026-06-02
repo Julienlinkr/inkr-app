@@ -9,19 +9,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  RefreshControl, ActivityIndicator, SafeAreaView,
+  RefreshControl, ActivityIndicator, SafeAreaView, TextInput,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../hooks/useAuth';
 import { apiFetch, EP } from '../../constants/Api';
+import AppHeader from '../../components/AppHeader';
 
 export default function MessagesScreen() {
   const { token, user }               = useAuth();
   const router                         = useRouter();
-  const [convs,   setConvs]           = useState([]);
-  const [loading, setLoading]         = useState(true);
-  const [refresh, setRefresh]         = useState(false);
+  const [convs,    setConvs]          = useState([]);
+  const [search,   setSearch]         = useState('');
+  const [loading,  setLoading]        = useState(true);
+  const [refresh,  setRefresh]        = useState(false);
 
   const load = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -108,12 +110,20 @@ export default function MessagesScreen() {
     );
   }
 
+  const unreadTotal = convs.filter(c => c.unread_count > 0).length;
+  const filtered = search.trim()
+    ? convs.filter(c => {
+        const name = (c.client_prenom || c.client_name || '').toLowerCase();
+        const msg  = (c.last_message || c.sujet || '').toLowerCase();
+        const q    = search.toLowerCase();
+        return name.includes(q) || msg.includes(q);
+      })
+    : convs;
+
   if (loading) {
     return (
       <SafeAreaView style={styles.root}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Messages</Text>
-        </View>
+        <AppHeader title="Messages" />
         <View style={styles.center}>
           <ActivityIndicator color="#a855f7" size="large" />
         </View>
@@ -123,17 +133,29 @@ export default function MessagesScreen() {
 
   return (
     <SafeAreaView style={styles.root}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Messages</Text>
-        {convs.length > 0 && (
-          <View style={styles.countBadge}>
-            <Text style={styles.countText}>{convs.length}</Text>
-          </View>
+      <AppHeader
+        title={`Messages${unreadTotal > 0 ? ` · ${unreadTotal}` : ''}`}
+      />
+
+      {/* Barre de recherche */}
+      <View style={styles.searchBar}>
+        <Ionicons name="search" size={15} color="#555" />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Chercher un client ou message..."
+          placeholderTextColor="#444"
+          value={search}
+          onChangeText={setSearch}
+          autoCorrect={false}
+        />
+        {search.length > 0 && (
+          <TouchableOpacity onPress={() => setSearch('')}>
+            <Ionicons name="close-circle" size={15} color="#555" />
+          </TouchableOpacity>
         )}
       </View>
 
-      {convs.length === 0 ? (
+      {filtered.length === 0 ? (
         <View style={styles.center}>
           <Ionicons name="chatbubbles-outline" size={56} color="#333" />
           <Text style={styles.emptyTitle}>Aucun message</Text>
@@ -143,7 +165,7 @@ export default function MessagesScreen() {
         </View>
       ) : (
         <FlatList
-          data={convs}
+          data={filtered}
           keyExtractor={item => String(item.id)}
           renderItem={renderConv}
           refreshControl={
@@ -163,29 +185,8 @@ export default function MessagesScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#0d0d0d' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#1e1e1e',
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#fff',
-    letterSpacing: -0.5,
-    flex: 1,
-  },
-  countBadge: {
-    backgroundColor: '#a855f7',
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-  },
-  countText: { color: 'white', fontWeight: '700', fontSize: 13 },
+  searchBar: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, marginVertical: 10, backgroundColor: '#1a1a1a', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 11, borderWidth: 1, borderColor: '#2a2a2a' },
+  searchInput: { flex: 1, color: '#fff', fontSize: 14 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   emptyTitle: { color: '#fff', fontSize: 18, fontWeight: '700' },
   emptyText: { color: '#555', fontSize: 14, textAlign: 'center', paddingHorizontal: 40 },

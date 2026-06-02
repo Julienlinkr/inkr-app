@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../hooks/useAuth';
 import { apiFetch, EP } from '../../constants/Api';
+import AppHeader from '../../components/AppHeader';
 
 // ─── Écran principal ──────────────────────────────────────────────────────────
 export default function PlusScreen() {
@@ -67,12 +68,8 @@ export default function PlusScreen() {
 
   return (
     <SafeAreaView style={ss.root}>
+      <AppHeader title="Plus" />
       <ScrollView showsVerticalScrollIndicator={false}>
-
-        {/* Header */}
-        <View style={ss.header}>
-          <Text style={ss.headerTitle}>Plus</Text>
-        </View>
 
         {/* Grille de fonctionnalités */}
         <View style={ss.grid}>
@@ -652,8 +649,6 @@ function MiniStat({ label, value, color }) {
 // ─── Styles — écran principal ─────────────────────────────────────────────────
 const ss = StyleSheet.create({
   root:        { flex: 1, backgroundColor: '#0d0d0d' },
-  header:      { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 14 },
-  headerTitle: { fontSize: 28, fontWeight: '800', color: '#fff', letterSpacing: -0.5 },
   grid:        { flexDirection: 'row', flexWrap: 'wrap', gap: 12, paddingHorizontal: 16, marginBottom: 16 },
   card: {
     width: '47%',

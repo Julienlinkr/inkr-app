@@ -29,8 +29,13 @@ export const EP = {
   conversations:      `${API_BASE}/api/auth/mobile/conversations`,
   conversation:  (id) => `${API_BASE}/api/auth/mobile/conversations/${id}`,
   reply:         (id) => `${API_BASE}/api/auth/mobile/conversations/${id}/reply`,
-  // Agenda
-  appointments:       `${API_BASE}/api/appointments`,
+  // Agenda (Bearer auth — endpoint mobile dédié)
+  appointments:       `${API_BASE}/api/auth/mobile/agenda`,
+  appointmentUpdate:  (id) => `${API_BASE}/api/auth/mobile/agenda/${id}`,
+  appointmentDelete:  (id) => `${API_BASE}/api/auth/mobile/agenda/${id}`,
+  // Clients (Bearer auth — endpoint mobile dédié)
+  clients:            `${API_BASE}/api/auth/mobile/clients`,
+  client:        (id) => `${API_BASE}/api/auth/mobile/clients/${id}`,
   // Push notifications
   registerPush:       `${API_BASE}/api/auth/mobile/push-token`,
   // Campagnes marketing

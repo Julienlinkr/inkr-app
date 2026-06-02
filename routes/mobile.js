@@ -336,6 +336,139 @@ router.put('/automations/:id', requireMobileAuth, (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// CLIENTS — accès Bearer token (mobile)
+// Séparé de /api/clients (cookie-only) pour permettre l'auth Bearer.
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── GET /api/auth/mobile/clients ──────────────────────────────────────────────
+router.get('/clients', requireMobileAuth, (req, res) => {
+  try {
+    const clients = db.prepare(
+      'SELECT * FROM clients WHERE user_id = ? ORDER BY created_at DESC'
+    ).all(req.userId);
+    res.json(clients); // retourne un tableau directement (pas { clients: [...] })
+  } catch (e) {
+    console.error('[mobile/clients GET]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── POST /api/auth/mobile/clients ─────────────────────────────────────────────
+router.post('/clients', requireMobileAuth, (req, res) => {
+  try {
+    const { name, prenom, email, phone, city, notes, tags } = req.body;
+    if (!name?.trim() && !prenom?.trim()) {
+      return res.status(400).json({ error: 'Nom ou prénom requis' });
+    }
+    const result = db.prepare(
+      'INSERT INTO clients (user_id, name, prenom, email, phone, city, notes, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+    ).run(
+      req.userId,
+      name?.trim() || '',
+      prenom?.trim() || '',
+      email?.trim() || '',
+      phone?.trim() || '',
+      city?.trim() || '',
+      notes?.trim() || '',
+      JSON.stringify(tags || [])
+    );
+    res.json({ success: true, id: result.lastInsertRowid });
+  } catch (e) {
+    console.error('[mobile/clients POST]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── PUT /api/auth/mobile/clients/:id ──────────────────────────────────────────
+router.put('/clients/:id', requireMobileAuth, (req, res) => {
+  try {
+    const { name, prenom, email, phone, city, notes, tags } = req.body;
+    db.prepare(
+      'UPDATE clients SET name=?, prenom=?, email=?, phone=?, city=?, notes=?, tags=? WHERE id=? AND user_id=?'
+    ).run(
+      name || '', prenom || '', email || '', phone || '',
+      city || '', notes || '', JSON.stringify(tags || []),
+      req.params.id, req.userId
+    );
+    res.json({ success: true });
+  } catch (e) {
+    console.error('[mobile/clients PUT]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AGENDA (APPOINTMENTS) — accès Bearer token (mobile)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ── GET /api/auth/mobile/agenda ───────────────────────────────────────────────
+router.get('/agenda', requireMobileAuth, (req, res) => {
+  try {
+    const appts = db.prepare(
+      'SELECT * FROM appointments WHERE user_id = ? ORDER BY date ASC, time ASC'
+    ).all(req.userId);
+    res.json(appts); // tableau directement
+  } catch (e) {
+    console.error('[mobile/agenda GET]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── POST /api/auth/mobile/agenda ──────────────────────────────────────────────
+router.post('/agenda', requireMobileAuth, (req, res) => {
+  try {
+    const { client_name, client_email, client_phone, style, body_zone, description, date, time, price } = req.body;
+    if (!client_name?.trim() || !date) {
+      return res.status(400).json({ error: 'Nom client et date requis' });
+    }
+    const result = db.prepare(
+      'INSERT INTO appointments (user_id, client_name, client_email, client_phone, style, body_zone, description, date, time, price, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    ).run(
+      req.userId,
+      client_name.trim(),
+      client_email || '',
+      client_phone || '',
+      style || '',
+      body_zone || '',
+      description || '',
+      date,
+      time || '',
+      price || null,
+      'confirmed'
+    );
+    res.json({ success: true, id: result.lastInsertRowid });
+  } catch (e) {
+    console.error('[mobile/agenda POST]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── PUT /api/auth/mobile/agenda/:id ───────────────────────────────────────────
+router.put('/agenda/:id', requireMobileAuth, (req, res) => {
+  try {
+    const { status, date, time } = req.body;
+    db.prepare(
+      'UPDATE appointments SET status=?, date=?, time=? WHERE id=? AND user_id=?'
+    ).run(status || 'confirmed', date || '', time || '', req.params.id, req.userId);
+    res.json({ success: true });
+  } catch (e) {
+    console.error('[mobile/agenda PUT]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── DELETE /api/auth/mobile/agenda/:id ────────────────────────────────────────
+router.delete('/agenda/:id', requireMobileAuth, (req, res) => {
+  try {
+    db.prepare('DELETE FROM appointments WHERE id=? AND user_id=?').run(req.params.id, req.userId);
+    res.json({ success: true });
+  } catch (e) {
+    console.error('[mobile/agenda DELETE]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── GET /api/auth/mobile/loyalty ─────────────────────────────────────────────
 // Stats fidélité : top clients par points et dépenses.
 router.get('/loyalty', requireMobileAuth, (req, res) => {
