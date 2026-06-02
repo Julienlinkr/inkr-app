@@ -1888,16 +1888,26 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 //   2. Fallback : image Unsplash curated si le fichier local manque
 // ────────────────────────────────────────────────────────────────────────────
 // Images dans public/images/styles/{slug}.jpg — tes photos perso
+// 15 styles au total. Noms de fichiers attendus dans public/images/styles/ :
+//   japonais.jpg  fineline.jpg  realisme.jpg  geometrique.jpg  tribal.jpg
+//   old-school.jpg  aquarelle.jpg  animaux.jpg  flash.jpg
+//   blackwork.jpg  minimaliste.jpg  lettering.jpg  chicano.jpg  neo-trad.jpg  dotwork.jpg
 const STYLES_DATA = [
-  { slug:'japonais',    name:'Japonais',     filter:'Japonais'    },
-  { slug:'fineline',    name:'Fine Line',    filter:'Fine Line'   },
-  { slug:'realisme',    name:'Réalisme',     filter:'Réalisme'    },
-  { slug:'geometrique', name:'Géométrique',  filter:'Géométrique' },
-  { slug:'tribal',      name:'Tribal',       filter:'Tribal'      },
-  { slug:'old-school',  name:'Old School',   filter:'Old School'  },
-  { slug:'aquarelle',   name:'Aquarelle',    filter:'Aquarelle'   },
-  { slug:'animaux',     name:'Animaux',      filter:'Animaux'     },
-  { slug:'flash',       name:'Flash',        filter:'Flash'       },
+  { slug:'japonais',    name:'Japonais',     filter:'Japonais'     },
+  { slug:'fineline',    name:'Fine Line',    filter:'Fine Line'    },
+  { slug:'realisme',    name:'Réalisme',     filter:'Réalisme'     },
+  { slug:'geometrique', name:'Géométrique',  filter:'Géométrique'  },
+  { slug:'tribal',      name:'Tribal',       filter:'Tribal'       },
+  { slug:'old-school',  name:'Old School',   filter:'Old School'   },
+  { slug:'aquarelle',   name:'Aquarelle',    filter:'Aquarelle'    },
+  { slug:'animaux',     name:'Animaux',      filter:'Animaux'      },
+  { slug:'flash',       name:'Flash',        filter:'Flash'        },
+  { slug:'blackwork',   name:'Blackwork',    filter:'Blackwork'    },
+  { slug:'minimaliste', name:'Minimaliste',  filter:'Minimaliste'  },
+  { slug:'lettering',   name:'Lettering',    filter:'Lettering'    },
+  { slug:'chicano',     name:'Chicano',      filter:'Chicano'      },
+  { slug:'neo-trad',    name:'Néo-trad',     filter:'Néo-trad'     },
+  { slug:'dotwork',     name:'Dotwork',      filter:'Dotwork'      },
 ];
 // activeStyles : tableau des slugs sélectionnés (multi-select)
 // [] = tous les styles
