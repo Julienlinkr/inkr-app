@@ -16,6 +16,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // ============ ROUTES API ============
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth/mobile', require('./routes/mobile')); // App iOS artiste inkr Pro
 app.use('/api/clients', require('./routes/clients'));
 app.use('/api/campaigns', require('./routes/campaigns'));
 app.use('/api/appointments', require('./routes/appointments'));

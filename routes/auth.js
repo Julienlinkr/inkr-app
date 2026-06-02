@@ -73,8 +73,12 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('inkr_token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
 
+    // Pour les clients mobiles (app iOS) : inclure le JWT dans le body
+    // L'app stocke ce token dans SecureStore et l'envoie via Authorization: Bearer
+    const isMobile = req.headers['x-inkr-client'] === 'mobile';
     res.json({
       success: true,
+      ...(isMobile ? { token } : {}),
       user: { id: user.id, email: user.email, name: user.name, studio_name: user.studio_name, avatar_seed: user.avatar_seed }
     });
   } catch (err) {
@@ -91,7 +95,10 @@ router.post('/logout', (req, res) => {
 
 // ============ VÉRIFIER SESSION ============
 router.get('/me', (req, res) => {
-  const token = req.cookies?.inkr_token;
+  // Accepte cookie (web) OU Bearer token (mobile)
+  const authHeader = req.headers['authorization'];
+  const token = req.cookies?.inkr_token ||
+    (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
   if (!token) return res.status(401).json({ error: 'Non connecté' });
 
   try {

@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "inkr Pro",
+    "slug": "inkr-pro",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "inkrpro",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0d0d0d"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "club.inkr.pro",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Permet d'ajouter des photos à votre galerie inkr.",
+        "NSPhotoLibraryUsageDescription": "Permet d'uploader vos photos de tatouage.",
+        "UIBackgroundModes": ["remote-notification"]
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#a855f7"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Permet d'uploader vos photos de tatouage."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
