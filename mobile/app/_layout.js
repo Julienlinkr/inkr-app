@@ -12,8 +12,9 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { AuthProvider, useAuth } from '../hooks/useAuth';
 
-// Empêche le splash de se fermer automatiquement
-SplashScreen.preventAutoHideAsync();
+// Empêche le splash de se fermer automatiquement.
+// Le catch() ignore l'erreur dans Expo Go (pas de splash screen natif en dev).
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 function RootLayoutNav() {
   const { user, loading } = useAuth();
@@ -22,7 +23,7 @@ function RootLayoutNav() {
 
   useEffect(() => {
     if (loading) return;
-    SplashScreen.hideAsync();
+    SplashScreen.hideAsync().catch(() => {});
 
     const inAuth = segments[0] === 'login';
 
