@@ -1688,7 +1688,10 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
         <span class="feat-link r rd3" onclick="showView('tournee')">Voir les artistes en tournée</span>
       </div>
       <div class="feat-vis r rd2" style="aspect-ratio:4/5;">
-        <img src="https://loremflickr.com/600/750/tattoo,studio?lock=20" alt="" style="width:100%;height:100%;object-fit:cover;opacity:.45;"/>
+        <!-- Image locale : public/images/tournee-artiste.jpg -->
+        <img src="/images/tournee-artiste.jpg" alt="Artiste en tournée"
+             style="width:100%;height:100%;object-fit:cover;object-position:center top;"
+             onerror="this.style.opacity='.08'"/>
       </div>
     </div>
   </section>
