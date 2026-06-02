@@ -79,11 +79,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
 .sec-lbl{font-size:10px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:.8px;padding:8px 11px 3px;}
 
 /* PANELS */
-.dash-panel{display:none;height:calc(100vh - 56px);overflow-y:auto;}
+.dash-panel{display:none;height:calc(100vh - 58px);overflow-y:auto;overflow-x:hidden;}
 .dash-panel.active{display:block;}
-.dash-panel.msg-panel.active{display:grid;grid-template-columns:260px 1fr;overflow:hidden;}
-.dash-panel.clients-panel.active{display:grid;grid-template-columns:260px 1fr;overflow:hidden;}
-.dp-inner{padding:24px 28px;}
+.dash-panel.msg-panel.active{display:grid;grid-template-columns:260px 1fr;overflow:hidden;height:calc(100vh - 58px);}
+.dash-panel.clients-panel.active{display:grid;grid-template-columns:260px 1fr;overflow:hidden;height:calc(100vh - 58px);}
+.dp-inner{padding:24px 28px;max-width:1100px;}
 
 /* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;}
@@ -190,8 +190,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
 /* MESSAGES */
 .msg-filter-btn{background:var(--card);border-radius:20px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;border:1px solid;}
 .msg-filter-btn.active-filter{color:#fff !important;background:var(--active-ch, var(--dim)) !important;}
-.msg-search{width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:6px 10px;color:var(--txt);font-size:12px;outline:none;margin-bottom:7px;}
+.msg-search{display:block;width:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;color:var(--txt);font-size:13px;outline:none;margin-bottom:8px;}
 .msg-search:focus{border-color:var(--accent);}
+.msg-search::placeholder{color:var(--dim);}
 .compose-bar{padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px;flex-shrink:0;background:var(--surface);}
 .compose-btn{flex:1;padding:7px;border-radius:var(--r);font-size:11px;font-weight:600;border:1px solid var(--border);background:var(--card);color:var(--txt);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s;}
 .compose-btn:hover{border-color:var(--accent);color:var(--accent);}
@@ -397,11 +398,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
   .nav-badge,.nav-switch{display:none;}
   .dash-layout{display:block !important;height:auto !important;overflow-x:hidden;}
   .dash-sidebar{display:none !important;}
-  .dash-panel{display:none;height:auto !important;min-height:calc(100svh - 56px - 62px);overflow-y:auto;overflow-x:hidden;padding-bottom:70px;}
+  .dash-panel{display:none;height:auto !important;min-height:calc(100svh - 58px - 56px);overflow-y:auto;overflow-x:hidden;padding-bottom:80px;}
   .dash-panel.active{display:block !important;}
-  .dash-panel.msg-panel.active{display:flex !important;flex-direction:column;overflow:visible;}
-  .dash-panel.clients-panel.active{display:flex !important;flex-direction:column;overflow:visible;}
-  .dp-inner{padding:14px 12px;}
+  .dash-panel.msg-panel.active{display:flex !important;flex-direction:column;overflow:visible;height:auto !important;}
+  .dash-panel.clients-panel.active{display:flex !important;flex-direction:column;overflow:visible;height:auto !important;}
+  .dp-inner{padding:16px 14px;max-width:100%;}
   .msg-sidebar-col{height:auto !important;border-right:none;border-bottom:1px solid var(--border);max-height:none;}
   .msg-list{max-height:300px;overflow-y:auto;}
   .chat-area{height:auto;flex:1;display:flex;flex-direction:column;}
@@ -832,8 +833,21 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
           <div class="form-group"><label>Email</label><input class="form-control" id="nc-email" type="email"></div>
           <div class="form-group"><label>Téléphone</label><input class="form-control" id="nc-phone" type="tel"></div>
         </div>
-        <div class="form-group"><label>Photo (URL)</label><input class="form-control" id="nc-photo" type="url" placeholder="https://..."></div>
-        <div class="form-group"><label>Notes (style préféré, allergies, préférences...)</label><textarea class="form-control" id="nc-notes" style="min-height:65px;"></textarea></div>
+        <div class="grid-2">
+          <div class="form-group"><label>Instagram</label><input class="form-control" id="nc-instagram" placeholder="@handle" autocapitalize="none"></div>
+          <div class="form-group"><label>WhatsApp</label><input class="form-control" id="nc-whatsapp" type="tel" placeholder="+33 6..."></div>
+        </div>
+        <div class="form-group">
+          <label>Styles tatouage</label>
+          <div class="crm-tag-grid" id="nc-tag-grid" style="margin-top:5px;">
+            ${['fine line','flash','japonais','realisme','blackwork','old school','geometrique','chicano','lettering','dotwork','aquarelle','tribal','dotwork','animaux'].map(t=>`
+            <label class="crm-tag-check">
+              <input type="checkbox" value="${t}" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)">
+              ${{  'fine line':'Fine line','flash':'Flash','japonais':'Japonais','realisme':'Réalisme','blackwork':'Blackwork','old school':'Old school','geometrique':'Géométrique','chicano':'Chicano','lettering':'Lettering','dotwork':'Dotwork','aquarelle':'Aquarelle','tribal':'Tribal','animaux':'Animaux'}[t]||t}
+            </label>`).join('')}
+          </div>
+        </div>
+        <div class="form-group"><label>Notes (allergies, préférences...)</label><textarea class="form-control" id="nc-notes" style="min-height:65px;"></textarea></div>
         <div style="display:flex;gap:6px;">
           <button class="btn btn-primary btn-sm" onclick="saveClient()">Enregistrer</button>
           <button class="btn btn-ghost btn-sm" onclick="cancelAddClient()">Annuler</button>
@@ -1250,6 +1264,25 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(11,11,11,.96)
 
 <div class="notif" id="notif"></div>
 
+<!-- IG POST MODAL -->
+<div class="acompte-modal" id="ig-post-modal" onclick="if(event.target===this)closeIgPostModal()">
+  <div class="acompte-box" style="max-width:500px;width:95%;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div>
+        <div style="font-size:15px;font-weight:800;">📸 Post Instagram généré</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px;">Copie et colle dans Instagram → Créer un post</div>
+      </div>
+      <button onclick="closeIgPostModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <textarea id="ig-post-text" style="width:100%;min-height:220px;background:#1a1a1a;border:1px solid #333;border-radius:10px;padding:12px;color:#f0f0f0;font-size:13px;line-height:1.6;resize:vertical;font-family:inherit;" spellcheck="false"></textarea>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn btn-primary btn-sm" style="flex:1;" onclick="copyIgPost()">📋 Copier le post</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeIgPostModal()">Ignorer</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center;">Tu peux modifier le texte avant de copier 👆</div>
+  </div>
+</div>
+
 <!-- COMPOSE MODAL -->
 <div class="compose-modal" id="compose-modal" onclick="if(event.target===this)closeCompose()">
   <div class="compose-sheet">
@@ -1446,6 +1479,9 @@ function populateUser(){
   document.querySelectorAll('#p-styles-grid input[type=checkbox]').forEach(cb=>{
     cb.checked=userStyles.includes(cb.value);
   });
+  // Mode tournée
+  const tToggle=document.getElementById('tournee-toggle');
+  if(tToggle)tToggle.checked=!!(u.en_tournee);
   // Charger la galerie photos
   loadMyPhotos();
 }
@@ -1807,7 +1843,17 @@ async function saveTournee(){
   const date_to=document.getElementById('tr-to').value;
   if(!city||!date_from||!date_to){showNotif('Ville et dates requises','error');return;}
   const res=await fetch('/api/tournee',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({city,date_from,date_to,description:document.getElementById('tr-desc').value,spots:parseInt(document.getElementById('tr-spots').value)||5})});
-  if(res.ok){showNotif('✅ Date ajoutée ! Les clients de '+city+' seront notifiés.','success');showTrForm(false);document.getElementById('tr-city').value='';document.getElementById('tr-desc').value='';loadTournee();}
+  if(res.ok){
+    showNotif('✅ Date ajoutée ! Les clients de '+city+' seront notifiés.','success');
+    const desc=document.getElementById('tr-desc').value;
+    const spotsVal=parseInt(document.getElementById('tr-spots').value)||5;
+    showTrForm(false);
+    document.getElementById('tr-city').value='';
+    document.getElementById('tr-desc').value='';
+    loadTournee();
+    // Proposer le post Instagram IA
+    setTimeout(()=>openIgPostModal(city,date_from,date_to,desc,spotsVal),400);
+  }
 }
 async function toggleTrActive(id,active){
   const t=tournees.find(x=>x.id===id);if(!t)return;
@@ -1820,9 +1866,52 @@ async function deleteTournee(id){
   await fetch(`/api/tournee/${id}`,{method:'DELETE',credentials:'include'});
   showNotif('Date supprimée','');loadTournee();
 }
-function toggleTourneeMode(){
+async function toggleTourneeMode(){
   const on=document.getElementById('tournee-toggle').checked;
-  showNotif(on?'✈️ Mode tournée activé !':'Mode tournée désactivé',on?'success':'');
+  try{
+    const res=await fetch('/api/auth/profile',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({en_tournee:on})});
+    if(res.ok){
+      if(currentUser)currentUser.en_tournee=on?1:0;
+      showNotif(on?'✈️ Mode tournée activé ! Ton profil est mis en avant dans tes villes.':'✅ Mode tournée désactivé',on?'success':'');
+    } else {
+      showNotif('Erreur lors de la mise à jour','error');
+      document.getElementById('tournee-toggle').checked=!on;
+    }
+  }catch(e){showNotif('Erreur réseau','error');document.getElementById('tournee-toggle').checked=!on;}
+}
+// ---- Modal post Instagram IA ----
+function generateIgPost(city,dateFrom,dateTo,description,spots){
+  const mois=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+  function fmt(d){const dt=new Date(d);return dt.getDate()+' '+mois[dt.getMonth()];}
+  const from=fmt(dateFrom),to=fmt(dateTo);
+  const artistName=currentUser?.name||'';
+  const studio=currentUser?.studio_name||'';
+  const insta=currentUser?.instagram?('@'+(currentUser.instagram||'').replace('@','')):'';
+  const spotsTxt=spots>1?`🗓 Il reste ${spots} créneaux disponibles.`:'🗓 1 dernier créneau disponible !';
+  const stylesTxt=(()=>{let s=[];try{s=JSON.parse(currentUser?.styles||'[]');}catch(_){}return s.slice(0,3).join(', ');})()||'tatouage';
+  const post=`✈️ EN TOURNÉE À ${city.toUpperCase()} — ${from} au ${to}
+
+Je serai de passage à ${city} pour quelques jours de créneaux tatouage 🎨${description?'\n\n"'+description+'"':''}
+
+${spotsTxt}
+
+📩 Contactez-moi en DM ou via le lien en bio pour réserver votre place.
+
+${studio?'📍 Studio : '+studio+'\n':''}${insta?insta+'\n':''}
+#tatouage #tattoo #${city.toLowerCase().replace(/\s/g,'')} #tattooartist #tournee ${stylesTxt.split(', ').map(s=>'#'+s.toLowerCase().replace(/\s/g,'')).join(' ')} #inkr`;
+  return post;
+}
+function openIgPostModal(city,dateFrom,dateTo,description,spots){
+  const post=generateIgPost(city,dateFrom,dateTo,description,spots);
+  document.getElementById('ig-post-text').value=post;
+  document.getElementById('ig-post-modal').classList.add('open');
+}
+function closeIgPostModal(){document.getElementById('ig-post-modal').classList.remove('open');}
+function copyIgPost(){
+  const ta=document.getElementById('ig-post-text');
+  ta.select();document.execCommand('copy');
+  showNotif('✅ Post copié ! Colle-le dans Instagram.','success');
+  closeIgPostModal();
 }
 
 // ======== CLIENTS ========
@@ -1864,10 +1953,12 @@ async function saveClient(){
   if(!name&&!prenom){showNotif('Nom ou prénom requis','error');return;}
   const dob=document.getElementById('nc-dob').value;
   const age=dob?Math.floor((new Date()-new Date(dob))/31557600000):0;
-  await fetch('/api/clients',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,prenom,email:document.getElementById('nc-email').value,phone:document.getElementById('nc-phone').value,city:document.getElementById('nc-city').value,notes:document.getElementById('nc-notes').value,age,date_naissance:dob,photo_url:document.getElementById('nc-photo').value})});
+  const tags=[...document.querySelectorAll('#nc-tag-grid input:checked')].map(i=>i.value);
+  await fetch('/api/clients',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,prenom,email:document.getElementById('nc-email').value,phone:document.getElementById('nc-phone').value,city:document.getElementById('nc-city').value,notes:document.getElementById('nc-notes').value,age,date_naissance:dob,instagram:document.getElementById('nc-instagram').value,whatsapp:document.getElementById('nc-whatsapp').value,tags})});
   showNotif('✅ Client ajouté !','success');
-  ['nc-name','nc-prenom','nc-email','nc-phone','nc-city','nc-notes','nc-photo'].forEach(id=>document.getElementById(id).value='');
+  ['nc-name','nc-prenom','nc-email','nc-phone','nc-city','nc-notes','nc-instagram','nc-whatsapp'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('nc-dob').value='';
+  document.querySelectorAll('#nc-tag-grid input:checked').forEach(cb=>{cb.checked=false;cb.closest('.crm-tag-check').classList.remove('on');});
   document.getElementById('add-client-form').style.display='none';
   loadClients();
 }
@@ -1911,13 +2002,17 @@ function renderClientCard(id, editMode=false){
           <div class="crm-edit-field"><label>Email</label><input class="form-control" id="ce-email" type="email" value="${(c.email||'').replace(/"/g,'&quot;')}" placeholder="sophie@email.com"></div>
           <div class="crm-edit-field"><label>Téléphone</label><input class="form-control" id="ce-phone" type="tel" value="${(c.phone||'').replace(/"/g,'&quot;')}" placeholder="06 xx xx xx xx"></div>
         </div>
+        <div class="crm-edit-row" style="margin-top:10px;">
+          <div class="crm-edit-field"><label>Instagram</label><input class="form-control" id="ce-instagram" value="${(c.instagram||'').replace(/"/g,'&quot;')}" placeholder="@handle" autocapitalize="none"></div>
+          <div class="crm-edit-field"><label>WhatsApp</label><input class="form-control" id="ce-whatsapp" type="tel" value="${(c.whatsapp||'').replace(/"/g,'&quot;')}" placeholder="+33 6..."></div>
+        </div>
         <div class="crm-edit-section-title">Styles tatouage</div>
         <div class="crm-tag-grid" id="ce-tag-grid">
-          ${['fine line','flash','japonais','realisme','blackwork','old school','geometrique','chicano','lettering','dotwork'].map(t=>`
-          <label class="crm-tag-check ${tags.map(x=>x.toLowerCase()).includes(t)?'on':''}">
-            <input type="checkbox" value="${t}" ${tags.map(x=>x.toLowerCase()).includes(t)?'checked':''} onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)">
-            ${{'fine line':'Fine line','flash':'Flash','japonais':'Japonais','realisme':'Réalisme','blackwork':'Blackwork','old school':'Old school','geometrique':'Géométrique','chicano':'Chicano','lettering':'Lettering','dotwork':'Dotwork'}[t]}
-          </label>`).join('')}
+          ${['fine line','flash','japonais','realisme','blackwork','old school','geometrique','chicano','lettering','dotwork','aquarelle','tribal','animaux'].map(t=>{const lbl={'fine line':'Fine line','flash':'Flash','japonais':'Japonais','realisme':'Réalisme','blackwork':'Blackwork','old school':'Old school','geometrique':'Géométrique','chicano':'Chicano','lettering':'Lettering','dotwork':'Dotwork','aquarelle':'Aquarelle','tribal':'Tribal','animaux':'Animaux'}[t]||t;const on=tags.map(x=>x.toLowerCase()).includes(t);return`
+          <label class="crm-tag-check ${on?'on':''}">
+            <input type="checkbox" value="${t}" ${on?'checked':''} onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)">
+            ${lbl}
+          </label>`;}).join('')}
         </div>
         <div class="crm-edit-section-title">Notes</div>
         <textarea class="form-control" id="ce-notes" style="min-height:90px;width:100%;">${c.notes||''}</textarea>
@@ -1955,6 +2050,8 @@ function renderClientCard(id, editMode=false){
         ${anniv?`<div class="crm-row"><div class="crm-row-lbl">Anniversaire</div><div class="crm-row-val">${anniv}</div></div>`:''}
         ${c.email?`<div class="crm-row"><div class="crm-row-lbl">Email</div><div class="crm-row-val">${c.email}</div></div>`:''}
         ${c.phone?`<div class="crm-row"><div class="crm-row-lbl">Téléphone</div><div class="crm-row-val">${c.phone}</div></div>`:''}
+        ${c.instagram?`<div class="crm-row"><div class="crm-row-lbl">Instagram</div><div class="crm-row-val"><a href="https://instagram.com/${(c.instagram||'').replace('@','')}" target="_blank" style="color:#E1306C;text-decoration:none;">📸 ${c.instagram.startsWith('@')?c.instagram:'@'+c.instagram}</a></div></div>`:''}
+        ${c.whatsapp?`<div class="crm-row"><div class="crm-row-lbl">WhatsApp</div><div class="crm-row-val"><a href="https://wa.me/${(c.whatsapp||'').replace(/\D/g,'')}" target="_blank" style="color:#25D366;text-decoration:none;">💬 ${c.whatsapp}</a></div></div>`:''}
         ${c.city?`<div class="crm-row"><div class="crm-row-lbl">Ville</div><div class="crm-row-val">${c.city}</div></div>`:''}
         ${tags.length?`<div class="crm-row"><div class="crm-row-lbl">Styles</div><div class="crm-row-val"><div class="crm-tags-line">${tags.map(t=>`<span class="crm-tag-pill">${t}</span>`).join('')}</div></div></div>`:''}
       </div>
@@ -2029,6 +2126,8 @@ async function updateClient(id){
     city:document.getElementById('ce-city').value.trim(),
     notes:document.getElementById('ce-notes').value,
     tags:[...document.querySelectorAll('#ce-tag-grid input:checked')].map(i=>i.value),
+    instagram:document.getElementById('ce-instagram').value.trim(),
+    whatsapp:document.getElementById('ce-whatsapp').value.trim(),
     age,date_naissance:dob,photo_url:c.photo_url||''
   };
   const res=await fetch(`/api/clients/${id}`,{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});

@@ -164,6 +164,9 @@ function runMigrations() {
     'ALTER TABLE users ADD COLUMN adresse TEXT DEFAULT ""',
     'ALTER TABLE users ADD COLUMN instagram TEXT DEFAULT ""',
     'ALTER TABLE users ADD COLUMN pinterest TEXT DEFAULT ""',
+    'ALTER TABLE users ADD COLUMN en_tournee INTEGER DEFAULT 0',
+    'ALTER TABLE clients ADD COLUMN instagram TEXT DEFAULT ""',
+    'ALTER TABLE clients ADD COLUMN whatsapp TEXT DEFAULT ""',
   ];
   migrations.forEach(sql => { try { db.exec(sql); } catch(e) { /* colonne déjà existante */ } });
 }

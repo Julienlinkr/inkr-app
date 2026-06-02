@@ -19,18 +19,18 @@ router.get('/', requireAuth, (req, res) => {
 
 // Créer client
 router.post('/', requireAuth, (req, res) => {
-  const { name, prenom, email, phone, city, notes, tags, age, date_naissance, photo_url } = req.body;
+  const { name, prenom, email, phone, city, notes, tags, age, date_naissance, photo_url, instagram, whatsapp } = req.body;
   const result = db.prepare(
-    'INSERT INTO clients (user_id, name, prenom, email, phone, city, notes, tags, age, date_naissance, photo_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-  ).run(req.user.userId, name||'', prenom||'', email||'', phone||'', city||'', notes||'', JSON.stringify(tags||[]), age||0, date_naissance||'', photo_url||'');
+    'INSERT INTO clients (user_id, name, prenom, email, phone, city, notes, tags, age, date_naissance, photo_url, instagram, whatsapp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  ).run(req.user.userId, name||'', prenom||'', email||'', phone||'', city||'', notes||'', JSON.stringify(tags||[]), age||0, date_naissance||'', photo_url||'', instagram||'', whatsapp||'');
   res.json({ success: true, id: result.lastInsertRowid });
 });
 
 // Modifier client
 router.put('/:id', requireAuth, (req, res) => {
-  const { name, prenom, email, phone, city, notes, tags, age, date_naissance, photo_url } = req.body;
-  db.prepare('UPDATE clients SET name=?, prenom=?, email=?, phone=?, city=?, notes=?, tags=?, age=?, date_naissance=?, photo_url=? WHERE id=? AND user_id=?')
-    .run(name||'', prenom||'', email||'', phone||'', city||'', notes||'', JSON.stringify(tags||[]), age||0, date_naissance||'', photo_url||'', req.params.id, req.user.userId);
+  const { name, prenom, email, phone, city, notes, tags, age, date_naissance, photo_url, instagram, whatsapp } = req.body;
+  db.prepare('UPDATE clients SET name=?, prenom=?, email=?, phone=?, city=?, notes=?, tags=?, age=?, date_naissance=?, photo_url=?, instagram=?, whatsapp=? WHERE id=? AND user_id=?')
+    .run(name||'', prenom||'', email||'', phone||'', city||'', notes||'', JSON.stringify(tags||[]), age||0, date_naissance||'', photo_url||'', instagram||'', whatsapp||'', req.params.id, req.user.userId);
   res.json({ success: true });
 });
 

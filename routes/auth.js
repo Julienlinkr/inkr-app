@@ -17,6 +17,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'inkr_secret_dev';
  'photo_artiste TEXT DEFAULT \'\'',
  'bio TEXT DEFAULT \'\'',
  'styles TEXT DEFAULT \'[]\'',
+ 'en_tournee INTEGER DEFAULT 0',
 ].forEach(col => {
   try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch(_) {}
 });
@@ -103,7 +104,7 @@ router.get('/me', (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest, auto_reply, bio, styles, photo_salon, photo_artiste, avatar_seed, created_at FROM users WHERE id = ?').get(decoded.userId);
+    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest, auto_reply, bio, styles, photo_salon, photo_artiste, avatar_seed, en_tournee, created_at FROM users WHERE id = ?').get(decoded.userId);
     if (!user) return res.status(401).json({ error: 'Utilisateur introuvable' });
     res.json({ user });
   } catch {
@@ -117,13 +118,20 @@ router.put('/profile', (req, res) => {
   if (!token) return res.status(401).json({ error: 'Non connecté' });
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const { name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest, auto_reply, bio, styles } = req.body;
+    const { name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest, auto_reply, bio, styles, en_tournee } = req.body;
+
+    // Mise à jour partielle : uniquement en_tournee (toggle tournée)
+    if (en_tournee !== undefined && !name) {
+      const val = en_tournee ? 1 : 0;
+      db.prepare('UPDATE users SET en_tournee=? WHERE id=?').run(val, decoded.userId);
+      return res.json({ success: true });
+    }
+
     if (!name) return res.status(400).json({ error: 'Nom requis' });
 
     // styles est un tableau JSON envoyé depuis le dashboard
     const stylesJson = Array.isArray(styles) ? JSON.stringify(styles) : (styles || '[]');
 
-    // Mise à jour du compte artiste inkr Pro
     db.prepare(
       'UPDATE users SET name=?, prenom=?, nom_artiste=?, studio_name=?, city=?, adresse=?, phone=?, instagram=?, pinterest=?, auto_reply=?, bio=?, styles=? WHERE id=?'
     ).run(name, prenom||'', nom_artiste||'', studio_name||'', city||'', adresse||'', phone||'', instagram||'', pinterest||'', auto_reply||'', bio||'', stylesJson, decoded.userId);
