@@ -1177,6 +1177,65 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 .sc-all-emoji { font-size: 30px; transition: transform .3s; }
 .style-card-all:hover .sc-all-emoji { transform: scale(1.2) rotate(-5deg); }
 
+/* ── Navigation arrows — style métal chromé ── */
+.styles-carousel-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+/* Conteneur bouton : laisse dépasser le bouton mais masque le scroll */
+.styles-carousel-wrap .styles-row {
+  flex: 1;
+  min-width: 0;
+}
+
+.styles-nav-btn {
+  /* Fond blanc nacré */
+  background: linear-gradient(145deg, #f8f8f8 0%, #e8e8e8 40%, #f4f4f4 70%, #efefef 100%);
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+  position: relative;
+  z-index: 10;
+  transition: transform .18s, box-shadow .18s, opacity .2s;
+  /* Bord prismatique/chromé via box-shadow multicouche */
+  box-shadow:
+    /* contour chromé extérieur */
+    0 0 0 2px rgba(255,255,255,.9),
+    /* reflet arc-en-ciel : haut-gauche violet/bleu */
+    -2px -2px 0 2px rgba(180,130,255,.55),
+    /* reflet arc-en-ciel : bas-droite orange/rouge */
+    2px 2px 0 2px rgba(255,140,60,.45),
+    /* ombre portée douce */
+    0 4px 16px rgba(0,0,0,.18),
+    /* lustre interne */
+    inset 0 1px 2px rgba(255,255,255,.95),
+    inset 0 -1px 2px rgba(0,0,0,.08);
+}
+.styles-nav-btn:hover {
+  transform: scale(1.1);
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.9),
+    -2px -2px 0 2.5px rgba(160,80,255,.7),
+    2px 2px 0 2.5px rgba(255,120,30,.6),
+    0 6px 22px rgba(0,0,0,.22),
+    inset 0 1px 2px rgba(255,255,255,.95),
+    inset 0 -1px 2px rgba(0,0,0,.08);
+}
+.styles-nav-btn:active { transform: scale(.96); }
+.styles-nav-btn.hidden { opacity: 0; pointer-events: none; }
+
+.styles-nav-prev { margin-right: 10px; }
+.styles-nav-next { margin-left: 10px; }
+
 /* Responsive — scroll horizontal sous 900px */
 @media (max-width: 900px) {
   .styles-row {
@@ -1342,6 +1401,10 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   .styles-section { padding: 20px 16px 0; }
   .styles-row { gap: 8px; }
   .style-card { min-width: 80px; padding: 12px 14px 10px; }
+  .styles-nav-btn { width: 36px; height: 36px; }
+  .styles-nav-btn svg { width: 14px; height: 14px; }
+  .styles-nav-prev { margin-right: 6px; }
+  .styles-nav-next { margin-left: 6px; }
 }
 </style>
 </head>
@@ -1469,8 +1532,16 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   <section class="styles-section">
     <div class="styles-section-i">
       <div class="styles-section-label">Explorer par style</div>
-      <!-- Rendu dynamique par renderStyleCards() -->
-      <div class="styles-row" id="stylesGrid"></div>
+      <!-- Carousel avec flèches de navigation style métal chromé -->
+      <div class="styles-carousel-wrap">
+        <button class="styles-nav-btn styles-nav-prev" id="stylesPrev" onclick="scrollStyles(-1)" aria-label="Précédent">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="styles-row" id="stylesGrid"></div>
+        <button class="styles-nav-btn styles-nav-next" id="stylesNext" onclick="scrollStyles(1)" aria-label="Suivant">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
     </div>
   </section>
 
@@ -1950,6 +2021,32 @@ function renderStyleCards() {
     </div>`).join('');
 
   grid.innerHTML = allCard + styleCards;
+}
+
+/**
+ * scrollStyles — fait défiler le carousel de styles.
+ * @param {1|-1} dir  1 = droite, -1 = gauche
+ */
+function scrollStyles(dir) {
+  const row = document.getElementById('stylesGrid');
+  if (!row) return;
+  const step = Math.min(row.clientWidth * .75, 520);
+  row.scrollBy({ left: dir * step, behavior: 'smooth' });
+}
+
+/**
+ * updateStylesNav — affiche/masque les flèches selon la position de scroll.
+ * Appelée à l'init et à chaque scroll du carousel.
+ */
+function updateStylesNav() {
+  const row  = document.getElementById('stylesGrid');
+  const prev = document.getElementById('stylesPrev');
+  const next = document.getElementById('stylesNext');
+  if (!row || !prev || !next) return;
+  const atStart = row.scrollLeft <= 4;
+  const atEnd   = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4;
+  prev.classList.toggle('hidden', atStart);
+  next.classList.toggle('hidden', atEnd);
 }
 
 /**
@@ -3743,6 +3840,15 @@ function showSwipeHint() {
 // ═══════════════════ INIT ═══════════════════
 // Rendu des composants synchrones (données statiques)
 renderStyleCards();     // pills de style
+// Init navigation arrows du carousel styles
+(function() {
+  const row = document.getElementById('stylesGrid');
+  if (row) {
+    row.addEventListener('scroll', updateStylesNav, { passive: true });
+    // Init légèrement différée pour laisser le DOM se peindre
+    setTimeout(updateStylesNav, 60);
+  }
+})();
 renderBlogPreview();
 renderEventCityBar();
 renderEvents();
