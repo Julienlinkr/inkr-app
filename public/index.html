@@ -1177,60 +1177,122 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 .sc-all-emoji { font-size: 30px; transition: transform .3s; }
 .style-card-all:hover .sc-all-emoji { transform: scale(1.2) rotate(-5deg); }
 
-/* ── Navigation arrows — style métal chromé ── */
+/* ── Navigation arrows — style bouton chrome HiFi années 80 ── */
 .styles-carousel-wrap {
   position: relative;
   display: flex;
   align-items: center;
   gap: 0;
 }
-/* Conteneur bouton : laisse dépasser le bouton mais masque le scroll */
 .styles-carousel-wrap .styles-row {
   flex: 1;
   min-width: 0;
 }
 
 .styles-nav-btn {
-  /* Fond blanc nacré */
-  background: linear-gradient(145deg, #f8f8f8 0%, #e8e8e8 40%, #f4f4f4 70%, #efefef 100%);
-  border: none;
+  /* Gradient chrome à plusieurs stops : simule une surface métallique convexe */
+  background: linear-gradient(
+    175deg,
+    #ffffff  0%,
+    #f0f0f0  8%,
+    #d8d8d8  22%,
+    #b8b8b8  38%,
+    #a8a8a8  50%,
+    #c4c4c4  63%,
+    #dedede  78%,
+    #f5f5f5  92%,
+    #ffffff  100%
+  );
+  /* Bord biseauté : clair en haut-gauche, sombre en bas-droite */
+  border: 1.5px solid transparent;
+  border-image: none;
+  border-color: #c0c0c0;
+  border-top-color: #e8e8e8;
+  border-left-color: #e4e4e4;
+  border-bottom-color: #888;
+  border-right-color: #999;
   border-radius: 50%;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   flex-shrink: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #333;
+  /* Icône en gris foncé, légèrement en relief */
+  color: #444;
   position: relative;
   z-index: 10;
-  transition: transform .18s, box-shadow .18s, opacity .2s;
-  /* Bord prismatique/chromé via box-shadow multicouche */
+  overflow: hidden; /* pour le pseudo-élément reflet */
+  transition: transform .12s ease, box-shadow .12s ease, opacity .2s;
+  /* Ombres multiples : profondeur + relief */
   box-shadow:
-    /* contour chromé extérieur */
-    0 0 0 2px rgba(255,255,255,.9),
-    /* reflet arc-en-ciel : haut-gauche violet/bleu */
-    -2px -2px 0 2px rgba(180,130,255,.55),
-    /* reflet arc-en-ciel : bas-droite orange/rouge */
-    2px 2px 0 2px rgba(255,140,60,.45),
-    /* ombre portée douce */
-    0 4px 16px rgba(0,0,0,.18),
-    /* lustre interne */
-    inset 0 1px 2px rgba(255,255,255,.95),
-    inset 0 -1px 2px rgba(0,0,0,.08);
+    /* ombre portée principale (profondeur) */
+    0 4px 10px rgba(0,0,0,.40),
+    0 2px 4px  rgba(0,0,0,.35),
+    /* liseré brillant extérieur (look métal poli) */
+    0 0 0 1px rgba(255,255,255,.6),
+    /* highlight interne haut — lustre convexe */
+    inset 0 2px 3px rgba(255,255,255,.85),
+    /* ombre interne bas — profondeur convexe */
+    inset 0 -2px 4px rgba(0,0,0,.20),
+    /* ombre interne droite */
+    inset -1px 0 3px rgba(0,0,0,.12),
+    /* highlight interne gauche */
+    inset 1px 0 2px rgba(255,255,255,.5);
 }
+
+/* Reflet spéculaire demi-lune en haut (trait caractéristique du chrome) */
+.styles-nav-btn::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 20%;
+  right: 20%;
+  height: 38%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,.80) 0%,
+    rgba(255,255,255,.25) 70%,
+    transparent 100%
+  );
+  border-radius: 50% 50% 40% 40% / 60% 60% 40% 40%;
+  pointer-events: none;
+}
+
+/* Survol : légère montée + intensification du lustre */
 .styles-nav-btn:hover {
-  transform: scale(1.1);
+  transform: translateY(-1px) scale(1.04);
   box-shadow:
-    0 0 0 2px rgba(255,255,255,.9),
-    -2px -2px 0 2.5px rgba(160,80,255,.7),
-    2px 2px 0 2.5px rgba(255,120,30,.6),
-    0 6px 22px rgba(0,0,0,.22),
-    inset 0 1px 2px rgba(255,255,255,.95),
-    inset 0 -1px 2px rgba(0,0,0,.08);
+    0 6px 14px rgba(0,0,0,.42),
+    0 3px 6px  rgba(0,0,0,.32),
+    0 0 0 1px rgba(255,255,255,.7),
+    inset 0 2px 3px rgba(255,255,255,.90),
+    inset 0 -2px 4px rgba(0,0,0,.22),
+    inset -1px 0 3px rgba(0,0,0,.13),
+    inset 1px 0 2px rgba(255,255,255,.55);
 }
-.styles-nav-btn:active { transform: scale(.96); }
+
+/* Clic : enfoncé — ombres inversées */
+.styles-nav-btn:active {
+  transform: translateY(1px) scale(.97);
+  box-shadow:
+    0 1px 4px rgba(0,0,0,.35),
+    0 0 0 1px rgba(255,255,255,.5),
+    inset 0 3px 6px rgba(0,0,0,.28),
+    inset 0 1px 2px rgba(0,0,0,.20);
+  background: linear-gradient(
+    175deg,
+    #c8c8c8  0%,
+    #d4d4d4  20%,
+    #b0b0b0  40%,
+    #a0a0a0  50%,
+    #bababa  65%,
+    #d0d0d0  82%,
+    #e0e0e0  100%
+  );
+}
+
 .styles-nav-btn.hidden { opacity: 0; pointer-events: none; }
 
 .styles-nav-prev { margin-right: 10px; }
