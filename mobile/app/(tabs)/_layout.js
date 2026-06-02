@@ -1,8 +1,6 @@
 /**
- * app/(tabs)/_layout.js — Barre de navigation principale
- *
- * 3 onglets : Messages | Agenda | Profil
- * Design sombre inkr avec icônes Ionicons.
+ * app/(tabs)/_layout.js — Barre de navigation principale inkr Pro
+ * 5 onglets : Accueil | Messages | Agenda | Clients | Plus
  */
 
 import { Tabs } from 'expo-router';
@@ -15,11 +13,11 @@ function TabIcon({ name, focused, badge }) {
       <Ionicons
         name={focused ? name : `${name}-outline`}
         size={24}
-        color={focused ? '#a855f7' : '#666'}
+        color={focused ? '#a855f7' : '#555'}
       />
       {badge > 0 && (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Text>
+        <View style={ss.badge}>
+          <Text style={ss.badgeTxt}>{badge > 9 ? '9+' : badge}</Text>
         </View>
       )}
     </View>
@@ -33,68 +31,47 @@ export default function TabLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: '#0d0d0d',
-          borderTopColor: '#222',
+          borderTopColor: '#1e1e1e',
           borderTopWidth: 1,
-          height: 82,
-          paddingBottom: 24,
+          height: 84,
+          paddingBottom: 26,
           paddingTop: 10,
         },
         tabBarActiveTintColor: '#a855f7',
-        tabBarInactiveTintColor: '#666',
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '600',
-          marginTop: 2,
-        },
+        tabBarInactiveTintColor: '#555',
+        tabBarLabelStyle: { fontSize: 10, fontWeight: '600', marginTop: 2 },
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Messages',
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="chatbubbles" focused={focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="agenda"
-        options={{
-          title: 'Agenda',
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="calendar" focused={focused} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profil"
-        options={{
-          title: 'Mon profil',
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="person" focused={focused} />
-          ),
-        }}
-      />
+      <Tabs.Screen name="index" options={{
+        title: 'Accueil',
+        tabBarIcon: ({ focused }) => <TabIcon name="home" focused={focused} />,
+      }} />
+      <Tabs.Screen name="messages" options={{
+        title: 'Messages',
+        tabBarIcon: ({ focused }) => <TabIcon name="chatbubbles" focused={focused} />,
+      }} />
+      <Tabs.Screen name="agenda" options={{
+        title: 'Agenda',
+        tabBarIcon: ({ focused }) => <TabIcon name="calendar" focused={focused} />,
+      }} />
+      <Tabs.Screen name="clients" options={{
+        title: 'Clients',
+        tabBarIcon: ({ focused }) => <TabIcon name="people" focused={focused} />,
+      }} />
+      <Tabs.Screen name="plus" options={{
+        title: 'Plus',
+        tabBarIcon: ({ focused }) => <TabIcon name="grid" focused={focused} />,
+      }} />
     </Tabs>
   );
 }
 
-const styles = StyleSheet.create({
+const ss = StyleSheet.create({
   badge: {
-    position: 'absolute',
-    top: -4,
-    right: -8,
-    backgroundColor: '#ec4899',
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
+    position: 'absolute', top: -4, right: -8,
+    backgroundColor: '#ec4899', borderRadius: 10,
+    minWidth: 18, height: 18,
+    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
   },
-  badgeText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: '800',
-  },
+  badgeTxt: { color: 'white', fontSize: 10, fontWeight: '800' },
 });

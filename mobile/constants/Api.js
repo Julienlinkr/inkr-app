@@ -4,13 +4,13 @@
  * Configuration API inkr Pro — mobile.
  *
  * ⚠️  Remplace API_BASE par l'URL Railway de production avant de builder.
- *     Exemple : 'https://inkr-app-production.up.railway.app'
+ *     Exemple : 'https://www.inkr.club'
  *     Pour tester en local avec l'iPhone sur le même wifi :
  *       API_BASE = 'http://TON_IP_LOCAL:3000'  (ex: http://192.168.1.10:3000)
  */
 
 // ── URL de base du backend inkr ──────────────────────────────────────────────
-export const API_BASE = 'https://inkr-app-production.up.railway.app'; // ← à changer
+export const API_BASE = 'https://www.inkr.club'; // ← à changer
 
 // ── Header spécial pour identifier les requêtes mobiles ─────────────────────
 // Le backend retourne le JWT dans le body quand ce header est présent.
@@ -33,6 +33,15 @@ export const EP = {
   appointments:       `${API_BASE}/api/appointments`,
   // Push notifications
   registerPush:       `${API_BASE}/api/auth/mobile/push-token`,
+  // Campagnes marketing
+  campaigns:          `${API_BASE}/api/auth/mobile/campaigns`,
+  campaign:      (id) => `${API_BASE}/api/auth/mobile/campaigns/${id}`,
+  campaignSend:  (id) => `${API_BASE}/api/auth/mobile/campaigns/${id}/send`,
+  // Automatisations
+  automations:        `${API_BASE}/api/auth/mobile/automations`,
+  automation:    (id) => `${API_BASE}/api/auth/mobile/automations/${id}`,
+  // Fidélité
+  loyalty:            `${API_BASE}/api/auth/mobile/loyalty`,
 };
 
 /**
