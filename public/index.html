@@ -1470,6 +1470,134 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   .styles-nav-prev { margin-right: 6px; }
   .styles-nav-next { margin-left: 6px; }
 }
+
+/* ══ PRICING VIEW ══ */
+.pricing-view{min-height:100vh;margin-top:var(--nav);background:#fff;padding:80px 24px 120px;}
+.pricing-inner{max-width:1100px;margin:0 auto;}
+.pricing-eyebrow{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8B5CF6;text-align:center;margin-bottom:18px;}
+.pricing-hero{text-align:center;margin-bottom:64px;}
+.pricing-h1{font-size:clamp(48px,7vw,88px);font-weight:900;letter-spacing:-4px;line-height:.95;color:#0A0A0A;margin-bottom:16px;}
+.pricing-h1 span{background:linear-gradient(135deg,#667eea,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.pricing-sub{font-size:18px;color:#6E6E73;max-width:480px;margin:0 auto 36px;line-height:1.6;}
+.pricing-badge-row{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:48px;}
+.pricing-badge{display:inline-flex;align-items:center;gap:7px;background:#F5F5F7;border-radius:980px;padding:8px 18px;font-size:13px;font-weight:600;color:#1D1D1F;}
+.pricing-badge svg{width:16px;height:16px;flex-shrink:0;}
+.pricing-cta-main{display:inline-flex;align-items:center;gap:10px;background:#0A0A0A;color:#fff;padding:16px 36px;border-radius:14px;font-size:16px;font-weight:700;border:none;cursor:pointer;transition:transform .15s,box-shadow .15s;letter-spacing:-.2px;}
+.pricing-cta-main:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.18);}
+.pricing-cta-note{font-size:12px;color:#AEAEB2;text-align:center;margin-top:10px;}
+
+.pricing-section-title{font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#AEAEB2;text-align:center;margin-bottom:32px;}
+.feat-cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:80px;}
+@media(max-width:900px){.feat-cards-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.feat-cards-grid{grid-template-columns:1fr;} .pricing-h1{letter-spacing:-2px;} .pricing-view{padding:60px 16px 80px;}}
+
+.fc-card{background:#fff;border:1.5px solid #E5E5EA;border-radius:18px;padding:24px;cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .15s;position:relative;overflow:hidden;}
+.fc-card:hover{border-color:#C7C7CC;box-shadow:0 8px 32px rgba(0,0,0,.06);transform:translateY(-2px);}
+.fc-card.open{border-color:#0A0A0A;box-shadow:0 12px 48px rgba(0,0,0,.1);}
+.fc-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+.fc-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.fc-tag{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:4px 10px;border-radius:980px;}
+.tag-green{background:#D1FAE5;color:#065F46;}
+.tag-blue{background:#DBEAFE;color:#1E40AF;}
+.tag-purple{background:#EDE9FE;color:#5B21B6;}
+.tag-orange{background:#FEF3C7;color:#92400E;}
+.tag-red{background:#FEE2E2;color:#991B1B;}
+.tag-cs{background:#F5F5F7;color:#AEAEB2;}
+.fc-title{font-size:16px;font-weight:800;color:#0A0A0A;margin-bottom:6px;letter-spacing:-.3px;}
+.fc-desc{font-size:13px;color:#6E6E73;line-height:1.55;}
+.fc-arrow{position:absolute;bottom:22px;right:22px;width:28px;height:28px;background:#F5F5F7;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .2s,background .2s;}
+.fc-card.open .fc-arrow{transform:rotate(45deg);background:#0A0A0A;}
+.fc-arrow svg{width:14px;height:14px;}
+.fc-card.open .fc-arrow svg path{stroke:#fff;}
+.fc-demo{max-height:0;overflow:hidden;transition:max-height .4s ease,opacity .3s;opacity:0;}
+.fc-card.open .fc-demo{max-height:280px;opacity:1;}
+.fc-demo-inner{margin-top:20px;padding-top:18px;border-top:1px solid #F5F5F7;}
+
+/* Mini demo UIs */
+.demo-payment{display:flex;flex-direction:column;gap:10px;}
+.demo-row{display:flex;align-items:center;justify-content:space-between;background:#F9F9FB;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:600;}
+.demo-amount{font-size:22px;font-weight:900;color:#0A0A0A;}
+.demo-btn{background:#0A0A0A;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;}
+.demo-confirm{display:flex;align-items:center;gap:8px;color:#059669;font-size:13px;font-weight:700;}
+.demo-confirm-dot{width:10px;height:10px;border-radius:50%;background:#059669;}
+@keyframes confirmPop{0%{transform:scale(.5);opacity:0;}70%{transform:scale(1.2);}100%{transform:scale(1);opacity:1;}}
+.fc-card.open .demo-confirm-dot{animation:confirmPop .5s ease .2s both;}
+
+.demo-timeline{display:flex;flex-direction:column;gap:8px;}
+.demo-tl-item{display:flex;align-items:center;gap:10px;font-size:12px;}
+.demo-tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.demo-tl-line{position:relative;}
+.demo-tl-line::before{content:'';position:absolute;left:3.5px;top:8px;width:1px;height:calc(100% + 8px);background:#E5E5EA;}
+.demo-tl-label{font-weight:700;color:#0A0A0A;font-size:11px;}
+.demo-tl-sub{color:#6E6E73;font-size:11px;margin-top:1px;}
+
+.demo-notif{background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:12px 14px;font-size:12px;color:#065F46;display:flex;align-items:center;gap:10px;}
+.demo-notif-icon{font-size:20px;flex-shrink:0;}
+
+.demo-chart{display:flex;align-items:flex-end;gap:6px;height:70px;padding:0 4px;}
+.demo-bar{flex:1;border-radius:6px 6px 0 0;background:linear-gradient(180deg,#667eea,#a855f7);min-width:0;}
+@keyframes barGrow{from{transform:scaleY(0);transform-origin:bottom;}to{transform:scaleY(1);transform-origin:bottom;}}
+.fc-card.open .demo-bar{animation:barGrow .5s ease both;}
+.demo-bar:nth-child(1){animation-delay:.05s!important;}
+.demo-bar:nth-child(2){animation-delay:.1s!important;}
+.demo-bar:nth-child(3){animation-delay:.15s!important;}
+.demo-bar:nth-child(4){animation-delay:.2s!important;}
+.demo-bar:nth-child(5){animation-delay:.25s!important;}
+.demo-bar:nth-child(6){animation-delay:.3s!important;}
+.demo-chart-label{font-size:10px;color:#AEAEB2;text-align:center;margin-top:6px;display:flex;gap:6px;padding:0 4px;}
+.demo-chart-label span{flex:1;}
+
+.demo-qr{display:flex;align-items:center;gap:16px;}
+.demo-qr-block{width:64px;height:64px;background:repeating-conic-gradient(#0A0A0A 0% 25%,#fff 0% 50%) 0 0/10px 10px;border-radius:8px;flex-shrink:0;}
+.demo-qr-text{font-size:12px;color:#6E6E73;line-height:1.6;}
+.demo-qr-id{font-size:11px;font-weight:700;color:#0A0A0A;font-family:monospace;background:#F5F5F7;padding:3px 8px;border-radius:6px;margin-top:6px;display:inline-block;}
+
+.demo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.demo-grid-cell{aspect-ratio:1;border-radius:8px;background:#F5F5F7;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:20px;}
+@keyframes cellFade{from{opacity:0;transform:scale(.8);}to{opacity:1;transform:scale(1);}}
+.fc-card.open .demo-grid-cell:nth-child(1){animation:cellFade .3s ease .1s both;}
+.fc-card.open .demo-grid-cell:nth-child(2){animation:cellFade .3s ease .2s both;}
+.fc-card.open .demo-grid-cell:nth-child(3){animation:cellFade .3s ease .3s both;}
+
+.demo-url{background:#F5F5F7;border-radius:10px;padding:9px 14px;display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.demo-url-bar{font-size:12px;color:#6E6E73;font-family:monospace;}
+.demo-url-bar span{color:#8B5CF6;font-weight:700;}
+.demo-profile-mini{display:flex;align-items:center;gap:10px;padding:8px 0;}
+.demo-avatar-mini{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#667eea,#a855f7);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:13px;flex-shrink:0;}
+
+.demo-flash{display:flex;flex-direction:column;gap:8px;}
+.demo-flash-item{display:flex;align-items:center;gap:10px;background:#FFF7ED;border-radius:10px;padding:9px 12px;}
+.demo-flash-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;}
+.demo-flash-sent{font-size:11px;color:#6E6E73;}
+.demo-flash-sent b{color:#EA580C;font-weight:700;}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+.fc-card.open .demo-flash-item:nth-child(1){animation:slideIn .3s ease .05s both;}
+.fc-card.open .demo-flash-item:nth-child(2){animation:slideIn .3s ease .15s both;}
+.fc-card.open .demo-flash-item:nth-child(3){animation:slideIn .3s ease .25s both;}
+
+.demo-form{display:flex;flex-direction:column;gap:8px;}
+.demo-field{background:#F9F9FB;border-radius:8px;padding:8px 12px;font-size:11px;color:#6E6E73;}
+.demo-sig{display:flex;align-items:center;gap:10px;background:#F0FDF4;border-radius:10px;padding:10px 14px;margin-top:4px;}
+.demo-sig-line{flex:1;height:2px;background:linear-gradient(90deg,#059669,transparent);}
+.demo-sig-text{font-size:11px;color:#059669;font-weight:700;white-space:nowrap;}
+
+.pricing-guarantee{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;background:#F9F9FB;border-radius:24px;padding:40px;margin-bottom:80px;}
+@media(max-width:700px){.pricing-guarantee{grid-template-columns:1fr;padding:28px 24px;}}
+.pg-item{text-align:center;}
+.pg-icon{font-size:32px;margin-bottom:12px;}
+.pg-title{font-size:15px;font-weight:800;color:#0A0A0A;margin-bottom:6px;}
+.pg-desc{font-size:13px;color:#6E6E73;line-height:1.55;}
+
+.pricing-comparison{margin-bottom:80px;}
+.pc-table{width:100%;border-collapse:collapse;font-size:14px;}
+.pc-table th{padding:14px 20px;text-align:left;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#AEAEB2;border-bottom:2px solid #F5F5F7;}
+.pc-table td{padding:14px 20px;border-bottom:1px solid #F5F5F7;color:#1D1D1F;}
+.pc-table tr:last-child td{border-bottom:none;}
+.pc-inkr{font-weight:800;color:#0A0A0A;}
+.pc-yes{color:#059669;font-weight:700;}
+.pc-no{color:#AEAEB2;}
+.pc-col-inkr{background:#FAFAFA;}
+.pc-head-inkr{background:#0A0A0A;color:#fff!important;border-radius:10px 10px 0 0;text-align:center;}
 </style>
 </head>
 <body>
@@ -1484,6 +1612,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
     <button class="nav-tab" onclick="showView('tournee')" id="tab-tournee">En tournée<span class="nav-new">✈</span></button>
     <button class="nav-tab" onclick="showView('blog')" id="tab-blog">Blog</button>
     <button class="nav-tab" onclick="goFlash()" id="tab-flash">Flash deals</button>
+    <button class="nav-tab" onclick="showView('pricing')" id="tab-pricing">Tarifs</button>
     <div class="nav-r" id="nav-right">
       <!-- Bouton "Se connecter" — remplacé par l'avatar client si connecté (JS) -->
       <button class="btn-out" id="btn-client-login" onclick="openMo('login')">Se connecter</button>
@@ -1826,6 +1955,348 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
       <h1 id="art-title" style="font-size:clamp(28px,4vw,48px);font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin-bottom:24px;"></h1>
       <img id="art-img" src="" alt="" style="width:100%;border-radius:16px;margin-bottom:32px;object-fit:cover;max-height:400px;background:rgba(255,255,255,.05);"/>
       <p id="art-excerpt" style="font-size:18px;line-height:1.75;color:rgba(255,255,255,.7);"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PRICING VIEW ══ -->
+<div class="view" id="view-pricing">
+  <div class="pricing-view">
+    <div class="pricing-inner">
+
+      <!-- HERO -->
+      <div class="pricing-hero">
+        <div class="pricing-eyebrow">inkr Pro · Pour les tatoueurs sérieux</div>
+        <h1 class="pricing-h1"><span>39€</span><br>par mois.<br>Tout inclus.</h1>
+        <p class="pricing-sub">Une seule offre. Zéro commission. Zéro surprise. Résiliez quand vous voulez.</p>
+        <div class="pricing-badge-row">
+          <span class="pricing-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Zéro commission sur vos ventes
+          </span>
+          <span class="pricing-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Résiliation libre, sans engagement
+          </span>
+          <span class="pricing-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Paiement sécurisé Stripe
+          </span>
+          <span class="pricing-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Support 7j/7
+          </span>
+        </div>
+        <button class="pricing-cta-main" onclick="openMo('register')">
+          Démarrer gratuitement 14 jours →
+        </button>
+        <div class="pricing-cta-note">Aucune CB requise pour l'essai · 39€/mois ensuite</div>
+      </div>
+
+      <!-- GARANTIES -->
+      <div class="pricing-guarantee">
+        <div class="pg-item">
+          <div class="pg-icon">🛡️</div>
+          <div class="pg-title">Données en sécurité</div>
+          <div class="pg-desc">Vos données et celles de vos clients sont chiffrées et hébergées en Europe. Conformité RGPD totale.</div>
+        </div>
+        <div class="pg-item">
+          <div class="pg-icon">⚡</div>
+          <div class="pg-title">100% dédié tatouage</div>
+          <div class="pg-desc">inkr est conçu exclusivement pour les tatoueurs. Chaque feature répond à un vrai besoin métier.</div>
+        </div>
+        <div class="pg-item">
+          <div class="pg-icon">💳</div>
+          <div class="pg-title">Zéro intermédiaire</div>
+          <div class="pg-desc">Les acomptes arrivent directement sur votre compte Stripe. inkr ne touche pas à votre argent.</div>
+        </div>
+      </div>
+
+      <!-- FEATURES GRID -->
+      <div class="pricing-section-title">Ce que vous obtenez</div>
+      <div class="feat-cards-grid" id="pricingFeatGrid">
+
+        <!-- 1 · Dépôt Stripe -->
+        <div class="fc-card" onclick="togglePricingCard(this)">
+          <div class="fc-card-top">
+            <div class="fc-icon" style="background:#D1FAE5;">💳</div>
+            <span class="fc-tag tag-green">Revenus</span>
+          </div>
+          <div class="fc-title">Dépôt en ligne (Stripe)</div>
+          <div class="fc-desc">Encaissez 50–150€ à la réservation. Zéro no-show, zéro perte de journée.</div>
+          <div class="fc-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div class="fc-demo">
+            <div class="fc-demo-inner">
+              <div class="demo-payment">
+                <div class="demo-row"><span style="color:#6E6E73;font-size:12px;">Acompte réservation</span><span class="demo-amount">80€</span></div>
+                <div style="display:flex;justify-content:flex-end;"><button class="demo-btn">Payer maintenant</button></div>
+                <div class="demo-confirm"><div class="demo-confirm-dot"></div>Paiement confirmé · Reçu envoyé par email</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2 · Consentement numérique -->
+        <div class="fc-card" onclick="togglePricingCard(this)">
+          <div class="fc-card-top">
+            <div class="fc-icon" style="background:#FEE2E2;">📋</div>
+            <span class="fc-tag tag-red">Légal</span>
+          </div>
+          <div class="fc-title">Consentement numérique</div>
+          <div class="fc-desc">Formulaire signé électroniquement avant chaque séance. Archivé dans la fiche client.</div>
+          <div class="fc-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div class="fc-demo">
+            <div class="fc-demo-inner">
+              <div class="demo-form">
+                <div class="demo-field">✓ Pas d'allergie connue · Pas de prise de médicants</div>
+                <div class="demo-field">✓ Client majeur · Consentement éclairé confirmé</div>
+                <div class="demo-sig">
+                  <div class="demo-sig-line"></div>
+                  <div class="demo-sig-text">✍️ Signé le 3 juin 2026</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 · Flash sale -->
+        <div class="fc-card" onclick="togglePricingCard(this)">
+          <div class="fc-card-top">
+            <div class="fc-icon" style="background:#FEF3C7;">⚡</div>
+            <span class="fc-tag tag-orange">Unique</span>
+          </div>
+          <div class="fc-title">Flash sale automatisé</div>
+          <div class="fc-desc">Flash dispo ? inkr envoie un WhatsApp auto à vos clients du même style. Sold out en 2h.</div>
+          <div class="fc-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div class="fc-demo">
+            <div class="fc-demo-inner">
+              <div class="demo-flash">
+                <div class="demo-flash-item"><div class="demo-flash-avatar">👤</div><div><div style="font-size:12px;font-weight:700;color:#0A0A0A;">Marie D.</div><div class="demo-flash-sent">💬 <b>Fine Line flash dispo</b> — envoyé</div></div></div>
+                <div class="demo-flash-item"><div class="demo-flash-avatar">👤</div><div><div style="font-size:12px;font-weight:700;color:#0A0A0A;">Lucas M.</div><div class="demo-flash-sent">💬 <b>Fine Line flash dispo</b> — envoyé</div></div></div>
+                <div class="demo-flash-item"><div class="demo-flash-avatar">👤</div><div><div style="font-size:12px;font-weight:700;color:#0A0A0A;">Camille R.</div><div class="demo-flash-sent">💬 <b>Fine Line flash dispo</b> — envoyé</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 · Page booking publique -->
+        <div class="fc-card" onclick="togglePricingCard(this)">
+          <div class="fc-card-top">
+            <div class="fc-icon" style="background:#DBEAFE;">🔗</div>
+            <span class="fc-tag tag-blue">Visibilité</span>
+          </div>
+          <div class="fc-title">Page booking publique</div>
+          <div class="fc-desc">inkr.club/votre-pseudo — galerie, agenda, réservation directe. Zéro commission.</div>
+          <div class="fc-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div class="fc-demo">
+            <div class="fc-demo-inner">
+              <div class="demo-url"><span style="font-size:14px;">🔒</span><span class="demo-url-bar">inkr.club/<span>@votre-studio</span></span></div>
+              <div class="demo-profile-mini">
+                <div class="demo-avatar-mini">JS</div>
+                <div><div style="font-size:13px;font-weight:800;color:#0A0A0A;">Julien Studio</div><div style="font-size:11px;color:#6E6E73;">Fine Line · Blackwork · 12 avis ⭐</div></div>
+              </div>
+              <button style="width:100%;margin-top:10px;background:#0A0A0A;color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;">Réserver une séance →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 · Suivi cicatrisation -->
+        <div class="fc-card" onclick="togglePricingCard(this)">
+          <div class="fc-card-top">
+            <div class="fc-icon" style="background:#D1FAE5;">🩹</div>
+            <span class="fc-tag tag-green">Fidélisation</span>
+          </div>
+          <div class="fc-title">Suivi cicatrisation</div>
+          <div class="fc-desc">Rappels auto J+5 et J+30 après chaque séance. Vos clients reviennent.</div>
+          <div class="fc-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div class="fc-demo">
+            <div class="fc-demo-inner">
+              <div class="demo-timeline">
+                <div class="demo-tl-item demo-tl-line">
+                  <div class="demo-tl-dot" style="background:#8B5CF6;"></div>
+                  <div><div class="demo-tl-label">J+5 · Suivi cicatrisation</div><div class="demo-tl-sub">💬 "Comment va votre tatouage ? Besoin d'un conseil ?"</div></div>
+                </div>
+                <div class="demo-tl-item demo-tl-line">
+                  <div class="demo-tl-dot" style="background:#059669;"></div>
+                  <div><div class="demo-tl-label">J+30 · Retouche offerte</div><div class="demo-tl-sub">💬 "1 mois déjà ! Retouche gratuite encore disponible."</div></div>
+                </div>
+                <div class="demo-tl-item">
+                  <div class="demo-tl-dot" style="background:#EA580C;"></div>
+                  <div><div class="demo-tl-label">M+3 · Relance prochain projet</div><div class="demo-tl-sub">💬 "De nouveaux designs vous attendent… 😊"</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6 · Mode tournée -->
+        <div class="fc-card" onclick="togglePricingCard(this)">
+          <div class="fc-card-top">
+            <div class="fc-icon" style="background:#EDE9FE;">✈️</div>
+            <span class="fc-tag tag-purple">Unique</span>
+          </div>
+          <div class="fc-title">Mode tournée</div>
+          <div class="fc-desc">Vos dates de tournée sur la carte inkr + post Instagram généré automatiquement.</div>
+          <div class="fc-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div class="fc-demo">
+            <div class="fc-demo-inner">
+              <div class="demo-notif" style="background:#EDE9FE;border-color:#C4B5FD;">
+                <div class="demo-notif-icon">✈️</div>
+                <div>
+                  <div style="font-weight:800;color:#5B21B6;font-size:13px;">Post Instagram généré</div>
+                  <div style="font-size:11px;color:#6D28D9;margin-top:3px;">📍 Lyon · 15–20 juin · 3 places dispo · #tatouage #tournée</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:10px;">
+                <div style="flex:1;background:#F5F5F7;border-radius:8px;padding:8px;text-align:center;font-size:11px;font-weight:700;color:#6E6E73;">📍 Paris</div>
+                <div style="flex:1;background:#0A0A0A;border-radius:8px;padding:8px;text-align:center;font-size:11px;font-weight:700;color:#fff;">📍 Lyon ← actif</div>
+                <div style="flex:1;background:#F5F5F7;border-radius:8px;padding:8px;text-align:center;font-size:11px;font-weight:700;color:#6E6E73;">📍 Bordeaux</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7 · Rapport fiscal -->
+        <div class="fc-card" onclick="togglePricingCard(this)">
+          <div class="fc-card-top">
+            <div class="fc-icon" style="background:#FEF3C7;">📊</div>
+            <span class="fc-tag tag-orange">Revenus</span>
+          </div>
+          <div class="fc-title">Rapport fiscal mensuel</div>
+          <div class="fc-desc">CA, acomptes, RDV — exportable PDF. Prêt pour votre comptable ou l'URSSAF.</div>
+          <div class="fc-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div class="fc-demo">
+            <div class="fc-demo-inner">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
+                <span style="font-size:11px;color:#AEAEB2;font-weight:700;letter-spacing:.8px;text-transform:uppercase;">CA Juin 2026</span>
+                <span style="font-size:22px;font-weight:900;color:#0A0A0A;">3 840€</span>
+              </div>
+              <div class="demo-chart">
+                <div class="demo-bar" style="height:55%;"></div>
+                <div class="demo-bar" style="height:70%;"></div>
+                <div class="demo-bar" style="height:45%;"></div>
+                <div class="demo-bar" style="height:90%;"></div>
+                <div class="demo-bar" style="height:65%;"></div>
+                <div class="demo-bar" style="height:100%;"></div>
+              </div>
+              <div class="demo-chart-label"><span>Jan</span><span>Fév</span><span>Mar</span><span>Avr</span><span>Mai</span><span>Juin</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8 · Moodboard client -->
+        <div class="fc-card" onclick="togglePricingCard(this)">
+          <div class="fc-card-top">
+            <div class="fc-icon" style="background:#DBEAFE;">🖼️</div>
+            <span class="fc-tag tag-blue">Unique</span>
+          </div>
+          <div class="fc-title">Moodboard client</div>
+          <div class="fc-desc">Le client partage ses références avant la séance. Fini les screenshots WhatsApp à minuit.</div>
+          <div class="fc-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div class="fc-demo">
+            <div class="fc-demo-inner">
+              <div style="font-size:11px;color:#AEAEB2;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;">Références de Marie D.</div>
+              <div class="demo-grid">
+                <div class="demo-grid-cell">🌸</div>
+                <div class="demo-grid-cell">🐉</div>
+                <div class="demo-grid-cell">⚡</div>
+              </div>
+              <div style="font-size:11px;color:#6E6E73;margin-top:10px;">💬 <em>"J'aimerais quelque chose dans cet esprit, fin et délicat"</em></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 9 · Certificat d'authenticité -->
+        <div class="fc-card" onclick="togglePricingCard(this)">
+          <div class="fc-card-top">
+            <div class="fc-icon" style="background:#FEF3C7;">🏆</div>
+            <span class="fc-tag tag-orange">Premium</span>
+          </div>
+          <div class="fc-title">Certificat d'authenticité</div>
+          <div class="fc-desc">QR code unique par tatouage. Le client prouve son œuvre, vous protégez votre art.</div>
+          <div class="fc-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div class="fc-demo">
+            <div class="fc-demo-inner">
+              <div class="demo-qr">
+                <div class="demo-qr-block"></div>
+                <div class="demo-qr-text">
+                  Tatouage certifié inkr<br>
+                  <strong style="color:#0A0A0A;">Fine Line · Bras droit</strong><br>
+                  Artiste : Julien Studio<br>
+                  Date : 3 juin 2026
+                  <div class="demo-qr-id">INK-2026-00847</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 10 · IA Portfolio SEO — COMING SOON -->
+        <div class="fc-card" style="opacity:.65;cursor:default;" onclick="">
+          <div class="fc-card-top">
+            <div class="fc-icon" style="background:#F5F5F7;">🤖</div>
+            <span class="fc-tag tag-cs">Coming soon</span>
+          </div>
+          <div class="fc-title">IA Portfolio SEO</div>
+          <div class="fc-desc">L'IA génère description + hashtags pour chaque photo uploadée. Apparaissez dans Google sans rien faire.</div>
+          <div style="margin-top:14px;display:inline-flex;align-items:center;gap:7px;background:#F5F5F7;border-radius:980px;padding:7px 16px;font-size:12px;font-weight:700;color:#AEAEB2;">
+            ⏳ Disponible prochainement
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TABLEAU COMPARATIF -->
+      <div class="pricing-section-title">inkr vs les concurrents</div>
+      <div class="pricing-comparison">
+        <table class="pc-table">
+          <thead>
+            <tr>
+              <th style="width:40%;">Fonctionnalité</th>
+              <th class="pc-head-inkr">inkr Pro · 39€/mois</th>
+              <th>Planity · 49€/mois</th>
+              <th>Booksy · 39$/mois</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="pc-inkr">Commission sur acomptes</td><td class="pc-col-inkr pc-yes">✓ 0% — Stripe direct</td><td class="pc-no">✗ +1,5–2%</td><td class="pc-no">✗ +2–3%</td></tr>
+            <tr><td class="pc-inkr">Spécifique tatouage</td><td class="pc-col-inkr pc-yes">✓ 100% dédié</td><td class="pc-no">✗ Généraliste</td><td class="pc-no">✗ Généraliste</td></tr>
+            <tr><td class="pc-inkr">Flash sale automatisé</td><td class="pc-col-inkr pc-yes">✓ Inclus</td><td class="pc-no">✗ Absent</td><td class="pc-no">✗ Absent</td></tr>
+            <tr><td class="pc-inkr">Consentement numérique tatouage</td><td class="pc-col-inkr pc-yes">✓ Inclus</td><td class="pc-no">✗ Absent</td><td class="pc-no">✗ Absent</td></tr>
+            <tr><td class="pc-inkr">Suivi cicatrisation J+5 / J+30</td><td class="pc-col-inkr pc-yes">✓ Inclus</td><td class="pc-no">✗ Absent</td><td class="pc-no">✗ Absent</td></tr>
+            <tr><td class="pc-inkr">Mode tournée + post Insta auto</td><td class="pc-col-inkr pc-yes">✓ Inclus</td><td class="pc-no">✗ Absent</td><td class="pc-no">✗ Absent</td></tr>
+            <tr><td class="pc-inkr">Annuaire + carte nationale</td><td class="pc-col-inkr pc-yes">✓ inkr.club</td><td class="pc-no">✗ Absent</td><td class="pc-no">✗ Absent</td></tr>
+            <tr><td class="pc-inkr">Rapport fiscal mensuel</td><td class="pc-col-inkr pc-yes">✓ Inclus</td><td class="pc-no">Export basique</td><td class="pc-no">Export basique</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- CTA FINAL -->
+      <div style="text-align:center;padding:60px 0 20px;">
+        <div style="font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-2px;color:#0A0A0A;margin-bottom:16px;">Prêt à passer au niveau supérieur ?</div>
+        <p style="font-size:16px;color:#6E6E73;margin-bottom:32px;">Rejoignez les tatoueurs inkr Pro. 14 jours d'essai gratuit, résiliation libre.</p>
+        <button class="pricing-cta-main" onclick="openMo('register')">Créer mon compte inkr Pro →</button>
+        <div class="pricing-cta-note" style="margin-top:12px;">Déjà inkr Pro ? <a href="/dashboard" style="color:#8B5CF6;font-weight:700;text-decoration:underline;">Accéder au dashboard →</a></div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -2844,6 +3315,12 @@ function showView(id){
   observe();
 }
 function goFlash(){showView('home');setTimeout(()=>document.getElementById('flash').scrollIntoView({behavior:'smooth'}),100);}
+
+function togglePricingCard(card){
+  const isOpen=card.classList.contains('open');
+  document.querySelectorAll('#pricingFeatGrid .fc-card').forEach(c=>c.classList.remove('open'));
+  if(!isOpen) card.classList.add('open');
+}
 
 // ═══════════════════ RENDER ARTISTS ═══════════════════
 function renderArtists(){
