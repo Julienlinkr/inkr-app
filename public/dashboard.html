@@ -7,9 +7,10 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{--bg:#080808;--surface:#101010;--card:#181818;--border:#252525;--accent:#FFFFFF;--acl:rgba(255,255,255,.06);--txt:#F2F2F2;--muted:#999;--dim:#555;--green:#22C55E;--blue:#60A5FA;--gold:#F59E0B;--red:#EF4444;--grad:linear-gradient(135deg,#667eea,#a855f7,#ec4899,#f97316);--r:6px;--rl:10px;}
-html,body{height:100%;}
+html,body{height:100%;color-scheme:dark;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--txt);overflow:hidden;}
-input,textarea,select{font-family:inherit;}
+input,textarea,select{font-family:inherit;color-scheme:dark;}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.7);opacity:.8;cursor:pointer;}
 button{font-family:inherit;cursor:pointer;}
 a{text-decoration:none;color:inherit;}
 
