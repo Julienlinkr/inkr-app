@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bienvenue dans la communauté inkr Pro</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #F5F5F7; font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif; }
+  .wrapper { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+  .card { background: #fff; border-radius: 20px; overflow: hidden; }
+
+  /* HEADER */
+  .header { background: #0A0A0A; padding: 40px; text-align: center; }
+  .logo { font-size: 32px; font-weight: 900; letter-spacing: -1.5px; color: #fff; }
+  .logo-sub { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.35); margin-top: 4px; }
+
+  /* BODY */
+  .body { padding: 48px 48px 40px; }
+  .emoji-hero { font-size: 48px; text-align: center; margin-bottom: 24px; }
+  .title { font-size: 26px; font-weight: 800; color: #0A0A0A; letter-spacing: -.8px; line-height: 1.2; margin-bottom: 16px; }
+  .text { font-size: 15px; color: #6E6E73; line-height: 1.75; margin-bottom: 20px; }
+  .text strong { color: #0A0A0A; font-weight: 700; }
+
+  /* CTA */
+  .cta-wrap { text-align: center; margin: 32px 0; }
+  .cta { display: inline-block; background: #0A0A0A; color: #fff; text-decoration: none; padding: 16px 36px; border-radius: 12px; font-size: 15px; font-weight: 700; letter-spacing: -.2px; }
+
+  /* STEPS */
+  .steps { margin: 32px 0; }
+  .step { display: flex; gap: 16px; align-items: flex-start; padding: 16px 0; border-bottom: 1px solid #F5F5F7; }
+  .step:last-child { border-bottom: none; }
+  .step-num { width: 32px; height: 32px; border-radius: 50%; background: #0A0A0A; color: #fff; font-size: 13px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .step-title { font-size: 14px; font-weight: 700; color: #0A0A0A; margin-bottom: 3px; }
+  .step-desc { font-size: 13px; color: #6E6E73; line-height: 1.5; }
+
+  /* CALLOUT */
+  .callout { background: #F9F9FB; border-radius: 14px; padding: 20px 24px; margin: 24px 0; border-left: 3px solid #0A0A0A; }
+  .callout-title { font-size: 13px; font-weight: 700; color: #0A0A0A; margin-bottom: 6px; }
+  .callout-text { font-size: 13px; color: #6E6E73; line-height: 1.6; }
+
+  /* FOOTER */
+  .footer { background: #F9F9FB; padding: 28px 48px; text-align: center; }
+  .footer-text { font-size: 12px; color: #AEAEB2; line-height: 1.7; }
+  .footer-text a { color: #0A0A0A; text-decoration: none; font-weight: 600; }
+
+  @media (max-width: 520px) {
+    .body, .footer { padding-left: 24px; padding-right: 24px; }
+    .title { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="card">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="logo">inkr</div>
+      <div class="logo-sub">Espace artiste pro</div>
+    </div>
+
+    <!-- BODY -->
+    <div class="body">
+      <div class="emoji-hero">🎨</div>
+
+      <h1 class="title">Bienvenue dans la communauté inkr Pro, {{prénom}} !</h1>
+
+      <p class="text">
+        Tu viens de rejoindre les tatoueurs les plus engagés de France. Ton compte est actif —
+        <strong>14 jours d'essai gratuit</strong> pour explorer tout ce qu'inkr a à t'offrir.
+      </p>
+
+      <p class="text">
+        On a construit inkr pour un seul objectif : <strong>te faire gagner du temps, des clients, et de l'argent</strong> —
+        sans commission, sans galère, sans bullshit.
+      </p>
+
+      <div class="cta-wrap">
+        <a href="https://www.inkr.club/dashboard" class="cta">Accéder à mon dashboard →</a>
+      </div>
+
+      <!-- PROCHAINES ÉTAPES -->
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div>
+            <div class="step-title">Complète ton profil artiste</div>
+            <div class="step-desc">Bio, styles, photos de salon — ta fiche apparaît dans l'annuaire inkr dès que c'est rempli.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div>
+            <div class="step-title">Partage ton lien de réservation</div>
+            <div class="step-desc">Tu as une page publique sur inkr.club/ton-pseudo. Mets-la dans ta bio Instagram aujourd'hui.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div>
+            <div class="step-title">Active tes automations</div>
+            <div class="step-desc">Rappel 24h avant, suivi cicatrisation J+5, message d'anniversaire — tout est prêt, active en un clic.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div>
+            <div class="step-title">Ton call de présentation personnalisé</div>
+            <div class="step-desc">On te propose un appel de 20 min pour faire le tour de l'outil ensemble et répondre à toutes tes questions. Réserve ton créneau ci-dessous.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cta-wrap" style="margin-top: 8px;">
+        <a href="https://calendly.com/inkr/onboarding" class="cta" style="background: #7C3AED;">Réserver mon call de présentation →</a>
+      </div>
+
+      <!-- CALLOUT SUPPORT -->
+      <div class="callout">
+        <div class="callout-title">💬 Une question ? On est là.</div>
+        <div class="callout-text">
+          Notre équipe répond 7j/7. Écris-nous à
+          <a href="mailto:hello@inkr.club" style="color: #0A0A0A; font-weight: 700;">hello@inkr.club</a>
+          et on te répond en moins de 2h en semaine.
+          <br><br>
+          Tu peux aussi répondre directement à cet email — on lit tout.
+        </div>
+      </div>
+
+      <p class="text" style="margin-top: 24px; font-size: 14px;">
+        À très vite sur inkr,<br>
+        <strong>L'équipe inkr</strong> 🖤
+      </p>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <p class="footer-text">
+        Tu reçois cet email car tu viens de créer un compte inkr Pro.<br>
+        <a href="https://www.inkr.club">inkr.club</a> ·
+        <a href="mailto:hello@inkr.club">hello@inkr.club</a> ·
+        <a href="#">Se désabonner</a>
+      </p>
+      <p class="footer-text" style="margin-top: 8px; color: #D1D1D6;">
+        © 2026 inkr · La plateforme N°1 des tatoueurs professionnels en Europe.
+      </p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

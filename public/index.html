@@ -1509,8 +1509,8 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 .fc-card.open .fc-arrow{transform:rotate(45deg);background:#0A0A0A;}
 .fc-arrow svg{width:14px;height:14px;}
 .fc-card.open .fc-arrow svg path{stroke:#fff;}
-.fc-demo{max-height:0;overflow:hidden;transition:max-height .4s ease,opacity .3s;opacity:0;}
-.fc-card.open .fc-demo{max-height:280px;opacity:1;}
+.fc-demo{max-height:0;overflow:hidden;transition:max-height .5s ease,opacity .3s;opacity:0;}
+.fc-card.open .fc-demo{max-height:420px;opacity:1;}
 .fc-demo-inner{margin-top:20px;padding-top:18px;border-top:1px solid #F5F5F7;}
 
 /* Mini demo UIs */
@@ -1581,12 +1581,12 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 .demo-sig-line{flex:1;height:2px;background:linear-gradient(90deg,#059669,transparent);}
 .demo-sig-text{font-size:11px;color:#059669;font-weight:700;white-space:nowrap;}
 
-.pricing-guarantee{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;background:#F9F9FB;border-radius:24px;padding:40px;margin-bottom:80px;}
-@media(max-width:700px){.pricing-guarantee{grid-template-columns:1fr;padding:28px 24px;}}
-.pg-item{text-align:center;}
-.pg-icon{font-size:32px;margin-bottom:12px;}
-.pg-title{font-size:15px;font-weight:800;color:#0A0A0A;margin-bottom:6px;}
-.pg-desc{font-size:13px;color:#6E6E73;line-height:1.55;}
+.pricing-guarantee{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:80px;}
+@media(max-width:700px){.pricing-guarantee{grid-template-columns:1fr;}}
+.guar-item{background:#fff;border:1px solid #E5E5EA;border-radius:20px;padding:32px 28px;display:flex;flex-direction:column;gap:16px;}
+.guar-icon-wrap{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;}
+.guar-title{font-size:16px;font-weight:700;color:#0A0A0A;letter-spacing:-.3px;}
+.guar-desc{font-size:13px;color:#6E6E73;line-height:1.65;}
 
 .pricing-comparison{margin-bottom:80px;}
 .pc-table{width:100%;border-collapse:collapse;font-size:14px;}
@@ -1598,6 +1598,37 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 .pc-no{color:#AEAEB2;}
 .pc-col-inkr{background:#FAFAFA;}
 .pc-head-inkr{background:#0A0A0A;color:#fff!important;border-radius:10px 10px 0 0;text-align:center;}
+
+/* Channel Manager animation */
+.demo-channels{display:flex;flex-direction:column;gap:0;}
+.demo-ch-msg{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;border-radius:12px;opacity:0;transform:translateY(6px);transition:opacity .4s ease,transform .4s ease;}
+.demo-ch-msg.visible{opacity:1;transform:translateY(0);}
+.demo-ch-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;font-weight:700;}
+.demo-ch-source{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin-bottom:2px;}
+.demo-ch-text{font-size:12px;color:#1D1D1F;line-height:1.4;}
+.demo-ch-time{font-size:10px;color:#AEAEB2;margin-left:auto;flex-shrink:0;padding-top:2px;}
+.demo-ch-wa{background:#F0FDF4;}.demo-ch-ig{background:#FDF2F8;}.demo-ch-em{background:#EFF6FF;}
+.demo-ch-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:980px;margin-bottom:6px;}
+.badge-wa{background:#DCFCE7;color:#166534;}.badge-ig{background:#FCE7F3;color:#9D174D;}.badge-em{background:#DBEAFE;color:#1E40AF;}
+
+/* Campagnes demo */
+.demo-camp-chip{display:inline-flex;align-items:center;gap:5px;background:#F5F5F7;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;color:#1D1D1F;cursor:pointer;border:1.5px solid transparent;transition:all .2s;}
+.demo-camp-chip.sel{background:#0A0A0A;color:#fff;border-color:#0A0A0A;}
+@keyframes sendPulse{0%{transform:scale(1);}50%{transform:scale(.94);}100%{transform:scale(1);}}
+.demo-send-anim{animation:sendPulse .3s ease;}
+
+/* Fidélité demo */
+.demo-loyalty-card{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:16px;padding:18px;color:#fff;}
+.demo-stamps{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.demo-stamp{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:16px;}
+.demo-stamp.filled{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.5);}
+@keyframes stampAppear{0%{transform:scale(0) rotate(-10deg);}70%{transform:scale(1.15) rotate(3deg);}100%{transform:scale(1) rotate(0deg);}}
+.fc-card.open .demo-stamp.filled{animation:stampAppear .35s ease both;}
+.fc-card.open .demo-stamp:nth-child(1){animation-delay:.05s!important;}
+.fc-card.open .demo-stamp:nth-child(2){animation-delay:.12s!important;}
+.fc-card.open .demo-stamp:nth-child(3){animation-delay:.19s!important;}
+.fc-card.open .demo-stamp:nth-child(4){animation-delay:.26s!important;}
+.fc-card.open .demo-stamp:nth-child(5){animation-delay:.33s!important;}
 </style>
 </head>
 <body>
@@ -1966,7 +1997,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 
       <!-- HERO -->
       <div class="pricing-hero">
-        <div class="pricing-eyebrow">inkr Pro · Pour les tatoueurs sérieux</div>
+        <div class="pricing-eyebrow">inkr Pro · Pour les tatoueurs engagés</div>
         <h1 class="pricing-h1"><span>39€</span><br>par mois.<br>Tout inclus.</h1>
         <p class="pricing-sub">Une seule offre. Zéro commission. Zéro surprise. Résiliez quand vous voulez.</p>
         <div class="pricing-badge-row">
@@ -1995,20 +2026,32 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 
       <!-- GARANTIES -->
       <div class="pricing-guarantee">
-        <div class="pg-item">
-          <div class="pg-icon">🛡️</div>
-          <div class="pg-title">Données en sécurité</div>
-          <div class="pg-desc">Vos données et celles de vos clients sont chiffrées et hébergées en Europe. Conformité RGPD totale.</div>
+        <div class="guar-item">
+          <div class="guar-icon-wrap" style="background:#EFF6FF;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <div class="guar-title">Données en sécurité</div>
+            <div class="guar-desc">Vos données et celles de vos clients sont chiffrées, hébergées en Europe. Conformité RGPD totale.</div>
+          </div>
         </div>
-        <div class="pg-item">
-          <div class="pg-icon">⚡</div>
-          <div class="pg-title">100% dédié tatouage</div>
-          <div class="pg-desc">inkr est conçu exclusivement pour les tatoueurs. Chaque feature répond à un vrai besoin métier.</div>
+        <div class="guar-item">
+          <div class="guar-icon-wrap" style="background:#FFF7ED;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div>
+            <div class="guar-title">100% dédié tatouage</div>
+            <div class="guar-desc">Chaque feature a été pensée pour le métier de tatoueur. Rien de superflu, tout ce qu'il faut.</div>
+          </div>
         </div>
-        <div class="pg-item">
-          <div class="pg-icon">💳</div>
-          <div class="pg-title">Zéro intermédiaire</div>
-          <div class="pg-desc">Les acomptes arrivent directement sur votre compte Stripe. inkr ne touche pas à votre argent.</div>
+        <div class="guar-item">
+          <div class="guar-icon-wrap" style="background:#F0FDF4;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <div>
+            <div class="guar-title">Zéro intermédiaire</div>
+            <div class="guar-desc">Les acomptes arrivent directement sur votre Stripe. inkr ne touche jamais votre argent.</div>
+          </div>
         </div>
       </div>
 
@@ -2038,7 +2081,142 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
           </div>
         </div>
 
-        <!-- 2 · Consentement numérique -->
+        <!-- 2 · Channel Manager -->
+        <div class="fc-card" onclick="togglePricingCard(this);startChannelAnim(this)">
+          <div class="fc-card-top">
+            <div class="fc-icon" style="background:#F0F9FF;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0284C7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <span class="fc-tag tag-blue">Unique</span>
+          </div>
+          <div class="fc-title">Channel Manager</div>
+          <div class="fc-desc">WhatsApp, Instagram, email — tout dans un seul endroit. Fini de jongler entre les applis.</div>
+          <div class="fc-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div class="fc-demo">
+            <div class="fc-demo-inner">
+              <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+                <span class="demo-ch-badge badge-wa">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="#16A34A"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                  WhatsApp
+                </span>
+                <span class="demo-ch-badge badge-ig">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="#9D174D"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path fill="#FCE7F3" d="M12 7a5 5 0 100 10A5 5 0 0012 7zm0 8a3 3 0 110-6 3 3 0 010 6zm4.5-9a1 1 0 100 2 1 1 0 000-2z"/></svg>
+                  Instagram
+                </span>
+                <span class="demo-ch-badge badge-em">📧 Email</span>
+              </div>
+              <div class="demo-channels" id="chDemo">
+                <div class="demo-ch-msg demo-ch-wa">
+                  <div class="demo-ch-avatar" style="background:#DCFCE7;color:#16A34A;">J</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:12px;font-weight:700;color:#0A0A0A;">Jérôme</span><span class="demo-ch-badge badge-wa" style="margin:0;">WA</span></div>
+                    <div class="demo-ch-text">Bonjour, vous avez des dispo en juillet ?</div>
+                  </div>
+                  <div class="demo-ch-time">09:14</div>
+                </div>
+                <div class="demo-ch-msg demo-ch-ig">
+                  <div class="demo-ch-avatar" style="background:#FCE7F3;color:#9D174D;">L</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:12px;font-weight:700;color:#0A0A0A;">Léa</span><span class="demo-ch-badge badge-ig" style="margin:0;">IG</span></div>
+                    <div class="demo-ch-text">Votre style fine line est incroyable 😍 Je veux prendre RDV !</div>
+                  </div>
+                  <div class="demo-ch-time">10:32</div>
+                </div>
+                <div class="demo-ch-msg demo-ch-em">
+                  <div class="demo-ch-avatar" style="background:#DBEAFE;color:#1E40AF;">M</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="display:flex;align-items:center;gap:6px;"><span style="font-size:12px;font-weight:700;color:#0A0A0A;">Marie</span><span class="demo-ch-badge badge-em" style="margin:0;">Email</span></div>
+                    <div class="demo-ch-text">Suite à notre échange, je confirme mon RDV du 18 juin.</div>
+                  </div>
+                  <div class="demo-ch-time">11:05</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 · Campagnes marketing -->
+        <div class="fc-card" onclick="togglePricingCard(this)">
+          <div class="fc-card-top">
+            <div class="fc-icon" style="background:#FFF7ED;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+            </div>
+            <span class="fc-tag tag-orange">Marketing</span>
+          </div>
+          <div class="fc-title">Campagnes en 2 clics</div>
+          <div class="fc-desc">Flash, relance, anniversaire — ciblez par style, par client, par inactivité. Envoi WhatsApp + email.</div>
+          <div class="fc-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div class="fc-demo">
+            <div class="fc-demo-inner">
+              <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#AEAEB2;margin-bottom:8px;">Type de campagne</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;" id="campChips">
+                <span class="demo-camp-chip sel" onclick="selectCamp(this)">⚡ Flash</span>
+                <span class="demo-camp-chip" onclick="selectCamp(this)">↩️ Relance</span>
+                <span class="demo-camp-chip" onclick="selectCamp(this)">🎂 Anniversaire</span>
+                <span class="demo-camp-chip" onclick="selectCamp(this)">✨ Promo</span>
+              </div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#AEAEB2;margin-bottom:8px;">Ciblage</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+                <span class="demo-camp-chip sel">Fine Line</span>
+                <span class="demo-camp-chip">Blackwork</span>
+                <span class="demo-camp-chip">Tous</span>
+              </div>
+              <div style="background:#F9F9FB;border-radius:10px;padding:10px 14px;font-size:12px;color:#6E6E73;margin-bottom:10px;">
+                "Salut {{prénom}} ! J'ai 2 flashs Fine Line dispo ce week-end 🔥 Intéressé·e ?"
+              </div>
+              <button id="campSendBtn" onclick="animCampSend()" style="width:100%;background:#0A0A0A;color:#fff;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                Envoyer à 14 clients
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 · Programme de fidélité -->
+        <div class="fc-card" onclick="togglePricingCard(this)">
+          <div class="fc-card-top">
+            <div class="fc-icon" style="background:#FDF4FF;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9333EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </div>
+            <span class="fc-tag tag-purple">Fidélisation</span>
+          </div>
+          <div class="fc-title">Programme de fidélité</div>
+          <div class="fc-desc">Créez votre propre carte tampon en 2 clics. Personnalisée par client, gérée depuis inkr.</div>
+          <div class="fc-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <div class="fc-demo">
+            <div class="fc-demo-inner">
+              <div class="demo-loyalty-card">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+                  <div>
+                    <div style="font-size:10px;font-weight:700;letter-spacing:1px;opacity:.5;text-transform:uppercase;margin-bottom:4px;">Carte fidélité</div>
+                    <div style="font-size:15px;font-weight:800;">Marie Dupont</div>
+                  </div>
+                  <div style="font-size:10px;opacity:.4;font-weight:700;letter-spacing:1px;">inkr</div>
+                </div>
+                <div class="demo-stamps">
+                  <div class="demo-stamp filled">🎨</div>
+                  <div class="demo-stamp filled">🎨</div>
+                  <div class="demo-stamp filled">🎨</div>
+                  <div class="demo-stamp filled">🎨</div>
+                  <div class="demo-stamp filled">🎨</div>
+                  <div class="demo-stamp">·</div>
+                  <div class="demo-stamp">·</div>
+                  <div class="demo-stamp">·</div>
+                  <div class="demo-stamp" style="border-color:rgba(255,255,255,.5);background:rgba(255,255,255,.1);font-size:11px;font-weight:800;">🎁</div>
+                </div>
+                <div style="margin-top:12px;font-size:11px;opacity:.5;">5 séances = retouche offerte 🎁</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 · Consentement numérique (anciennement 2) -->
         <div class="fc-card" onclick="togglePricingCard(this)">
           <div class="fc-card-top">
             <div class="fc-icon" style="background:#FEE2E2;">📋</div>
@@ -3320,6 +3498,29 @@ function togglePricingCard(card){
   const isOpen=card.classList.contains('open');
   document.querySelectorAll('#pricingFeatGrid .fc-card').forEach(c=>c.classList.remove('open'));
   if(!isOpen) card.classList.add('open');
+}
+
+function startChannelAnim(card){
+  if(card.classList.contains('open')) return;
+  setTimeout(()=>{
+    const msgs=card.querySelectorAll('.demo-ch-msg');
+    msgs.forEach((m,i)=>setTimeout(()=>m.classList.add('visible'),i*320));
+  },200);
+}
+
+function selectCamp(chip){
+  chip.closest('.demo-channels, div').querySelectorAll('.demo-camp-chip').forEach(c=>c.classList.remove('sel'));
+  chip.classList.add('sel');
+}
+
+function animCampSend(){
+  const btn=document.getElementById('campSendBtn');
+  if(!btn)return;
+  btn.classList.add('demo-send-anim');
+  const orig=btn.innerHTML;
+  btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> 14 messages envoyés !';
+  btn.style.background='#059669';
+  setTimeout(()=>{btn.innerHTML=orig;btn.style.background='#0A0A0A';btn.classList.remove('demo-send-anim');},2500);
 }
 
 // ═══════════════════ RENDER ARTISTS ═══════════════════
