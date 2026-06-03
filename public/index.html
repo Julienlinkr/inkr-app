@@ -1491,7 +1491,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 @media(max-width:900px){.feat-cards-grid{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:560px){.feat-cards-grid{grid-template-columns:1fr;} .pricing-h1{letter-spacing:-2px;} .pricing-view{padding:60px 16px 80px;}}
 
-.fc-card{background:#fff;border:1.5px solid #E5E5EA;border-radius:18px;padding:24px;cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .15s;position:relative;overflow:hidden;}
+.fc-card{background:#fff;border:1.5px solid #E5E5EA;border-radius:18px;padding:24px;cursor:pointer;transition:border-color .2s,box-shadow .2s,transform .15s;position:relative;}
 .fc-card:hover{border-color:#C7C7CC;box-shadow:0 8px 32px rgba(0,0,0,.06);transform:translateY(-2px);}
 .fc-card.open{border-color:#0A0A0A;box-shadow:0 12px 48px rgba(0,0,0,.1);}
 .fc-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
@@ -1510,7 +1510,8 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 .fc-arrow svg{width:14px;height:14px;}
 .fc-card.open .fc-arrow svg path{stroke:#fff;}
 .fc-demo{max-height:0;overflow:hidden;transition:max-height .5s ease,opacity .3s;opacity:0;}
-.fc-card.open .fc-demo{max-height:420px;opacity:1;}
+.fc-card.open .fc-demo{max-height:600px;opacity:1;}
+.fc-card.open .fc-arrow{display:none;}
 .fc-demo-inner{margin-top:20px;padding-top:18px;border-top:1px solid #F5F5F7;}
 
 /* Mini demo UIs */
@@ -2018,43 +2019,13 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
             Support 7j/7
           </span>
         </div>
-        <button class="pricing-cta-main" onclick="openMo('register')">
+        <button class="pricing-cta-main" onclick="openPricingRegister()">
           Démarrer gratuitement 14 jours →
         </button>
         <div class="pricing-cta-note">Aucune CB requise pour l'essai · 39€/mois ensuite</div>
       </div>
 
       <!-- GARANTIES -->
-      <div class="pricing-guarantee">
-        <div class="guar-item">
-          <div class="guar-icon-wrap" style="background:#EFF6FF;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          </div>
-          <div>
-            <div class="guar-title">Données en sécurité</div>
-            <div class="guar-desc">Vos données et celles de vos clients sont chiffrées, hébergées en Europe. Conformité RGPD totale.</div>
-          </div>
-        </div>
-        <div class="guar-item">
-          <div class="guar-icon-wrap" style="background:#FFF7ED;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-          </div>
-          <div>
-            <div class="guar-title">100% dédié tatouage</div>
-            <div class="guar-desc">Chaque feature a été pensée pour le métier de tatoueur. Rien de superflu, tout ce qu'il faut.</div>
-          </div>
-        </div>
-        <div class="guar-item">
-          <div class="guar-icon-wrap" style="background:#F0FDF4;">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          </div>
-          <div>
-            <div class="guar-title">Zéro intermédiaire</div>
-            <div class="guar-desc">Les acomptes arrivent directement sur votre Stripe. inkr ne touche jamais votre argent.</div>
-          </div>
-        </div>
-      </div>
-
       <!-- FEATURES GRID -->
       <div class="pricing-section-title">Ce que vous obtenez</div>
       <div class="feat-cards-grid" id="pricingFeatGrid">
@@ -2400,42 +2371,17 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
           </div>
         </div>
 
-        <!-- 9 · Certificat d'authenticité -->
-        <div class="fc-card" onclick="togglePricingCard(this)">
+        <!-- 9 · IA Portfolio SEO — COMING SOON -->
+        <div class="fc-card" style="opacity:.6;cursor:default;">
           <div class="fc-card-top">
-            <div class="fc-icon" style="background:#FEF3C7;">🏆</div>
-            <span class="fc-tag tag-orange">Premium</span>
-          </div>
-          <div class="fc-title">Certificat d'authenticité</div>
-          <div class="fc-desc">QR code unique par tatouage. Le client prouve son œuvre, vous protégez votre art.</div>
-          <div class="fc-arrow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </div>
-          <div class="fc-demo">
-            <div class="fc-demo-inner">
-              <div class="demo-qr">
-                <div class="demo-qr-block"></div>
-                <div class="demo-qr-text">
-                  Tatouage certifié inkr<br>
-                  <strong style="color:#0A0A0A;">Fine Line · Bras droit</strong><br>
-                  Artiste : Julien Studio<br>
-                  Date : 3 juin 2026
-                  <div class="demo-qr-id">INK-2026-00847</div>
-                </div>
-              </div>
+            <div class="fc-icon" style="background:#F5F5F7;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#AEAEB2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
             </div>
+            <span class="fc-tag tag-cs">Bientôt</span>
           </div>
-        </div>
-
-        <!-- 10 · IA Portfolio SEO — COMING SOON -->
-        <div class="fc-card" style="opacity:.65;cursor:default;" onclick="">
-          <div class="fc-card-top">
-            <div class="fc-icon" style="background:#F5F5F7;">🤖</div>
-            <span class="fc-tag tag-cs">Coming soon</span>
-          </div>
-          <div class="fc-title">IA Portfolio SEO</div>
-          <div class="fc-desc">L'IA génère description + hashtags pour chaque photo uploadée. Apparaissez dans Google sans rien faire.</div>
-          <div style="margin-top:14px;display:inline-flex;align-items:center;gap:7px;background:#F5F5F7;border-radius:980px;padding:7px 16px;font-size:12px;font-weight:700;color:#AEAEB2;">
+          <div class="fc-title" style="color:#AEAEB2;">IA Portfolio SEO</div>
+          <div class="fc-desc">L'IA génère description + hashtags SEO pour chaque photo uploadée. Vous apparaissez dans Google sans rien faire.</div>
+          <div style="margin-top:16px;display:inline-flex;align-items:center;gap:7px;background:#F5F5F7;border-radius:980px;padding:7px 16px;font-size:12px;font-weight:700;color:#AEAEB2;">
             ⏳ Disponible prochainement
           </div>
         </div>
@@ -2467,11 +2413,42 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
         </table>
       </div>
 
+      <!-- GARANTIES (déplacées ici) -->
+      <div class="pricing-guarantee" style="margin-top:0;margin-bottom:64px;">
+        <div class="guar-item">
+          <div class="guar-icon-wrap" style="background:#EFF6FF;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <div class="guar-title">Données en sécurité</div>
+            <div class="guar-desc">Vos données et celles de vos clients sont chiffrées, hébergées en Europe. Conformité RGPD totale.</div>
+          </div>
+        </div>
+        <div class="guar-item">
+          <div class="guar-icon-wrap" style="background:#FFF7ED;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EA580C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div>
+            <div class="guar-title">100% dédié tatouage</div>
+            <div class="guar-desc">Chaque feature a été pensée pour le métier de tatoueur. Rien de superflu, tout ce qu'il faut.</div>
+          </div>
+        </div>
+        <div class="guar-item">
+          <div class="guar-icon-wrap" style="background:#F0FDF4;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <div>
+            <div class="guar-title">Zéro intermédiaire</div>
+            <div class="guar-desc">Les acomptes arrivent directement sur votre Stripe. inkr ne touche jamais votre argent.</div>
+          </div>
+        </div>
+      </div>
+
       <!-- CTA FINAL -->
-      <div style="text-align:center;padding:60px 0 20px;">
+      <div style="text-align:center;padding:40px 0 20px;">
         <div style="font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-2px;color:#0A0A0A;margin-bottom:16px;">Prêt à passer au niveau supérieur ?</div>
         <p style="font-size:16px;color:#6E6E73;margin-bottom:32px;">Rejoignez les tatoueurs inkr Pro. 14 jours d'essai gratuit, résiliation libre.</p>
-        <button class="pricing-cta-main" onclick="openMo('register')">Créer mon compte inkr Pro →</button>
+        <button class="pricing-cta-main" onclick="openPricingRegister()">Créer mon compte inkr Pro →</button>
         <div class="pricing-cta-note" style="margin-top:12px;">Déjà inkr Pro ? <a href="/dashboard" style="color:#8B5CF6;font-weight:700;text-decoration:underline;">Accéder au dashboard →</a></div>
       </div>
 
@@ -3493,6 +3470,21 @@ function showView(id){
   observe();
 }
 function goFlash(){showView('home');setTimeout(()=>document.getElementById('flash').scrollIntoView({behavior:'smooth'}),100);}
+
+function openPricingRegister(){
+  // Transition dermographe vers le dashboard avec onglet "Créer un compte" pré-sélectionné
+  const ov=document.getElementById('dermo-overlay');
+  if(ov){
+    const txt=document.getElementById('dermo-text2');
+    const needle=document.getElementById('dermo-needle2');
+    ov.style.display='flex';
+    if(txt)txt.style.animation='drawInkr2 1.3s ease-in-out forwards';
+    if(needle)needle.style.animation='needleBuzz2 .04s infinite alternate, needleSlide2 1.1s ease-in-out forwards';
+    setTimeout(()=>window.location.href='/dashboard?action=register',1600);
+  } else {
+    window.location.href='/dashboard?action=register';
+  }
+}
 
 function togglePricingCard(card){
   const isOpen=card.classList.contains('open');

@@ -3218,6 +3218,20 @@ function showNotif(msg,type=''){
 const params=new URLSearchParams(location.search);
 if(params.get('meta_connected'))showNotif('✅ Instagram & Facebook connectés !','success');
 if(params.get('meta_error'))showNotif('❌ Erreur connexion Meta','error');
+// Depuis la page Tarifs : ouvre directement l'onglet inscription
+if(params.get('action')==='register'){
+  // On attend que checkAuth soit passé — s'il n'est pas connecté, l'écran auth s'affiche
+  // On switch automatiquement sur l'onglet "Créer un compte"
+  setTimeout(()=>{
+    const authScreen=document.getElementById('auth-screen');
+    if(authScreen&&authScreen.style.display!=='none'&&!authScreen.classList.contains('hidden')){
+      // Cherche le bouton "Créer un compte" et le clique
+      document.querySelectorAll('.auth-tab').forEach(t=>{
+        if(t.textContent.trim().toLowerCase().includes('créer'))t.click();
+      });
+    }
+  },400);
+}
 checkAuth();
 </script>
 </body>
