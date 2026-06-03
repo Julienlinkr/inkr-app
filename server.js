@@ -7,7 +7,18 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ============ MIDDLEWARE ============
+// ============ WEBHOOKS — doivent être montés AVANT express.json() ============
+// Stripe et Meta signent leurs requêtes avec HMAC sur le body brut.
+// Si express.json() parse le body en premier, la signature ne peut plus être vérifiée.
+
+// Stripe webhook (signature HMAC sur body brut)
+const { webhookRouter } = require('./routes/payments');
+app.use('/api/payments/webhook', webhookRouter);
+
+// Meta webhook (WhatsApp + Instagram — signature HMAC sur body brut)
+app.use('/api/webhooks', require('./routes/webhooks'));
+
+// ============ MIDDLEWARE (après les webhooks) ============
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -25,6 +36,8 @@ app.use('/api/annuaire',   require('./routes/annuaire'));
 app.use('/api/instagram',     require('./routes/instagram'));
 app.use('/api/client',        require('./routes/client_auth'));
 app.use('/api/artist-photos', require('./routes/artist_photos'));
+app.use('/api/payments', require('./routes/payments'));
+app.use('/api/loyalty', require('./routes/loyalty'));
 
 // ============ PAGES (no-cache pour forcer le rechargement) ============
 app.get('/', (req, res) => {
@@ -46,9 +59,12 @@ app.get('/api/status', (req, res) => {
     status: 'ok',
     version: '1.0.0',
     services: {
-      email: !!(process.env.EMAIL_USER && process.env.EMAIL_USER !== 'ton.email@gmail.com'),
+      email: !!process.env.RESEND_API_KEY,
       sms: !!(process.env.TWILIO_ACCOUNT_SID && !process.env.TWILIO_ACCOUNT_SID.startsWith('ACxx')),
-      meta: !!(process.env.META_APP_ID)
+      stripe: !!process.env.STRIPE_SECRET_KEY,
+      whatsapp: !!(process.env.WHATSAPP_TOKEN && process.env.WHATSAPP_PHONE_ID),
+      instagram: !!process.env.INSTAGRAM_PAGE_TOKEN,
+      meta_webhook: !!process.env.META_VERIFY_TOKEN,
     }
   });
 });
@@ -68,6 +84,8 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log(`             → Puis ajoutez EMAIL_FROM=inkr <noreply@inkr.club> dans Railway`);
   }
   console.log(`   SMS    : ${process.env.TWILIO_ACCOUNT_SID && !process.env.TWILIO_ACCOUNT_SID.startsWith('ACxx') ? '✅ Twilio actif' : '⚠️  Mode simulation'}`);
+  console.log(`   STRIPE : ${process.env.STRIPE_SECRET_KEY ? '✅ Configuré' : '⚠️  Mode simulation (STRIPE_SECRET_KEY manquant)'}`);
+  console.log(`   WHATSAPP: ${process.env.WHATSAPP_TOKEN ? '✅ Configuré' : '⚠️  Mode simulation (WHATSAPP_TOKEN manquant)'}`);
   console.log(`   DB     : ${process.env.DB_PATH || 'db/inkr.db (local)'}`);
   console.log('\n');
 });

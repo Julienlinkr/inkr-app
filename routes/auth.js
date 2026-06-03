@@ -48,6 +48,21 @@ router.post('/register', async (req, res) => {
 
     initDefaultAutomations(result.lastInsertRowid);
 
+    // Email de bienvenue — async, n'impacte pas la réponse
+    try {
+      const { sendEmail } = require('./campaigns');
+      const appUrl = process.env.APP_URL || 'https://inkr-app-production.up.railway.app';
+      await sendEmail(
+        email,
+        '🎨 Bienvenue dans la communauté inkr Pro !',
+        `Bonjour ${prenom || name} !\n\nTon compte inkr Pro est actif — tu as 14 jours d'essai gratuit pour explorer tout ce qu'inkr a à t'offrir.\n\n👉 Accède à ton dashboard : ${appUrl}/dashboard\n\n📞 Ton call de présentation : https://calendly.com/inkr/onboarding\n\n💬 Une question ? Écris-nous à hello@inkr.club — on répond en moins de 2h.\n\nL'équipe inkr 🖤`,
+        { name, prenom: prenom || '', studio_name, email },
+        appUrl
+      );
+    } catch(emailErr) {
+      console.warn('[Auth] Email bienvenue non envoyé:', emailErr.message);
+    }
+
     const token = jwt.sign({ userId: result.lastInsertRowid, email }, JWT_SECRET, { expiresIn: '30d' });
 
     res.cookie('inkr_token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });

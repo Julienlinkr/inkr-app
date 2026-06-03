@@ -55,22 +55,62 @@ router.post('/:id/acompte', requireAuth, async (req, res) => {
   const appt = db.prepare('SELECT * FROM appointments WHERE id=? AND user_id=?').get(req.params.id, req.user.userId);
   if (!appt) return res.status(404).json({ error: 'RDV introuvable' });
 
-  // En production : Stripe Payment Links API
-  // const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-  // const link = await stripe.paymentLinks.create({...});
-  const simulatedUrl = `https://buy.stripe.com/test_inkr_${req.params.id}_${amount}€`;
+  // Utilise Stripe si configuré, sinon génère un lien simulé
+  try {
+    // Créer la session Stripe via la logique interne
+    if (!process.env.STRIPE_SECRET_KEY) {
+      const fakeUrl = `/dashboard?payment=simulated&appt=${appt.id}`;
+      db.prepare('UPDATE appointments SET acompte_amount=?, acompte_status=?, acompte_stripe_url=? WHERE id=?')
+        .run(amount || appt.deposit || 50, 'pending', fakeUrl, appt.id);
 
-  db.prepare('UPDATE appointments SET acompte_amount=?, acompte_status=?, acompte_stripe_url=? WHERE id=?')
-    .run(amount, 'requested', simulatedUrl, req.params.id);
+      if (appt.client_email) {
+        try {
+          await sendEmail(appt.client_email, `💳 Acompte de ${amount || appt.deposit || 50}€ requis — inkr`,
+            `Bonjour ${appt.client_name} !\n\nVotre tatoueur demande un acompte de ${amount || appt.deposit || 50}€ pour confirmer votre RDV.\n\nPayez ici : ${(process.env.APP_URL || 'https://inkr-app-production.up.railway.app') + fakeUrl}\n\nCet acompte garantit votre créneau. 🎨`);
+        } catch(e) { console.log('Acompte email err:', e.message); }
+      }
 
-  if (appt.client_email) {
-    try {
-      await sendEmail(appt.client_email, `💳 Acompte de ${amount}€ requis — inkr`,
-        `Bonjour ${appt.client_name} !\n\nVotre tatoueur demande un acompte de ${amount}€ pour confirmer votre RDV.\n\nPayez ici : ${simulatedUrl}\n\nCet acompte garantit votre créneau. 🎨`);
-    } catch(e) { console.log('Acompte email err:', e.message); }
+      return res.json({ url: fakeUrl, simulated: true });
+    }
+
+    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+    const appUrl = process.env.APP_URL || 'https://inkr-app-production.up.railway.app';
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      line_items: [{
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: `Acompte tatouage — ${appt.client_name || 'Client'}`,
+            description: `RDV le ${appt.date || 'date à confirmer'} — ${appt.style || 'tatouage'}`,
+          },
+          unit_amount: Math.round(parseFloat(amount || appt.deposit || 50) * 100),
+        },
+        quantity: 1,
+      }],
+      customer_email: appt.client_email || undefined,
+      success_url: `${appUrl}/api/payments/success?session_id={CHECKOUT_SESSION_ID}&appt=${appt.id}`,
+      cancel_url: `${appUrl}/api/payments/cancel?appt=${appt.id}`,
+      metadata: { appointment_id: String(appt.id), artist_id: String(req.user.userId) },
+    });
+
+    db.prepare('UPDATE appointments SET acompte_amount=?, acompte_status=?, acompte_stripe_url=? WHERE id=?')
+      .run(amount || appt.deposit || 50, 'pending', session.url, appt.id);
+
+    // Email avec le vrai lien Stripe
+    if (appt.client_email) {
+      try {
+        await sendEmail(appt.client_email, `💳 Acompte de ${amount || appt.deposit || 50}€ requis — inkr`,
+          `Bonjour ${appt.client_name} !\n\nVotre tatoueur demande un acompte de ${amount || appt.deposit || 50}€ pour confirmer votre RDV.\n\nPayez ici : ${session.url}\n\nCet acompte garantit votre créneau. 🎨`);
+      } catch(e) { console.log('Acompte email err:', e.message); }
+    }
+
+    return res.json({ url: session.url, session_id: session.id });
+  } catch(stripeErr) {
+    console.error('[Stripe acompte]', stripeErr.message);
+    return res.status(500).json({ error: stripeErr.message });
   }
-
-  res.json({ success: true, url: simulatedUrl, amount });
 });
 
 // Supprimer RDV

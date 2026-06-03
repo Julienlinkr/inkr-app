@@ -134,6 +134,18 @@ db.exec(`
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
   );
+
+  CREATE TABLE IF NOT EXISTS loyalty_points (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    client_id INTEGER NOT NULL,
+    artist_id INTEGER NOT NULL,
+    points INTEGER NOT NULL,
+    reason TEXT DEFAULT '',
+    appointment_id INTEGER DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (client_id) REFERENCES clients(id),
+    FOREIGN KEY (artist_id) REFERENCES users(id)
+  );
 `);
 
 // Automations par défaut pour les nouveaux utilisateurs
@@ -167,6 +179,11 @@ function runMigrations() {
     'ALTER TABLE users ADD COLUMN en_tournee INTEGER DEFAULT 0',
     'ALTER TABLE clients ADD COLUMN instagram TEXT DEFAULT ""',
     'ALTER TABLE clients ADD COLUMN whatsapp TEXT DEFAULT ""',
+    'ALTER TABLE messages ADD COLUMN client_id INTEGER DEFAULT NULL',
+    'ALTER TABLE messages ADD COLUMN external_id TEXT DEFAULT NULL',
+    'ALTER TABLE messages ADD COLUMN phone TEXT DEFAULT NULL',
+    'ALTER TABLE users ADD COLUMN meta_wa_phone_id TEXT DEFAULT NULL',
+    'ALTER TABLE users ADD COLUMN meta_ig_page_id TEXT DEFAULT NULL',
   ];
   migrations.forEach(sql => { try { db.exec(sql); } catch(e) { /* colonne déjà existante */ } });
 }
