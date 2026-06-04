@@ -426,4 +426,141 @@ router.post('/verify-otp', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ENDPOINTS ARTISTE — Conversations clients inkr
+// Les clients envoient des demandes depuis la fiche publique (index.html).
+// L'artiste les consulte ici et peut répondre depuis son dashboard.
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Migration : colonne is_read_by_artist sur client_messages
+try { db.exec('ALTER TABLE client_messages ADD COLUMN is_read_by_artist INTEGER DEFAULT 0'); } catch(_) {}
+
+// Middleware auth artiste (réutilisé des routes existantes)
+function requireArtistAuth(req, res, next) {
+  try {
+    const token = req.cookies['inkr_token'] || (req.headers.authorization || '').replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Non connecté' });
+    const decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET || 'inkr_secret_dev');
+    req.userId = decoded.userId;
+    next();
+  } catch (e) {
+    res.status(401).json({ error: 'Session expirée' });
+  }
+}
+
+// GET /api/auth/artist-conversations
+// Retourne toutes les conversations adressées à cet artiste (via tatoueur_id ou user_id)
+router.get('/artist-conversations', requireArtistAuth, (req, res) => {
+  try {
+    // Trouver la fiche tatoueur liée à ce compte artiste
+    const fiche = db.prepare('SELECT id FROM tatoueurs WHERE user_id=?').get(req.userId);
+    const tatoueurId = fiche ? fiche.id : null;
+
+    let convs = [];
+    if (tatoueurId) {
+      convs = db.prepare(`
+        SELECT cc.*,
+          ca.prenom || ' ' || ca.nom AS client_display_name,
+          ca.prenom AS client_prenom,
+          (SELECT content  FROM client_messages WHERE conversation_id=cc.id ORDER BY created_at DESC LIMIT 1) AS last_message,
+          (SELECT created_at FROM client_messages WHERE conversation_id=cc.id ORDER BY created_at DESC LIMIT 1) AS last_message_at,
+          (SELECT COUNT(*) FROM client_messages WHERE conversation_id=cc.id AND sender='client' AND is_read_by_artist=0) AS unread_count
+        FROM client_conversations cc
+        LEFT JOIN client_accounts ca ON ca.id = cc.client_id
+        WHERE cc.tatoueur_id = ?
+        ORDER BY last_message_at DESC
+      `).all(tatoueurId);
+    }
+
+    res.json({ conversations: convs, tatoueur_id: tatoueurId });
+  } catch (e) {
+    console.error('[artist-conversations GET]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/auth/artist-conversations/:id
+// Détail d'une conversation + tous ses messages
+router.get('/artist-conversations/:id', requireArtistAuth, (req, res) => {
+  try {
+    const fiche = db.prepare('SELECT id FROM tatoueurs WHERE user_id=?').get(req.userId);
+    if (!fiche) return res.status(404).json({ error: 'Fiche artiste introuvable' });
+
+    const conv = db.prepare(
+      'SELECT cc.*, ca.prenom || \' \' || ca.nom AS client_display_name, ca.prenom AS client_prenom FROM client_conversations cc LEFT JOIN client_accounts ca ON ca.id=cc.client_id WHERE cc.id=? AND cc.tatoueur_id=?'
+    ).get(parseInt(req.params.id), fiche.id);
+    if (!conv) return res.status(404).json({ error: 'Conversation introuvable' });
+
+    const messages = db.prepare(
+      'SELECT * FROM client_messages WHERE conversation_id=? ORDER BY created_at ASC'
+    ).all(conv.id);
+
+    // Marquer les messages client comme lus
+    db.prepare(
+      'UPDATE client_messages SET is_read_by_artist=1 WHERE conversation_id=? AND sender=\'client\''
+    ).run(conv.id);
+
+    res.json({ ...conv, messages });
+  } catch (e) {
+    console.error('[artist-conversations/:id GET]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /api/auth/artist-conversations/:id/reply
+// L'artiste répond à un message client
+router.post('/artist-conversations/:id/reply', requireArtistAuth, (req, res) => {
+  try {
+    const fiche = db.prepare('SELECT id FROM tatoueurs WHERE user_id=?').get(req.userId);
+    if (!fiche) return res.status(404).json({ error: 'Fiche artiste introuvable' });
+
+    const conv = db.prepare(
+      'SELECT id FROM client_conversations WHERE id=? AND tatoueur_id=?'
+    ).get(parseInt(req.params.id), fiche.id);
+    if (!conv) return res.status(404).json({ error: 'Conversation introuvable' });
+
+    const { content } = req.body;
+    if (!content || !content.trim()) return res.status(400).json({ error: 'Message vide' });
+
+    const result = db.prepare(
+      'INSERT INTO client_messages (conversation_id, sender, content, is_read_by_artist) VALUES (?,\'artist\',?,1)'
+    ).run(conv.id, content.trim());
+
+    res.json({ ok: true, id: result.lastInsertRowid });
+  } catch (e) {
+    console.error('[artist-conversations reply POST]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /api/auth/artist-unread
+// Retourne le nombre total de messages non lus → utilisé pour le polling notifications
+router.get('/artist-unread', requireArtistAuth, (req, res) => {
+  try {
+    const fiche = db.prepare('SELECT id FROM tatoueurs WHERE user_id=?').get(req.userId);
+    if (!fiche) return res.json({ unread: 0, conversations: [] });
+
+    const unread = db.prepare(`
+      SELECT cc.id, cc.tatoueur_nom,
+        ca.prenom || ' ' || ca.nom AS client_display_name,
+        ca.prenom AS client_prenom,
+        cc.booking_style, cc.booking_zone,
+        COUNT(*) AS new_count,
+        MAX(cm.created_at) AS latest_at,
+        (SELECT content FROM client_messages WHERE conversation_id=cc.id AND sender='client' AND is_read_by_artist=0 ORDER BY created_at DESC LIMIT 1) AS latest_msg
+      FROM client_messages cm
+      JOIN client_conversations cc ON cc.id = cm.conversation_id
+      LEFT JOIN client_accounts ca ON ca.id = cc.client_id
+      WHERE cc.tatoueur_id=? AND cm.sender='client' AND cm.is_read_by_artist=0
+      GROUP BY cc.id
+      ORDER BY latest_at DESC
+    `).all(fiche.id);
+
+    res.json({ unread: unread.reduce((s, c) => s + c.new_count, 0), conversations: unread });
+  } catch (e) {
+    console.error('[artist-unread GET]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 module.exports = router;

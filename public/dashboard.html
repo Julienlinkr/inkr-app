@@ -561,7 +561,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(8,8,8,.97);ba
     <div class="dni" id="nav-agenda" onclick="dashGo('dp-agenda',this)"><span class="dni-icon">📅</span> Agenda <span class="notif-dot" id="rdv-dot" style="display:none"></span></div>
     <div class="dni" id="nav-tournee" onclick="dashGo('dp-tournee',this)"><span class="dni-icon">✈️</span> En tournée</div>
     <div class="sec-lbl">Clients & Marketing</div>
-    <div class="dni" id="nav-messages" onclick="dashGo('dp-messages',this)"><span class="dni-icon">💬</span> Messages <span class="notif-dot"></span></div>
+    <div class="dni" id="nav-messages" onclick="dashGo('dp-messages',this);loadInkrConversations()"><span class="dni-icon">💬</span> Messages <span class="msg-badge" id="msg-unread-badge" style="display:none;background:#ef4444;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span></div>
     <div class="dni" id="nav-clients" onclick="dashGo('dp-clients',this)"><span class="dni-icon">👥</span> CRM Clients</div>
     <div class="dni" id="nav-campaigns" onclick="dashGo('dp-campaigns',this)"><span class="dni-icon">📣</span> Campagnes</div>
     <div class="dni" id="nav-fidelite" onclick="dashGo('dp-fidelite',this)"><span class="dni-icon">⭐</span> Fidélité</div>
@@ -767,9 +767,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(8,8,8,.97);ba
           <div class="msg-filter-btn" style="border-color:#1877F2;color:#1877F2;" data-ch="facebook" data-color="#1877F2" onclick="filterMessages('facebook',this)">Facebook</div>
           <div class="msg-filter-btn" style="border-color:#4A9EFF;color:#4A9EFF;" data-ch="email" data-color="#4A9EFF" onclick="filterMessages('email',this)">✉️ Email</div>
           <div class="msg-filter-btn" style="border-color:#E60023;color:#E60023;" data-ch="pinterest" data-color="#E60023" onclick="filterMessages('pinterest',this)">📌 Pinterest</div>
+          <div class="msg-filter-btn" style="border-color:#a855f7;color:#a855f7;" data-ch="inkr" data-color="#a855f7" onclick="filterMessages('inkr',this)">🎨 inkr</div>
         </div>
       </div>
       <div class="msg-list" id="msg-list">
+        <!-- ── Conversations réelles inkr (demandes clients) — chargées via API ── -->
+        <div id="inkr-convs-list"></div>
+        <!-- ── Conversations démo canaux externes (statiques) ── -->
+        <div id="demo-convs-list">
         <div class="msg-thread active" data-channel="instagram" data-name="chloé t." onclick="openThread(this,'Chloé T.','Instagram DM','chloe@example.com',null)">
           <div class="mt-av">C</div>
           <div class="mt-body">
@@ -818,6 +823,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(8,8,8,.97);ba
             <div class="ch-tag" style="background:rgba(230,0,35,.15);color:#E60023;">📌 Pinterest</div>
           </div>
         </div>
+        </div><!-- /demo-convs-list -->
       </div>
     </div>
     <div class="chat-area">
@@ -1622,6 +1628,9 @@ function showApp(){
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('app').style.display='block';
   populateUser();loadAll();
+  // Démarre le polling de notifications + charge les conversations inkr
+  startMsgPolling();
+  loadInkrConversations();
 }
 function populateUser(){
   const u=currentUser;
@@ -2813,10 +2822,303 @@ function openThread(el,name,ch,email,phone){
   currentChatClientEmail=email||null;
   currentChatClientPhone=phone||null;
 }
+// ═══════════════════════════════════════════════════════════════════════
+// NOTIFICATIONS TEMPS RÉEL — inkr Dashboard
+//
+// Architecture :
+//   1. startMsgPolling()  — lance un setInterval toutes les 15s
+//   2. pollForMessages()  — GET /api/auth/artist-unread → compare avec l'état précédent
+//   3. onNewMessages()    — joue le son + affiche notif navigateur + met à jour le badge
+//   4. loadInkrConversations() — charge la liste complète (sidebar)
+//   5. openInkrConv(id)  — ouvre une conversation spécifique + marque comme lu
+//
+// Le son est généré en Web Audio API (pas de fichier externe requis).
+// Les notifications navigateur utilisent l'API Notification standard.
+// ═══════════════════════════════════════════════════════════════════════
+
+let _lastUnreadCount = 0;          // compteur connu au dernier poll
+let _lastKnownConvIds = new Set(); // IDs de conversations déjà vus
+let _pollTimer = null;             // référence setInterval
+
+// ── Son de notification (Web Audio API) ──────────────────────────────────────
+function playNotifSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    // Premier ding
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.connect(gain1); gain1.connect(ctx.destination);
+    osc1.frequency.value = 880;
+    osc1.type = 'sine';
+    gain1.gain.setValueAtTime(0, ctx.currentTime);
+    gain1.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.01);
+    gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    osc1.start(ctx.currentTime); osc1.stop(ctx.currentTime + 0.4);
+    // Deuxième ding (harmonique)
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.connect(gain2); gain2.connect(ctx.destination);
+    osc2.frequency.value = 1100;
+    osc2.type = 'sine';
+    gain2.gain.setValueAtTime(0, ctx.currentTime + 0.1);
+    gain2.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.12);
+    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc2.start(ctx.currentTime + 0.1); osc2.stop(ctx.currentTime + 0.5);
+  } catch (e) { /* navigateur sans Web Audio */ }
+}
+
+// ── Demande permission notification navigateur ────────────────────────────────
+function initBrowserNotifications() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') {
+    // On demande la permission au premier clic/interaction (pas au load)
+    document.addEventListener('click', function _askOnce() {
+      Notification.requestPermission();
+      document.removeEventListener('click', _askOnce);
+    }, { once: true });
+  }
+}
+
+// ── Affiche une notification navigateur ──────────────────────────────────────
+function showBrowserNotif(title, body) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    const n = new Notification(title, {
+      body,
+      icon: '/favicon.ico',
+      badge: '/favicon.ico',
+      tag: 'inkr-msg',          // remplace la précédente (pas de spam)
+      renotify: true,
+    });
+    n.onclick = () => {
+      window.focus();
+      dashGo('dp-messages', document.getElementById('nav-messages'));
+      loadInkrConversations();
+      n.close();
+    };
+    setTimeout(() => n.close(), 6000);
+  } catch (e) {}
+}
+
+// ── Met à jour le badge rouge dans la nav ────────────────────────────────────
+function updateMsgBadge(count) {
+  const badge = document.getElementById('msg-unread-badge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count > 99 ? '99+' : count;
+    badge.style.display = 'inline-block';
+    badge.style.animation = 'pulse-badge .6s ease 3';
+  } else {
+    badge.style.display = 'none';
+  }
+  // Mise à jour titre onglet
+  const base = 'inkr Dashboard';
+  document.title = count > 0 ? `(${count}) ${base}` : base;
+}
+
+// ── Callback quand de nouveaux messages arrivent ──────────────────────────────
+function onNewMessages(conversations) {
+  if (!conversations || conversations.length === 0) return;
+  const first = conversations[0];
+  const senderName = first.client_prenom || first.client_display_name || 'Un client';
+  const preview = first.latest_msg ? first.latest_msg.slice(0, 80) : 'Nouveau message';
+
+  playNotifSound();
+  showBrowserNotif(`💬 Nouveau message — ${senderName}`, preview);
+  showNotif(`💬 ${senderName} vous a envoyé un message`, 'success');
+
+  // Recharger la liste des conversations dans la sidebar
+  loadInkrConversations();
+}
+
+// ── Polling principal ─────────────────────────────────────────────────────────
+async function pollForMessages() {
+  try {
+    const r = await fetch('/api/auth/artist-unread', { credentials: 'include' });
+    if (!r.ok) return;
+    const data = await r.json();
+    const { unread, conversations } = data;
+
+    updateMsgBadge(unread);
+
+    // Détecte si de nouvelles conversations sont apparues OU si le compteur a augmenté
+    const newConvIds = new Set((conversations || []).map(c => c.id));
+    const isFirstPoll = _lastKnownConvIds.size === 0 && _lastUnreadCount === 0;
+
+    if (!isFirstPoll && unread > _lastUnreadCount) {
+      // Il y a de nouveaux messages non lus depuis le dernier poll
+      const newConvs = (conversations || []).filter(c => !_lastKnownConvIds.has(c.id) || c.new_count > 0);
+      onNewMessages(newConvs.length ? newConvs : conversations);
+    }
+
+    _lastUnreadCount = unread;
+    _lastKnownConvIds = newConvIds;
+  } catch (e) { /* réseau indisponible — on réessaie au prochain tick */ }
+}
+
+// ── Démarre le polling (appelé au chargement de la page) ─────────────────────
+function startMsgPolling() {
+  initBrowserNotifications();
+  pollForMessages(); // Poll immédiat au chargement
+  if (_pollTimer) clearInterval(_pollTimer);
+  _pollTimer = setInterval(pollForMessages, 15000); // puis toutes les 15s
+}
+
+// ── Charge et affiche les conversations inkr dans la sidebar ─────────────────
+let _inkrConvs = []; // cache local des conversations
+
+async function loadInkrConversations() {
+  try {
+    const r = await fetch('/api/auth/artist-conversations', { credentials: 'include' });
+    if (!r.ok) return;
+    const data = await r.json();
+    _inkrConvs = data.conversations || [];
+    renderInkrConvList(_inkrConvs);
+  } catch (e) {}
+}
+
+function renderInkrConvList(convs) {
+  const container = document.getElementById('inkr-convs-list');
+  if (!container) return;
+
+  if (!convs.length) { container.innerHTML = ''; return; }
+
+  container.innerHTML = convs.map(c => {
+    const name = c.client_prenom || c.client_display_name || 'Client inkr';
+    const initials = name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
+    const details = [c.booking_style, c.booking_zone].filter(Boolean).join(' · ');
+    const preview = c.last_message ? c.last_message.slice(0, 60) : (details || 'Demande de RDV');
+    const ts = c.last_message_at ? formatMsgTime(c.last_message_at) : '';
+    const hasUnread = c.unread_count > 0;
+    return `
+      <div class="msg-thread" data-channel="inkr" data-name="${name.toLowerCase()}" onclick="openInkrConv(${c.id},this)"
+           style="${hasUnread ? 'border-left:3px solid #a855f7;' : ''}">
+        <div class="mt-av" style="background:linear-gradient(135deg,#a855f7,#7c3aed);">${initials}</div>
+        <div class="mt-body">
+          <div class="mt-name">${name} <span class="mt-time">${ts}</span>
+            ${hasUnread ? `<span style="background:#a855f7;color:#fff;font-size:9px;font-weight:800;padding:1px 5px;border-radius:8px;margin-left:4px;">${c.unread_count}</span>` : ''}
+          </div>
+          <div class="mt-prev">${escHtml(preview)}</div>
+          <div class="ch-tag" style="background:rgba(168,85,247,.15);color:#a855f7;">🎨 inkr</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Ouvre une conversation inkr dans la zone de chat ─────────────────────────
+let _activeInkrConvId = null;
+
+async function openInkrConv(convId, el) {
+  document.querySelectorAll('.msg-thread').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  _activeInkrConvId = convId;
+
+  try {
+    const r = await fetch(`/api/auth/artist-conversations/${convId}`, { credentials: 'include' });
+    if (!r.ok) return;
+    const conv = await r.json();
+
+    const name = conv.client_prenom || conv.client_display_name || 'Client inkr';
+    const details = [conv.booking_style, conv.booking_zone, conv.booking_taille].filter(Boolean).join(' · ');
+
+    // Mettre à jour l'en-tête du chat
+    document.getElementById('chat-name').textContent = name;
+    document.getElementById('chat-ch').textContent = '🎨 inkr' + (details ? ' · ' + details : '');
+    document.getElementById('chat-av').textContent = name.charAt(0).toUpperCase();
+    document.getElementById('chat-av').style.background = 'linear-gradient(135deg,#a855f7,#7c3aed)';
+
+    // Rendre les messages
+    const msgs = document.getElementById('chat-msgs');
+    const bookingInfo = [conv.booking_style, conv.booking_zone, conv.booking_taille].filter(Boolean);
+    msgs.innerHTML = `
+      <div style="text-align:center;padding:14px 20px 8px;">
+        <div style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);border-radius:10px;padding:10px 14px;display:inline-block;text-align:left;max-width:340px;">
+          <div style="font-size:10px;color:#a855f7;font-weight:800;letter-spacing:.5px;margin-bottom:6px;">DEMANDE ENVOYÉE</div>
+          ${bookingInfo.length ? `<div style="font-size:12px;color:#ddd;font-weight:600;">${escHtml(bookingInfo.join(' · '))}</div>` : ''}
+          ${conv.booking_date ? `<div style="font-size:11px;color:#888;margin-top:3px;">Date : ${escHtml(conv.booking_date)}</div>` : ''}
+          ${conv.booking_desc ? `<div style="font-size:11px;color:#888;margin-top:3px;">${escHtml(conv.booking_desc)}</div>` : ''}
+        </div>
+      </div>
+      ${(conv.messages || []).map(m => {
+        const isArtist = m.sender === 'artist';
+        const t = formatMsgTime(m.created_at);
+        return `<div class="msg ${isArtist ? 'me' : 'them'}">${escHtml(m.content)}<div class="msg-meta">${isArtist ? 'Vous' : name} · ${t}</div></div>`;
+      }).join('')}
+    `;
+    msgs.scrollTop = msgs.scrollHeight;
+
+    // Adapter la barre d'envoi pour répondre via inkr
+    currentChatClientName = name;
+    currentChatClientEmail = null;
+    currentChatClientPhone = null;
+    currentChatChannel = 'inkr';
+    updateComposeBar('inkr', null, null);
+
+    // Mettre à jour le badge (les messages sont maintenant lus)
+    if (el) el.style.borderLeft = '';
+    const unreadSpan = el ? el.querySelector('span[style*="#a855f7"]') : null;
+    if (unreadSpan) unreadSpan.remove();
+    pollForMessages(); // rafraîchit le badge global
+  } catch (e) { console.error('[openInkrConv]', e); }
+}
+
+// ── Envoyer un message artiste → client inkr ─────────────────────────────────
+async function sendInkrReply(content) {
+  if (!_activeInkrConvId || !content.trim()) return false;
+  try {
+    const r = await fetch(`/api/auth/artist-conversations/${_activeInkrConvId}/reply`, {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: content.trim() })
+    });
+    return r.ok;
+  } catch (e) { return false; }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function formatMsgTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts.includes('T') ? ts : ts + 'Z');
+  const now = new Date();
+  const diffMs = now - d;
+  const diffMn = Math.floor(diffMs / 60000);
+  const diffH  = Math.floor(diffMs / 3600000);
+  const diffD  = Math.floor(diffMs / 86400000);
+  if (diffMn < 1)  return 'maintenant';
+  if (diffMn < 60) return `${diffMn}min`;
+  if (diffH  < 24) return `${diffH}h`;
+  if (diffD  === 1) return 'hier';
+  if (diffD  < 7)  return ['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'][d.getDay()];
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
+
 function sendMsg(){
   const ta=document.getElementById('chat-input');const txt=ta.value.trim();if(!txt)return;
+
+  // Si on est dans une conversation inkr → envoyer via API
+  if (_activeInkrConvId && currentChatChannel === 'inkr') {
+    sendInkrReply(txt).then(ok => {
+      if (ok) {
+        const msgs=document.getElementById('chat-msgs');
+        const d=document.createElement('div');
+        d.className='msg me';
+        d.innerHTML=`${escHtml(txt)}<div class="msg-meta">Vous · maintenant</div>`;
+        msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+        ta.value='';
+        loadInkrConversations(); // refresh sidebar
+      } else {
+        showNotif('Erreur envoi message','error');
+      }
+    });
+    return;
+  }
+
+  // Sinon comportement classique (canaux simulés)
   const msgs=document.getElementById('chat-msgs');const d=document.createElement('div');
-  d.className='msg me';d.innerHTML=`${txt}<div class="msg-meta">Vous · maintenant</div>`;
+  d.className='msg me';d.innerHTML=`${escHtml(txt)}<div class="msg-meta">Vous · maintenant</div>`;
   msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;ta.value='';
 }
 
@@ -2918,6 +3220,10 @@ function updateComposeBar(ch,phone,email){
   }
   if(email){
     btns.push(`<button class="compose-btn" onclick="openComposeEmail()">✉️ Email</button>`);
+  }
+  // Canal inkr natif — le bouton Envoyer de la zone de chat suffit
+  if(ch==='inkr'){
+    btns = [`<span style="font-size:11px;color:#a855f7;padding:4px 8px;background:rgba(168,85,247,.1);border-radius:6px;display:inline-block;">🎨 Répondre directement via inkr ↑</span>`];
   }
   if(!btns.length){
     btns.push(`<button class="compose-btn" onclick="openComposeEmail()">✉️ Email</button>`);
