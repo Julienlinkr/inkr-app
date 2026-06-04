@@ -2194,7 +2194,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
           <div class="fc-demo">
             <div class="fc-demo-inner">
               <div class="demo-form">
-                <div class="demo-field">✓ Pas d'allergie connue · Pas de prise de médicants</div>
+                <div class="demo-field">✓ Pas d'allergie connue · Pas de prise de médicaments</div>
                 <div class="demo-field">✓ Client majeur · Consentement éclairé confirmé</div>
                 <div class="demo-sig">
                   <div class="demo-sig-line"></div>
@@ -3555,6 +3555,7 @@ function renderArtists(){
       <div class="ac-img" style="position:relative">
         ${artistAvatarDiv(a)}
         ${a.flash?'<div class="fl-badge">⚡ Flash</div>':''}
+        ${a.dispo_flash?'<div style="position:absolute;bottom:10px;left:10px;background:#f59e0b;color:#000;font-size:9px;font-weight:800;padding:3px 7px;border-radius:20px;letter-spacing:.3px;">⚡ Dispo aujourd\'hui</div>':''}
         ${a.instagram?`<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);border-radius:6px;padding:3px 7px;font-size:10px;font-weight:700;color:rgba(255,255,255,.7);">📸 IG</div>`:''}
         <button class="ac-shortlist ${isShortlisted(a.id)?'saved':''}" onclick="toggleShortlist(${a.id},'${a.name.replace(/'/g,"\\'")}',event)" title="Ajouter à ma shortlist">${isShortlisted(a.id)?'♥':'♡'}</button>
       </div>
@@ -3828,10 +3829,11 @@ async function openProfile(id){
   const igLink=a.instagram?`<a href="https://instagram.com/${a.instagram.replace('@','')}" target="_blank" style="color:#a78bfa;text-decoration:none;">📸 ${a.instagram}</a>`:'';
   const siteLink=a.site_web?`<a href="${a.site_web}" target="_blank" style="color:#a78bfa;text-decoration:none;font-size:12px;">🌐 Site web</a>`:'';
   const telLine=a.telephone?`<span style="font-size:12px;color:var(--g3);">📞 ${a.telephone}</span>`:'';
+  const dispoFlashBadge=a.dispo_flash?`<span style="display:inline-flex;align-items:center;gap:4px;background:#f59e0b;color:#000;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;margin-left:6px;">⚡ Dispo aujourd'hui</span>`:'';
   document.getElementById('pmHeader').innerHTML=`
     <div class="pm-photo" style="overflow:hidden;border-radius:16px;">${artistAvatarDiv(a,'64px')}</div>
     <div class="pm-info">
-      <div class="pm-name">${a.name}</div>
+      <div class="pm-name">${a.name}${dispoFlashBadge}</div>
       <div class="pm-location">📍 ${a.city}${a.cp?' ('+a.cp+')':''}</div>
       <div class="pm-tags">${stylesHtml}</div>
       <div class="pm-meta" style="gap:10px;flex-wrap:wrap;">${igLink}${telLine}${siteLink}</div>
@@ -3871,7 +3873,9 @@ async function openProfile(id){
         ${a.instagram?`<div>📸 <a href="https://instagram.com/${igHandle}" target="_blank" style="color:#a78bfa;">${a.instagram}</a></div>`:''}
         ${a.site_web?`<div>🌐 <a href="${a.site_web}" target="_blank" style="color:#a78bfa;">${a.site_web}</a></div>`:''}
       </div>
-    </div>`;
+    </div>
+    ${a.horaires ? renderHorairesPublic(a.horaires) : ''}
+    `;
   openMo('profile');
   // Chargement portfolio : inkr Pro photos en priorité, IG en fallback
   loadPortfolio(igHandle);
@@ -4523,8 +4527,63 @@ async function pmFollowClient(tatoueurId, tatoueurNom, btn) {
   }
 }
 
+// ═══════════════════ HORAIRES PUBLIC (fiche artiste) ═══════════════════
+/**
+ * Formate les horaires JSON en HTML lisible pour la modale artiste.
+ * horairesRaw : string JSON ou objet { lun: {open, from, to}, ... }
+ */
+function renderHorairesPublic(horairesRaw){
+  if(!horairesRaw) return '';
+  let h={};
+  try{ h=typeof horairesRaw==='string'?JSON.parse(horairesRaw):horairesRaw; }catch(_){ return ''; }
+  const jours=[
+    {key:'lun',label:'Lun'},{key:'mar',label:'Mar'},{key:'mer',label:'Mer'},
+    {key:'jeu',label:'Jeu'},{key:'ven',label:'Ven'},{key:'sam',label:'Sam'},{key:'dim',label:'Dim'}
+  ];
+  const rows=jours.map(j=>{
+    const d=h[j.key];
+    if(!d)return '';
+    return `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;">
+      <span style="width:32px;font-weight:700;color:var(--g3);">${j.label}</span>
+      ${d.open
+        ? `<span style="color:#34d399;font-size:11px;">●</span> <span>${d.from} – ${d.to}</span>`
+        : `<span style="color:#6b7280;font-size:11px;">●</span> <span style="color:var(--g3);">Fermé</span>`}
+    </div>`;
+  }).join('');
+  if(!rows.trim()) return '';
+  return `<div class="pm-section"><div class="pm-section-title">Horaires</div><div style="padding:4px 0;">${rows}</div></div>`;
+}
+
+// ═══════════════════ HANDLER URL ?rdv= ═══════════════════
+/**
+ * Si l'URL contient ?rdv=instagram_handle ou ?rdv=artist_id :
+ * → charge les artistes, trouve le bon, ouvre sa fiche directement.
+ * Permet de créer un lien de résa direct pour bio Instagram.
+ * Exemple : https://www.inkr.club/?rdv=studio_inkr
+ */
+async function handleRdvParam(){
+  const params=new URLSearchParams(window.location.search);
+  const rdv=params.get('rdv');
+  if(!rdv) return;
+  // Charger les artistes si pas encore fait
+  if(!ARTISTS.length) await loadArtists(true);
+  if(!ARTISTS.length) return;
+  // Chercher par handle Instagram ou par id
+  let artist=ARTISTS.find(a=>
+    a.instagram&&a.instagram.replace('@','').toLowerCase()===rdv.toLowerCase()
+  ) || ARTISTS.find(a=>String(a.id)===String(rdv));
+  if(artist){
+    // Scroller vers l'annuaire puis ouvrir la fiche
+    showView('discover');
+    setTimeout(()=>openProfile(artist.id), 400);
+  }
+}
+
 // ── Init au chargement de page ────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', checkClientSession);
+document.addEventListener('DOMContentLoaded', ()=>{
+  checkClientSession();
+  handleRdvParam();
+});
 
 // ═══════════════════ DERMOGRAPHE → DASHBOARD ═══════════════════
 function goToDashboard(){

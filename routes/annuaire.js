@@ -6,7 +6,8 @@ const { db }  = require('../db/database');
 // SQLite ne supporte pas IF NOT EXISTS sur ALTER TABLE → try/catch
 ['auto_reply TEXT DEFAULT \'\'', 'bio TEXT DEFAULT \'\'', 'telephone TEXT DEFAULT \'\'',
  'email TEXT DEFAULT \'\'', 'site_web TEXT DEFAULT \'\'', 'adresse TEXT DEFAULT \'\'',
- 'cp TEXT DEFAULT \'\''].forEach(col => {
+ 'cp TEXT DEFAULT \'\'', 'horaires TEXT DEFAULT \'\'', 'dispo_flash INTEGER DEFAULT 0',
+ 'user_id INTEGER DEFAULT NULL'].forEach(col => {
   try { db.exec(`ALTER TABLE tatoueurs ADD COLUMN ${col}`); } catch(_) {}
 });
 
@@ -46,6 +47,9 @@ function toFront(t){
     avail:      true,
     source:     t.source || 'import',
     auto_reply: t.auto_reply || '',
+    horaires:   t.horaires || '',
+    dispo_flash: t.dispo_flash ? true : false,
+    user_id:    t.user_id || null,
   };
 }
 

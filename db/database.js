@@ -184,6 +184,17 @@ function runMigrations() {
     'ALTER TABLE messages ADD COLUMN phone TEXT DEFAULT NULL',
     'ALTER TABLE users ADD COLUMN meta_wa_phone_id TEXT DEFAULT NULL',
     'ALTER TABLE users ADD COLUMN meta_ig_page_id TEXT DEFAULT NULL',
+    // Colonnes styles / bio / auto_reply sur users (utilisées par PUT /profile)
+    'ALTER TABLE users ADD COLUMN styles TEXT DEFAULT "[]"',
+    'ALTER TABLE users ADD COLUMN auto_reply TEXT DEFAULT ""',
+    'ALTER TABLE users ADD COLUMN bio TEXT DEFAULT ""',
+    // Lien entre un compte artiste inkr Pro et sa fiche annuaire publique
+    'ALTER TABLE tatoueurs ADD COLUMN user_id INTEGER DEFAULT NULL',
+    // Horaires d'ouverture (JSON par jour) + disponibilité tatoo jour même
+    'ALTER TABLE tatoueurs ADD COLUMN horaires TEXT DEFAULT ""',
+    'ALTER TABLE tatoueurs ADD COLUMN dispo_flash INTEGER DEFAULT 0',
+    'ALTER TABLE users ADD COLUMN horaires TEXT DEFAULT ""',
+    'ALTER TABLE users ADD COLUMN dispo_flash INTEGER DEFAULT 0',
   ];
   migrations.forEach(sql => { try { db.exec(sql); } catch(e) { /* colonne déjà existante */ } });
 }

@@ -1168,6 +1168,41 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(8,8,8,.97);ba
           <div style="font-size:11px;color:var(--muted);margin-top:5px;">Ce texte apparaît automatiquement dès qu'un client vous envoie une demande via inkr.</div>
         </div>
 
+        <!-- HORAIRES D'OUVERTURE -->
+        <div class="form-group" style="margin-top:8px;">
+          <label style="display:flex;align-items:center;gap:7px;">
+            🕐 Horaires d'ouverture
+            <span style="font-size:10px;color:#aaa;background:rgba(255,255,255,.07);padding:2px 7px;border-radius:20px;font-weight:600;">Affichés sur votre fiche publique</span>
+          </label>
+          <div id="horaires-grid" style="margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+            <!-- Généré par JS via renderHorairesGrid() -->
+          </div>
+        </div>
+
+        <!-- DISPONIBILITÉ TATOO JOUR MÊME -->
+        <div style="margin-top:6px;padding:13px 15px;background:var(--card);border:1px solid var(--border);border-radius:var(--rl);display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:13px;font-weight:700;">⚡ Dispo tatoo jour même</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Activer si tu acceptes des réservations le jour même. Badge visible sur ta fiche.</div>
+          </div>
+          <label class="toggle-switch" style="flex-shrink:0;">
+            <input type="checkbox" id="p-dispo-flash">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <!-- LIEN DE RÉSERVATION INSTAGRAM -->
+        <div style="margin-top:12px;padding:14px 15px;background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(236,72,153,.08));border:1px solid rgba(168,85,247,.25);border-radius:var(--rl);">
+          <div style="font-size:12px;font-weight:700;color:#c084fc;margin-bottom:8px;">📲 Lien de réservation — idéal pour bio Instagram</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="booking-link-display" readonly
+              style="flex:1;font-size:11px;padding:7px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e2e8f0;font-family:monospace;"
+              value="Sauvegarde ton profil pour générer ton lien…">
+            <button onclick="copyBookingLink()" style="padding:7px 12px;font-size:11px;font-weight:700;background:#7c3aed;border:none;border-radius:8px;color:#fff;cursor:pointer;flex-shrink:0;">Copier 📋</button>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:6px;">Partage ce lien dans ta bio IG → tes clients arrivent directement sur ta fiche inkr avec le formulaire de RDV.</div>
+        </div>
+
         <div id="profil-save-msg" style="margin-top:9px;font-size:12px;display:none;color:var(--green);">✅ Profil mis à jour !</div>
       </div>
 
@@ -1613,6 +1648,13 @@ function populateUser(){
   // Mode tournée
   const tToggle=document.getElementById('tournee-toggle');
   if(tToggle)tToggle.checked=!!(u.en_tournee);
+  // Dispo flash
+  const df=document.getElementById('p-dispo-flash');
+  if(df)df.checked=!!(u.dispo_flash);
+  // Horaires
+  renderHorairesGrid(u.horaires||'');
+  // Lien de réservation
+  updateBookingLink(u);
   // Charger la galerie photos
   loadMyPhotos();
 }
@@ -2431,6 +2473,81 @@ async function saveAutoMsg(id){
 }
 
 // ======== PROFIL ========
+
+// Jours de la semaine pour les horaires
+const JOURS = [
+  {key:'lun',label:'Lundi'}, {key:'mar',label:'Mardi'}, {key:'mer',label:'Mercredi'},
+  {key:'jeu',label:'Jeudi'}, {key:'ven',label:'Vendredi'}, {key:'sam',label:'Samedi'},
+  {key:'dim',label:'Dimanche'}
+];
+
+// Rend la grille horaires dans le formulaire profil
+function renderHorairesGrid(horairesRaw){
+  const grid=document.getElementById('horaires-grid');
+  if(!grid)return;
+  let h={};
+  try{h=typeof horairesRaw==='string'?JSON.parse(horairesRaw||'{}'):horairesRaw||{};}catch(_){}
+  grid.innerHTML=JOURS.map(j=>{
+    const d=h[j.key]||{open:false,from:'10:00',to:'19:00'};
+    return `<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--card);border:1px solid var(--border);border-radius:8px;">
+      <label class="toggle-switch" style="flex-shrink:0;">
+        <input type="checkbox" id="h-${j.key}-open" ${d.open?'checked':''} onchange="toggleJourHoraire('${j.key}')">
+        <span class="toggle-slider"></span>
+      </label>
+      <span style="width:72px;font-size:12px;font-weight:600;">${j.label}</span>
+      <div id="h-${j.key}-times" style="display:flex;align-items:center;gap:6px;${d.open?'':'opacity:.3;pointer-events:none;'}">
+        <input type="time" id="h-${j.key}-from" value="${d.from||'10:00'}"
+          style="padding:4px 7px;font-size:12px;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:6px;color:inherit;">
+        <span style="font-size:11px;color:var(--muted);">→</span>
+        <input type="time" id="h-${j.key}-to" value="${d.to||'19:00'}"
+          style="padding:4px 7px;font-size:12px;background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:6px;color:inherit;">
+      </div>
+      <span id="h-${j.key}-closed" style="font-size:11px;color:var(--muted);${d.open?'display:none':''}">Fermé</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleJourHoraire(key){
+  const open=document.getElementById(`h-${key}-open`)?.checked;
+  const times=document.getElementById(`h-${key}-times`);
+  const closed=document.getElementById(`h-${key}-closed`);
+  if(times)times.style.cssText=`display:flex;align-items:center;gap:6px;${open?'':'opacity:.3;pointer-events:none;'}`;
+  if(closed)closed.style.display=open?'none':'';
+}
+
+// Lit les horaires depuis la grille
+function readHoraires(){
+  const h={};
+  JOURS.forEach(j=>{
+    h[j.key]={
+      open:!!(document.getElementById(`h-${j.key}-open`)?.checked),
+      from:document.getElementById(`h-${j.key}-from`)?.value||'10:00',
+      to:document.getElementById(`h-${j.key}-to`)?.value||'19:00'
+    };
+  });
+  return h;
+}
+
+// Génère et affiche le lien de réservation
+function updateBookingLink(u){
+  const inp=document.getElementById('booking-link-display');
+  if(!inp)return;
+  const handle=(u.instagram||'').replace('@','').trim();
+  const slug=handle||u.id;
+  if(slug){
+    const base=window.location.origin||'https://www.inkr.club';
+    inp.value=`${base}/?rdv=${slug}`;
+  } else {
+    inp.value='Ajoute ton Instagram pour générer ton lien…';
+  }
+}
+
+function copyBookingLink(){
+  const inp=document.getElementById('booking-link-display');
+  if(!inp||!inp.value.startsWith('http'))return showNotif('⚠️ Sauvegarde ton profil d\'abord','warning');
+  navigator.clipboard.writeText(inp.value).then(()=>showNotif('✅ Lien copié ! Colle-le dans ta bio IG','success'));
+}
+
 async function saveProfil(){
   const body={
     name:document.getElementById('p-name').value,
@@ -2446,7 +2563,9 @@ async function saveProfil(){
     photo_artiste:document.getElementById('p-photo-artiste').value.trim(),
     auto_reply:document.getElementById('p-auto-reply').value.trim(),
     bio:document.getElementById('p-bio').value.trim(),
-    styles:[...document.querySelectorAll('#p-styles-grid input[type=checkbox]:checked')].map(cb=>cb.value)
+    styles:[...document.querySelectorAll('#p-styles-grid input[type=checkbox]:checked')].map(cb=>cb.value),
+    horaires:readHoraires(),
+    dispo_flash:document.getElementById('p-dispo-flash')?.checked||false
   };
   const res=await fetch('/api/auth/profile',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   if(res.ok){
@@ -2455,7 +2574,7 @@ async function saveProfil(){
     const msg=document.getElementById('profil-save-msg');
     msg.style.display='block';
     setTimeout(()=>msg.style.display='none',3000);
-    showNotif('✅ Profil mis à jour !','success');
+    showNotif('✅ Profil mis à jour ! Ta fiche est visible dans l\'annuaire.','success');
   }
 }
 

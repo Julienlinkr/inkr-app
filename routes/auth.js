@@ -138,7 +138,8 @@ router.put('/profile', (req, res) => {
   if (!token) return res.status(401).json({ error: 'Non connecté' });
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const { name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest, auto_reply, bio, styles, en_tournee } = req.body;
+    const { name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest,
+            auto_reply, bio, styles, en_tournee, horaires, dispo_flash } = req.body;
 
     // Mise à jour partielle : uniquement en_tournee (toggle tournée)
     if (en_tournee !== undefined && !name) {
@@ -151,26 +152,44 @@ router.put('/profile', (req, res) => {
 
     // styles est un tableau JSON envoyé depuis le dashboard
     const stylesJson = Array.isArray(styles) ? JSON.stringify(styles) : (styles || '[]');
+    // horaires est un objet JSON { lun: {open, from, to}, ... }
+    const horairesJson = (horaires && typeof horaires === 'object') ? JSON.stringify(horaires) : (horaires || '');
 
-    db.prepare(
-      'UPDATE users SET name=?, prenom=?, nom_artiste=?, studio_name=?, city=?, adresse=?, phone=?, instagram=?, pinterest=?, auto_reply=?, bio=?, styles=? WHERE id=?'
-    ).run(name, prenom||'', nom_artiste||'', studio_name||'', city||'', adresse||'', phone||'', instagram||'', pinterest||'', auto_reply||'', bio||'', stylesJson, decoded.userId);
+    db.prepare(`
+      UPDATE users SET name=?, prenom=?, nom_artiste=?, studio_name=?, city=?, adresse=?,
+        phone=?, instagram=?, pinterest=?, auto_reply=?, bio=?, styles=?, horaires=?, dispo_flash=?
+      WHERE id=?
+    `).run(name, prenom||'', nom_artiste||'', studio_name||'', city||'', adresse||'', phone||'',
+           instagram||'', pinterest||'', auto_reply||'', bio||'', stylesJson,
+           horairesJson, dispo_flash ? 1 : 0, decoded.userId);
 
-    // ── Sync vers la fiche tatoueur publique (by Instagram handle) ────────────
-    // Quand l'artiste inkr Pro met à jour son profil, sa fiche publique dans
-    // l'annuaire est mise à jour : bio, styles, auto_reply synchronisés.
-    if (instagram) {
-      const igHandle = (instagram || '').replace('@', '').toLowerCase().trim();
-      if (igHandle) {
-        try {
-          db.prepare(`
-            UPDATE tatoueurs
-            SET auto_reply=?, bio=?, styles=?, nom=COALESCE(NULLIF(?,''), nom),
-                ville=COALESCE(NULLIF(?,''), ville), adresse=COALESCE(NULLIF(?,''), adresse)
-            WHERE LOWER(REPLACE(instagram,'@','')) = ?
-          `).run(auto_reply||'', bio||'', stylesJson, nom_artiste||name, city||'', adresse||'', igHandle);
-        } catch(_) { /* migration non encore jouée — sans impact */ }
+    // ── Sync vers la fiche tatoueur publique (UPSERT par user_id) ────────────
+    // Chaque artiste inkr Pro a une entrée dans tatoueurs (répertoire public).
+    // Si la fiche existe déjà (même user_id), on la met à jour.
+    // Sinon on crée une nouvelle entrée. Pas besoin d'un compte Instagram pour apparaître.
+    try {
+      const existingFiche = db.prepare('SELECT id FROM tatoueurs WHERE user_id = ?').get(decoded.userId);
+      if (existingFiche) {
+        db.prepare(`
+          UPDATE tatoueurs SET nom=?, nom_commercial=?, ville=?, adresse=?, telephone=?,
+            instagram=?, styles=?, bio=?, auto_reply=?, horaires=?, dispo_flash=?, statut='active'
+          WHERE user_id=?
+        `).run(name, nom_artiste||name, city||'', adresse||'', phone||'',
+               instagram||'', stylesJson, bio||'', auto_reply||'',
+               horairesJson, dispo_flash ? 1 : 0, decoded.userId);
+      } else {
+        db.prepare(`
+          INSERT INTO tatoueurs
+            (user_id, nom, nom_commercial, ville, adresse, telephone, instagram,
+             styles, bio, auto_reply, horaires, dispo_flash, source, statut)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'inkr_pro', 'active')
+        `).run(decoded.userId, name, nom_artiste||name, city||'', adresse||'', phone||'',
+               instagram||'', stylesJson, bio||'', auto_reply||'',
+               horairesJson, dispo_flash ? 1 : 0);
       }
+    } catch(syncErr) {
+      // Ne bloque pas la réponse — la migration user_id est peut-être encore en cours
+      console.warn('[Profile] Sync tatoueurs échoué (non bloquant):', syncErr.message);
     }
 
     res.json({ success: true });
