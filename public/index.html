@@ -4578,8 +4578,10 @@ async function handleRdvParam(){
         (a.instagram||'').replace('@','').toLowerCase()===rdv.toLowerCase()
       ) || all.find(a=>String(a.id)===String(rdv));
       if(artist){
-        showView('discover');
-        setTimeout(()=>openProfile(artist.id), 500);
+        // La fiche est dans la vue home (annuaire split)
+        showView('home');
+        // Attendre que la vue soit rendue + ARTISTS peuplé avant d'ouvrir le profil
+        setTimeout(()=>openProfile(artist.id), 600);
         return;
       }
     }

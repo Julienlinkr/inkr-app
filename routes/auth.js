@@ -8,23 +8,44 @@ const { db, initDefaultAutomations } = require('../db/database');
 const JWT_SECRET = process.env.JWT_SECRET || 'inkr_secret_dev';
 
 // ── Migration : ajout des colonnes optionnelles sur users ──────────────────────
-['auto_reply TEXT DEFAULT \'\'',
- 'prenom TEXT DEFAULT \'\'',
- 'nom_artiste TEXT DEFAULT \'\'',
- 'adresse TEXT DEFAULT \'\'',
- 'instagram TEXT DEFAULT \'\'',
- 'pinterest TEXT DEFAULT \'\'',
- 'photo_salon TEXT DEFAULT \'\'',
- 'photo_artiste TEXT DEFAULT \'\'',
- 'bio TEXT DEFAULT \'\'',
- 'styles TEXT DEFAULT \'[]\'',
- 'en_tournee INTEGER DEFAULT 0',
- 'reset_token TEXT DEFAULT NULL',
- 'reset_token_expiry TEXT DEFAULT NULL',
- 'otp_code TEXT DEFAULT NULL',
- 'otp_expiry TEXT DEFAULT NULL',
+// Toutes les colonnes optionnelles de users — idempotentes (try/catch si déjà présentes)
+[
+  'auto_reply TEXT DEFAULT \'\'',
+  'prenom TEXT DEFAULT \'\'',
+  'nom_artiste TEXT DEFAULT \'\'',
+  'adresse TEXT DEFAULT \'\'',
+  'cp TEXT DEFAULT \'\'',
+  'instagram TEXT DEFAULT \'\'',
+  'pinterest TEXT DEFAULT \'\'',
+  'photo_salon TEXT DEFAULT \'\'',
+  'photo_artiste TEXT DEFAULT \'\'',
+  'bio TEXT DEFAULT \'\'',
+  'styles TEXT DEFAULT \'[]\'',
+  'horaires TEXT DEFAULT \'\'',
+  'dispo_flash INTEGER DEFAULT 0',
+  'en_tournee INTEGER DEFAULT 0',
+  'reset_token TEXT DEFAULT NULL',
+  'reset_token_expiry TEXT DEFAULT NULL',
+  'otp_code TEXT DEFAULT NULL',
+  'otp_expiry TEXT DEFAULT NULL',
 ].forEach(col => {
   try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch(_) {}
+});
+
+// Colonnes optionnelles de tatoueurs (sync profil artiste → annuaire public)
+[
+  'auto_reply TEXT DEFAULT \'\'',
+  'bio TEXT DEFAULT \'\'',
+  'telephone TEXT DEFAULT \'\'',
+  'email TEXT DEFAULT \'\'',
+  'site_web TEXT DEFAULT \'\'',
+  'adresse TEXT DEFAULT \'\'',
+  'cp TEXT DEFAULT \'\'',
+  'horaires TEXT DEFAULT \'\'',
+  'dispo_flash INTEGER DEFAULT 0',
+  'user_id INTEGER DEFAULT NULL',
+].forEach(col => {
+  try { db.exec(`ALTER TABLE tatoueurs ADD COLUMN ${col}`); } catch(_) {}
 });
 
 // ============ INSCRIPTION ============
@@ -124,7 +145,7 @@ router.get('/me', (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest, auto_reply, bio, styles, photo_salon, photo_artiste, avatar_seed, en_tournee, created_at FROM users WHERE id = ?').get(decoded.userId);
+    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, cp, adresse, phone, instagram, pinterest, auto_reply, bio, styles, horaires, dispo_flash, photo_salon, photo_artiste, avatar_seed, en_tournee, created_at FROM users WHERE id = ?').get(decoded.userId);
     if (!user) return res.status(401).json({ error: 'Utilisateur introuvable' });
     res.json({ user });
   } catch {
