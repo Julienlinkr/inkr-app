@@ -197,6 +197,13 @@ function runMigrations() {
     'ALTER TABLE tatoueurs ADD COLUMN dispo_flash INTEGER DEFAULT 0',
     'ALTER TABLE users ADD COLUMN horaires TEXT DEFAULT ""',
     'ALTER TABLE users ADD COLUMN dispo_flash INTEGER DEFAULT 0',
+    // Colonnes invité sur client_conversations (booking sans compte client)
+    'ALTER TABLE client_conversations ADD COLUMN guest_prenom TEXT DEFAULT ""',
+    'ALTER TABLE client_conversations ADD COLUMN guest_nom TEXT DEFAULT ""',
+    'ALTER TABLE client_conversations ADD COLUMN guest_email TEXT DEFAULT ""',
+    'ALTER TABLE client_conversations ADD COLUMN guest_telephone TEXT DEFAULT ""',
+    // Marquer les messages client comme lus par l'artiste
+    'ALTER TABLE client_messages ADD COLUMN is_read_by_artist INTEGER DEFAULT 0',
   ];
   migrations.forEach(sql => { try { db.exec(sql); } catch(e) { /* colonne déjà existante */ } });
 }

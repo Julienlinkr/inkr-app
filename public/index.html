@@ -4049,14 +4049,17 @@ async function submitBooking(){
   // Message de réponse personnalisé de l'artiste (si dispo dans ARTISTS)
   const autoReply = a?.auto_reply || '';
 
-  // ── Si le client est connecté → stocker la conversation en base ──────────
+  // ── Stocker la conversation en base (client connecté OU invité) ──────────
+  // Route connectée : POST /api/client/conversations (requiert inkr_client_token)
+  // Route invitée  : POST /api/client/guest-booking  (sans auth, stocke guest_*)
   activeConversationId = null;
-  if(_clientUser){
-    try{
-      const r=await fetch('/api/client/conversations',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
+  try {
+    let r;
+    if (_clientUser) {
+      r = await fetch('/api/client/conversations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
           tatoueur_id:    a.id,
           tatoueur_nom:   a.name,
           booking_style:  style,
@@ -4067,9 +4070,30 @@ async function submitBooking(){
           auto_reply:     autoReply,
         }),
       });
-      if(r.ok){const d=await r.json();activeConversationId=d.id;}
-    }catch(e){console.warn('[booking] Erreur stockage conversation:',e.message);}
-  }
+    } else {
+      // Invité : on envoie aussi les infos d'identité du formulaire
+      const tel = document.getElementById('bk-tel')?.value?.trim() || '';
+      r = await fetch('/api/client/guest-booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tatoueur_id:      a.id,
+          tatoueur_nom:     a.name,
+          booking_style:    style,
+          booking_zone:     zone,
+          booking_taille:   taille,
+          booking_date:     date,
+          booking_desc:     desc,
+          auto_reply:       autoReply,
+          guest_prenom:     prenom,
+          guest_nom:        nom,
+          guest_email:      email,
+          guest_telephone:  tel,
+        }),
+      });
+    }
+    if (r && r.ok) { const d = await r.json(); activeConversationId = d.id; }
+  } catch(e) { console.warn('[booking] Erreur stockage conversation:', e.message); }
 
   closeMo('booking');
   setTimeout(()=>{
@@ -4100,14 +4124,18 @@ async function sendMsg(){
   input.value='';msgs.scrollTop=msgs.scrollHeight;
 
   // ── Persister le message en base si la conversation est sauvegardée ───────
-  if(activeConversationId && _clientUser){
-    try{
-      await fetch(`/api/client/conversations/${activeConversationId}/messages`,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({content:text,sender:'client'}),
+  // Fonctionne aussi pour les invités (guest-conversations) — activeConversationId suffit.
+  if (activeConversationId) {
+    try {
+      const endpoint = _clientUser
+        ? `/api/client/conversations/${activeConversationId}/messages`
+        : `/api/client/guest-conversations/${activeConversationId}/messages`;
+      await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: text, sender: 'client' }),
       });
-    }catch(e){console.warn('[sendMsg] Erreur stockage message:',e.message);}
+    } catch(e) { console.warn('[sendMsg] Erreur stockage message:', e.message); }
   }
 }
 

@@ -381,6 +381,83 @@ router.post('/conversations', requireClientAuth, (req, res) => {
   }
 });
 
+// ── POST /api/client/guest-booking ── Demande de RDV sans compte client ─────────
+// Permet aux visiteurs non connectés de soumettre une demande de RDV.
+// client_id = 0 (SQLite ne vérifie pas les FK sans PRAGMA foreign_keys=ON).
+// Les infos du visiteur sont stockées dans les colonnes guest_* de client_conversations.
+router.post('/guest-booking', (req, res) => {
+  try {
+    const {
+      tatoueur_id, tatoueur_nom,
+      booking_style, booking_zone, booking_taille, booking_date, booking_desc,
+      auto_reply,
+      guest_prenom, guest_nom, guest_email, guest_telephone,
+    } = req.body;
+
+    if (!tatoueur_nom)   return res.status(400).json({ error: 'Nom du tatoueur requis' });
+    if (!guest_email)    return res.status(400).json({ error: 'Email requis' });
+
+    const result = db.prepare(`
+      INSERT INTO client_conversations
+        (client_id, tatoueur_id, tatoueur_nom,
+         booking_style, booking_zone, booking_taille, booking_date, booking_desc,
+         guest_prenom, guest_nom, guest_email, guest_telephone)
+      VALUES (0,?,?, ?,?,?,?,?, ?,?,?,?)
+    `).run(
+      tatoueur_id   || null,
+      tatoueur_nom,
+      booking_style  || '',
+      booking_zone   || '',
+      booking_taille || '',
+      booking_date   || '',
+      booking_desc   || '',
+      guest_prenom   || '',
+      guest_nom      || '',
+      guest_email    || '',
+      guest_telephone|| '',
+    );
+
+    const convId = result.lastInsertRowid;
+
+    // Premier message automatique de l'artiste
+    const replyText = auto_reply ||
+      `Bonjour ! J'ai bien reçu ta demande 🎨 Je reviendrai vers toi dans les 48h pour qu'on discute de ton projet. Tu peux m'envoyer d'autres références ici si tu en as.\n\nÀ très vite ! ✌️`;
+    db.prepare(
+      'INSERT INTO client_messages (conversation_id, sender, content) VALUES (?,?,?)'
+    ).run(convId, 'artist', replyText);
+
+    res.json({ ok: true, id: convId });
+  } catch (e) {
+    console.error('[client/guest-booking POST]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── POST /api/client/guest-conversations/:id/messages ── Message invité ─────────
+// Permet d'envoyer un message dans une conversation invité sans être connecté.
+// Sécurité minimale : le conv_id doit appartenir à un booking invité (client_id=0).
+router.post('/guest-conversations/:id/messages', (req, res) => {
+  try {
+    const convId = parseInt(req.params.id);
+    const conv = db.prepare(
+      'SELECT id FROM client_conversations WHERE id=? AND client_id=0'
+    ).get(convId);
+    if (!conv) return res.status(404).json({ error: 'Conversation introuvable' });
+
+    const { content } = req.body;
+    if (!content || !content.trim()) return res.status(400).json({ error: 'Message vide' });
+
+    const result = db.prepare(
+      'INSERT INTO client_messages (conversation_id, sender, content) VALUES (?,\'client\',?)'
+    ).run(convId, content.trim());
+
+    res.json({ ok: true, id: result.lastInsertRowid });
+  } catch (e) {
+    console.error('[client/guest-conversations/:id/messages POST]', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── GET /api/client/conversations ── Lister les conversations du client ───────
 router.get('/conversations', requireClientAuth, (req, res) => {
   try {

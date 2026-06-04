@@ -460,13 +460,17 @@ router.get('/artist-conversations', requireArtistAuth, (req, res) => {
     if (tatoueurId) {
       convs = db.prepare(`
         SELECT cc.*,
-          ca.prenom || ' ' || ca.nom AS client_display_name,
-          ca.prenom AS client_prenom,
+          COALESCE(
+            NULLIF(TRIM(ca.prenom || ' ' || ca.nom), ''),
+            NULLIF(TRIM(cc.guest_prenom || ' ' || cc.guest_nom), ''),
+            'Client inkr'
+          ) AS client_display_name,
+          COALESCE(NULLIF(ca.prenom,''), NULLIF(cc.guest_prenom,''), 'Client') AS client_prenom,
           (SELECT content  FROM client_messages WHERE conversation_id=cc.id ORDER BY created_at DESC LIMIT 1) AS last_message,
           (SELECT created_at FROM client_messages WHERE conversation_id=cc.id ORDER BY created_at DESC LIMIT 1) AS last_message_at,
           (SELECT COUNT(*) FROM client_messages WHERE conversation_id=cc.id AND sender='client' AND is_read_by_artist=0) AS unread_count
         FROM client_conversations cc
-        LEFT JOIN client_accounts ca ON ca.id = cc.client_id
+        LEFT JOIN client_accounts ca ON ca.id = cc.client_id AND cc.client_id != 0
         WHERE cc.tatoueur_id = ?
         ORDER BY last_message_at DESC
       `).all(tatoueurId);
@@ -486,9 +490,18 @@ router.get('/artist-conversations/:id', requireArtistAuth, (req, res) => {
     const fiche = db.prepare('SELECT id FROM tatoueurs WHERE user_id=?').get(req.userId);
     if (!fiche) return res.status(404).json({ error: 'Fiche artiste introuvable' });
 
-    const conv = db.prepare(
-      'SELECT cc.*, ca.prenom || \' \' || ca.nom AS client_display_name, ca.prenom AS client_prenom FROM client_conversations cc LEFT JOIN client_accounts ca ON ca.id=cc.client_id WHERE cc.id=? AND cc.tatoueur_id=?'
-    ).get(parseInt(req.params.id), fiche.id);
+    const conv = db.prepare(`
+      SELECT cc.*,
+        COALESCE(
+          NULLIF(TRIM(ca.prenom || ' ' || ca.nom), ''),
+          NULLIF(TRIM(cc.guest_prenom || ' ' || cc.guest_nom), ''),
+          'Client inkr'
+        ) AS client_display_name,
+        COALESCE(NULLIF(ca.prenom,''), NULLIF(cc.guest_prenom,''), 'Client') AS client_prenom
+      FROM client_conversations cc
+      LEFT JOIN client_accounts ca ON ca.id=cc.client_id AND cc.client_id != 0
+      WHERE cc.id=? AND cc.tatoueur_id=?
+    `).get(parseInt(req.params.id), fiche.id);
     if (!conv) return res.status(404).json({ error: 'Conversation introuvable' });
 
     const messages = db.prepare(
@@ -542,15 +555,19 @@ router.get('/artist-unread', requireArtistAuth, (req, res) => {
 
     const unread = db.prepare(`
       SELECT cc.id, cc.tatoueur_nom,
-        ca.prenom || ' ' || ca.nom AS client_display_name,
-        ca.prenom AS client_prenom,
+        COALESCE(
+          NULLIF(TRIM(ca.prenom || ' ' || ca.nom), ''),
+          NULLIF(TRIM(cc.guest_prenom || ' ' || cc.guest_nom), ''),
+          'Client inkr'
+        ) AS client_display_name,
+        COALESCE(NULLIF(ca.prenom,''), NULLIF(cc.guest_prenom,''), 'Client') AS client_prenom,
         cc.booking_style, cc.booking_zone,
         COUNT(*) AS new_count,
         MAX(cm.created_at) AS latest_at,
         (SELECT content FROM client_messages WHERE conversation_id=cc.id AND sender='client' AND is_read_by_artist=0 ORDER BY created_at DESC LIMIT 1) AS latest_msg
       FROM client_messages cm
       JOIN client_conversations cc ON cc.id = cm.conversation_id
-      LEFT JOIN client_accounts ca ON ca.id = cc.client_id
+      LEFT JOIN client_accounts ca ON ca.id = cc.client_id AND cc.client_id != 0
       WHERE cc.tatoueur_id=? AND cm.sender='client' AND cm.is_read_by_artist=0
       GROUP BY cc.id
       ORDER BY latest_at DESC
