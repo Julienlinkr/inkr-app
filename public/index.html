@@ -4565,18 +4565,25 @@ async function handleRdvParam(){
   const params=new URLSearchParams(window.location.search);
   const rdv=params.get('rdv');
   if(!rdv) return;
-  // Charger les artistes si pas encore fait
-  if(!ARTISTS.length) await loadArtists(true);
-  if(!ARTISTS.length) return;
-  // Chercher par handle Instagram ou par id
-  let artist=ARTISTS.find(a=>
-    a.instagram&&a.instagram.replace('@','').toLowerCase()===rdv.toLowerCase()
-  ) || ARTISTS.find(a=>String(a.id)===String(rdv));
-  if(artist){
-    // Scroller vers l'annuaire puis ouvrir la fiche
-    showView('discover');
-    setTimeout(()=>openProfile(artist.id), 400);
-  }
+
+  // Essayer d'abord via l'API directement par instagram handle ou id
+  try {
+    // Charger tous les artistes en cherchant par nom d'IG ou id
+    const r=await fetch(`/api/annuaire?limit=200`);
+    if(r.ok){
+      const d=await r.json();
+      const all=d.artists||[];
+      ARTISTS=[...all];
+      const artist=all.find(a=>
+        (a.instagram||'').replace('@','').toLowerCase()===rdv.toLowerCase()
+      ) || all.find(a=>String(a.id)===String(rdv));
+      if(artist){
+        showView('discover');
+        setTimeout(()=>openProfile(artist.id), 500);
+        return;
+      }
+    }
+  } catch(_){}
 }
 
 // ── Init au chargement de page ────────────────────────────────────────────────

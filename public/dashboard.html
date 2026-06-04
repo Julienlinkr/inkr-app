@@ -888,11 +888,19 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(8,8,8,.97);ba
         <div class="form-group">
           <label>Styles tatouage</label>
           <div class="crm-tag-grid" id="nc-tag-grid" style="margin-top:5px;">
-            ${['fine line','flash','japonais','realisme','blackwork','old school','geometrique','chicano','lettering','dotwork','aquarelle','tribal','dotwork','animaux'].map(t=>`
-            <label class="crm-tag-check">
-              <input type="checkbox" value="${t}" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)">
-              ${{  'fine line':'Fine line','flash':'Flash','japonais':'Japonais','realisme':'Réalisme','blackwork':'Blackwork','old school':'Old school','geometrique':'Géométrique','chicano':'Chicano','lettering':'Lettering','dotwork':'Dotwork','aquarelle':'Aquarelle','tribal':'Tribal','animaux':'Animaux'}[t]||t}
-            </label>`).join('')}
+            <label class="crm-tag-check"><input type="checkbox" value="fine line" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)"> Fine Line</label>
+            <label class="crm-tag-check"><input type="checkbox" value="flash" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)"> Flash</label>
+            <label class="crm-tag-check"><input type="checkbox" value="japonais" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)"> Japonais</label>
+            <label class="crm-tag-check"><input type="checkbox" value="realisme" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)"> Réalisme</label>
+            <label class="crm-tag-check"><input type="checkbox" value="blackwork" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)"> Blackwork</label>
+            <label class="crm-tag-check"><input type="checkbox" value="old school" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)"> Old School</label>
+            <label class="crm-tag-check"><input type="checkbox" value="geometrique" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)"> Géométrique</label>
+            <label class="crm-tag-check"><input type="checkbox" value="chicano" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)"> Chicano</label>
+            <label class="crm-tag-check"><input type="checkbox" value="lettering" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)"> Lettering</label>
+            <label class="crm-tag-check"><input type="checkbox" value="dotwork" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)"> Dotwork</label>
+            <label class="crm-tag-check"><input type="checkbox" value="aquarelle" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)"> Aquarelle</label>
+            <label class="crm-tag-check"><input type="checkbox" value="tribal" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)"> Tribal</label>
+            <label class="crm-tag-check"><input type="checkbox" value="animaux" onchange="this.closest('.crm-tag-check').classList.toggle('on',this.checked)"> Animaux</label>
           </div>
         </div>
         <div class="form-group"><label>Notes (allergies, préférences...)</label><textarea class="form-control" id="nc-notes" style="min-height:65px;"></textarea></div>
@@ -1112,11 +1120,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(8,8,8,.97);ba
           <div class="form-group"><label>Nom complet</label><input class="form-control" id="p-name"></div>
           <div class="form-group"><label>Nom du studio</label><input class="form-control" id="p-studio"></div>
         </div>
-        <div class="form-group"><label>Adresse complète</label><input class="form-control" id="p-adresse" placeholder="12 rue de la Paix, 75001 Paris"></div>
+        <div class="form-group"><label>Adresse complète</label><input class="form-control" id="p-adresse" placeholder="12 rue van Gogh"></div>
         <div class="grid-2">
-          <div class="form-group"><label>Ville</label><input class="form-control" id="p-city"></div>
-          <div class="form-group"><label>Téléphone</label><input class="form-control" id="p-phone" type="tel"></div>
+          <div class="form-group"><label>Code postal</label><input class="form-control" id="p-cp" placeholder="33000" maxlength="10"></div>
+          <div class="form-group"><label>Ville</label><input class="form-control" id="p-city" placeholder="Bordeaux"></div>
         </div>
+        <div class="form-group"><label>Téléphone</label><input class="form-control" id="p-phone" type="tel"></div>
         <div class="grid-2">
           <div class="form-group"><label>Instagram</label><input class="form-control" id="p-instagram" placeholder="@studio_inkr"></div>
           <div class="form-group"><label>Pinterest</label><input class="form-control" id="p-pinterest" placeholder="@studio_inkr"></div>
@@ -1630,6 +1639,7 @@ function populateUser(){
   document.getElementById('p-nom-artiste').value=u.nom_artiste||'';
   document.getElementById('p-studio').value=u.studio_name||'';
   document.getElementById('p-city').value=u.city||'';
+  document.getElementById('p-cp').value=u.cp||'';
   document.getElementById('p-adresse').value=u.adresse||'';
   document.getElementById('p-phone').value=u.phone||'';
   document.getElementById('p-email').value=u.email||'';
@@ -2555,6 +2565,7 @@ async function saveProfil(){
     nom_artiste:document.getElementById('p-nom-artiste').value,
     studio_name:document.getElementById('p-studio').value,
     city:document.getElementById('p-city').value,
+    cp:document.getElementById('p-cp').value,
     adresse:document.getElementById('p-adresse').value,
     phone:document.getElementById('p-phone').value,
     instagram:document.getElementById('p-instagram').value,

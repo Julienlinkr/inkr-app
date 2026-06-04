@@ -184,6 +184,8 @@ function runMigrations() {
     'ALTER TABLE messages ADD COLUMN phone TEXT DEFAULT NULL',
     'ALTER TABLE users ADD COLUMN meta_wa_phone_id TEXT DEFAULT NULL',
     'ALTER TABLE users ADD COLUMN meta_ig_page_id TEXT DEFAULT NULL',
+    // Code postal sur users
+    'ALTER TABLE users ADD COLUMN cp TEXT DEFAULT ""',
     // Colonnes styles / bio / auto_reply sur users (utilisées par PUT /profile)
     'ALTER TABLE users ADD COLUMN styles TEXT DEFAULT "[]"',
     'ALTER TABLE users ADD COLUMN auto_reply TEXT DEFAULT ""',

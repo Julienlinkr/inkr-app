@@ -138,7 +138,7 @@ router.put('/profile', (req, res) => {
   if (!token) return res.status(401).json({ error: 'Non connecté' });
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const { name, prenom, nom_artiste, studio_name, city, adresse, phone, instagram, pinterest,
+    const { name, prenom, nom_artiste, studio_name, city, cp, adresse, phone, instagram, pinterest,
             auto_reply, bio, styles, en_tournee, horaires, dispo_flash } = req.body;
 
     // Mise à jour partielle : uniquement en_tournee (toggle tournée)
@@ -156,10 +156,10 @@ router.put('/profile', (req, res) => {
     const horairesJson = (horaires && typeof horaires === 'object') ? JSON.stringify(horaires) : (horaires || '');
 
     db.prepare(`
-      UPDATE users SET name=?, prenom=?, nom_artiste=?, studio_name=?, city=?, adresse=?,
+      UPDATE users SET name=?, prenom=?, nom_artiste=?, studio_name=?, city=?, cp=?, adresse=?,
         phone=?, instagram=?, pinterest=?, auto_reply=?, bio=?, styles=?, horaires=?, dispo_flash=?
       WHERE id=?
-    `).run(name, prenom||'', nom_artiste||'', studio_name||'', city||'', adresse||'', phone||'',
+    `).run(name, prenom||'', nom_artiste||'', studio_name||'', city||'', cp||'', adresse||'', phone||'',
            instagram||'', pinterest||'', auto_reply||'', bio||'', stylesJson,
            horairesJson, dispo_flash ? 1 : 0, decoded.userId);
 
@@ -171,19 +171,19 @@ router.put('/profile', (req, res) => {
       const existingFiche = db.prepare('SELECT id FROM tatoueurs WHERE user_id = ?').get(decoded.userId);
       if (existingFiche) {
         db.prepare(`
-          UPDATE tatoueurs SET nom=?, nom_commercial=?, ville=?, adresse=?, telephone=?,
+          UPDATE tatoueurs SET nom=?, nom_commercial=?, ville=?, cp=?, adresse=?, telephone=?,
             instagram=?, styles=?, bio=?, auto_reply=?, horaires=?, dispo_flash=?, statut='active'
           WHERE user_id=?
-        `).run(name, nom_artiste||name, city||'', adresse||'', phone||'',
+        `).run(name, nom_artiste||name, city||'', cp||'', adresse||'', phone||'',
                instagram||'', stylesJson, bio||'', auto_reply||'',
                horairesJson, dispo_flash ? 1 : 0, decoded.userId);
       } else {
         db.prepare(`
           INSERT INTO tatoueurs
-            (user_id, nom, nom_commercial, ville, adresse, telephone, instagram,
+            (user_id, nom, nom_commercial, ville, cp, adresse, telephone, instagram,
              styles, bio, auto_reply, horaires, dispo_flash, source, statut)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'inkr_pro', 'active')
-        `).run(decoded.userId, name, nom_artiste||name, city||'', adresse||'', phone||'',
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'inkr_pro', 'active')
+        `).run(decoded.userId, name, nom_artiste||name, city||'', cp||'', adresse||'', phone||'',
                instagram||'', stylesJson, bio||'', auto_reply||'',
                horairesJson, dispo_flash ? 1 : 0);
       }
