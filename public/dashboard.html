@@ -32,6 +32,11 @@ a{text-decoration:none;color:inherit;}
 .auth-tab{flex:1;padding:8px;text-align:center;border-radius:4px;font-size:12px;font-weight:700;letter-spacing:.3px;cursor:pointer;transition:all .15s;color:var(--dim);border:none;background:transparent;text-transform:uppercase;}
 .auth-tab.active{background:#fff;color:#000;}
 .auth-err{margin-top:10px;padding:9px 12px;border-radius:var(--r);font-size:12px;color:var(--red);background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);display:none;}
+.auth-forgot-link{font-size:12px;color:var(--dim);text-align:center;margin-top:12px;cursor:pointer;}
+.auth-forgot-link:hover{color:#fff;}
+.auth-back-link{font-size:12px;color:var(--dim);text-align:center;margin-top:8px;cursor:pointer;display:block;}
+.auth-success{background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:#10b981;border-radius:8px;padding:10px 14px;font-size:13px;margin-top:10px;display:none;}
+.otp-step2{display:none;}
 
 /* FORMS */
 .form-group{margin-bottom:12px;}
@@ -456,16 +461,57 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:rgba(8,8,8,.97);ba
   <div class="auth-box">
     <div class="auth-logo">inkr</div>
     <div class="auth-sub">Espace artiste — Dashboard Pro</div>
+
+    <!-- Tabs -->
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="authTab('login',this)">Connexion</button>
+      <button class="auth-tab" onclick="authTab('sms',this)">SMS ⚡</button>
       <button class="auth-tab" onclick="authTab('register',this)">Créer un compte</button>
     </div>
+
+    <!-- Login classique -->
     <div id="auth-login">
       <div class="form-group"><label>Email</label><input class="form-control" id="l-email" type="email" placeholder="artiste@email.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <div class="form-group"><label>Mot de passe</label><input class="form-control" id="l-password" type="password" placeholder="••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
       <button class="btn btn-primary btn-full" onclick="doLogin()">Se connecter</button>
       <div id="login-err" class="auth-err"></div>
+      <div class="auth-forgot-link" onclick="showForgot()">Mot de passe oublié ?</div>
     </div>
+
+    <!-- Connexion SMS OTP -->
+    <div id="auth-sms" style="display:none">
+      <div id="otp-step1">
+        <div class="form-group"><label>Ton numéro de téléphone</label><input class="form-control" id="sms-phone" type="tel" placeholder="+33 6 12 34 56 78"></div>
+        <button class="btn btn-primary btn-full" id="sms-send-btn" onclick="sendOTP()">Recevoir mon code →</button>
+      </div>
+      <div id="otp-step2" class="otp-step2">
+        <div class="form-group"><label>Code reçu par SMS</label><input class="form-control" id="sms-code" type="text" maxlength="6" placeholder="123456" style="letter-spacing:6px;font-size:22px;text-align:center;" onkeydown="if(event.key==='Enter')verifyOTP()"></div>
+        <button class="btn btn-primary btn-full" id="otp-verify-btn" onclick="verifyOTP()">Se connecter →</button>
+        <span class="auth-back-link" onclick="document.getElementById('otp-step1').style.display='block';document.getElementById('otp-step2').style.display='none';">← Changer de numéro</span>
+      </div>
+      <div id="sms-err" class="auth-err"></div>
+    </div>
+
+    <!-- Mot de passe oublié -->
+    <div id="auth-forgot" style="display:none">
+      <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Entre ton email pour recevoir un lien de réinitialisation.</p>
+      <div class="form-group"><label>Email</label><input class="form-control" id="f-email" type="email" placeholder="artiste@email.com" onkeydown="if(event.key==='Enter')doForgotPassword()"></div>
+      <button class="btn btn-primary btn-full" id="forgot-btn" onclick="doForgotPassword()">Envoyer le lien →</button>
+      <div id="forgot-err" class="auth-err"></div>
+      <div id="forgot-success" class="auth-success"></div>
+      <span class="auth-back-link" onclick="authTab('login',document.querySelector('.auth-tab'))">← Retour à la connexion</span>
+    </div>
+
+    <!-- Reset mot de passe (depuis lien email) -->
+    <div id="auth-reset" style="display:none">
+      <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Choisis ton nouveau mot de passe.</p>
+      <div class="form-group"><label>Nouveau mot de passe</label><input class="form-control" id="rp-password" type="password" placeholder="••••••••"></div>
+      <div class="form-group"><label>Confirmer le mot de passe</label><input class="form-control" id="rp-password2" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doResetPassword()"></div>
+      <button class="btn btn-primary btn-full" id="reset-btn" onclick="doResetPassword()">Confirmer le nouveau mot de passe</button>
+      <div id="reset-err" class="auth-err"></div>
+    </div>
+
+    <!-- Register -->
     <div id="auth-register" style="display:none">
       <div class="grid-2">
         <div class="form-group"><label>Nom *</label><input class="form-control" id="r-name" placeholder="Leclerc"></div>
@@ -1412,10 +1458,83 @@ function goToSite(){switchMode('/','← Mode Visiteur');}
 // ======== AUTH ========
 function authTab(tab,el){
   document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
+  if(el)el.classList.add('active');
   document.getElementById('auth-login').style.display=tab==='login'?'block':'none';
+  document.getElementById('auth-sms').style.display=tab==='sms'?'block':'none';
   document.getElementById('auth-register').style.display=tab==='register'?'block':'none';
+  document.getElementById('auth-forgot').style.display='none';
 }
+
+function showForgot(){
+  document.getElementById('auth-login').style.display='none';
+  document.getElementById('auth-forgot').style.display='block';
+  document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+}
+
+async function doForgotPassword(){
+  const email=document.getElementById('f-email').value.trim();
+  const err=document.getElementById('forgot-err');err.style.display='none';
+  const suc=document.getElementById('forgot-success');
+  if(!email){err.textContent='Email requis';err.style.display='block';return;}
+  const btn=document.getElementById('forgot-btn');
+  btn.disabled=true;btn.textContent='Envoi...';
+  const res=await fetch('/api/auth/forgot-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+  const data=await res.json();
+  btn.disabled=false;btn.textContent='Envoyer le lien →';
+  if(data.success){suc.style.display='block';suc.textContent='Lien envoyé ! Vérifie ta boite email.';err.style.display='none';}
+  else{err.textContent=data.error||'Erreur';err.style.display='block';}
+}
+
+async function doResetPassword(){
+  const token=new URLSearchParams(window.location.search).get('reset_token');
+  const p1=document.getElementById('rp-password').value;
+  const p2=document.getElementById('rp-password2').value;
+  const err=document.getElementById('reset-err');err.style.display='none';
+  if(p1!==p2){err.textContent='Les mots de passe ne correspondent pas';err.style.display='block';return;}
+  if(p1.length<6){err.textContent='6 caractères minimum';err.style.display='block';return;}
+  const btn=document.getElementById('reset-btn');
+  btn.disabled=true;btn.textContent='Mise à jour...';
+  const res=await fetch('/api/auth/reset-password',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,new_password:p1})});
+  const data=await res.json();
+  btn.disabled=false;btn.textContent='Confirmer le nouveau mot de passe';
+  if(data.success){window.history.replaceState({},'','/dashboard');currentUser=data.user;showApp();}
+  else{err.textContent=data.error||'Lien invalide ou expiré';err.style.display='block';}
+}
+
+async function sendOTP(){
+  const phone=document.getElementById('sms-phone').value.trim();
+  const err=document.getElementById('sms-err');err.style.display='none';
+  if(!phone){err.textContent='Téléphone requis';err.style.display='block';return;}
+  const btn=document.getElementById('sms-send-btn');
+  btn.disabled=true;btn.textContent='Envoi...';
+  const res=await fetch('/api/auth/send-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone})});
+  const data=await res.json();
+  btn.disabled=false;btn.textContent='Recevoir mon code →';
+  if(data.success){
+    document.getElementById('otp-step1').style.display='none';
+    document.getElementById('otp-step2').style.display='block';
+    if(data.code){
+      document.getElementById('sms-code').value=data.code;
+      err.textContent='Mode test : code pré-rempli ('+data.code+')';
+      err.style.color='#10b981';err.style.display='block';
+    }
+  } else {err.textContent=data.error||'Erreur';err.style.color='';err.style.display='block';}
+}
+
+async function verifyOTP(){
+  const phone=document.getElementById('sms-phone').value.trim();
+  const code=document.getElementById('sms-code').value.trim();
+  const err=document.getElementById('sms-err');err.style.display='none';
+  if(!code){err.textContent='Code requis';err.style.display='block';return;}
+  const btn=document.getElementById('otp-verify-btn');
+  btn.disabled=true;btn.textContent='Vérification...';
+  const res=await fetch('/api/auth/verify-otp',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,code})});
+  const data=await res.json();
+  btn.disabled=false;btn.textContent='Se connecter →';
+  if(data.success){currentUser=data.user;showApp();}
+  else{err.textContent=data.error||'Code invalide';err.style.color='';err.style.display='block';}
+}
+
 async function doLogin(){
   const email=document.getElementById('l-email').value.trim();
   const password=document.getElementById('l-password').value;
@@ -1443,6 +1562,16 @@ async function checkAuth(){
   else{
     document.getElementById('auth-screen').style.display='flex';
     document.getElementById('app').style.display='none';
+    // Vérifier si on a un reset_token dans l'URL
+    const params=new URLSearchParams(window.location.search);
+    if(params.get('reset_token')){
+      document.getElementById('auth-login').style.display='none';
+      document.getElementById('auth-sms').style.display='none';
+      document.getElementById('auth-register').style.display='none';
+      document.getElementById('auth-forgot').style.display='none';
+      document.getElementById('auth-reset').style.display='block';
+      document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));
+    }
   }
 }
 function showApp(){

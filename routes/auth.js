@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { db, initDefaultAutomations } = require('../db/database');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'inkr_secret_dev';
@@ -18,6 +19,10 @@ const JWT_SECRET = process.env.JWT_SECRET || 'inkr_secret_dev';
  'bio TEXT DEFAULT \'\'',
  'styles TEXT DEFAULT \'[]\'',
  'en_tournee INTEGER DEFAULT 0',
+ 'reset_token TEXT DEFAULT NULL',
+ 'reset_token_expiry TEXT DEFAULT NULL',
+ 'otp_code TEXT DEFAULT NULL',
+ 'otp_expiry TEXT DEFAULT NULL',
 ].forEach(col => {
   try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch(_) {}
 });
@@ -55,8 +60,8 @@ router.post('/register', async (req, res) => {
       await sendEmail(
         email,
         '🎨 Bienvenue dans la communauté inkr Pro !',
-        `Bonjour ${prenom || name} !\n\nTon compte inkr Pro est actif — tu as 14 jours d'essai gratuit pour explorer tout ce qu'inkr a à t'offrir.\n\n👉 Accède à ton dashboard : ${appUrl}/dashboard\n\n📞 Ton call de présentation : https://calendly.com/inkr/onboarding\n\n💬 Une question ? Écris-nous à hello@inkr.club — on répond en moins de 2h.\n\nL'équipe inkr 🖤`,
-        { name, prenom: prenom || '', studio_name, email },
+        `Bonjour ${name} !\n\nTon compte inkr Pro est actif — tu as 14 jours d'essai gratuit pour explorer tout ce qu'inkr a à t'offrir.\n\n👉 Accède à ton dashboard : ${appUrl}/dashboard\n\n📞 Ton call de présentation : https://calendly.com/inkr/onboarding\n\n💬 Une question ? Écris-nous à hello@inkr.club — on répond en moins de 2h.\n\nL'équipe inkr 🖤`,
+        { name, prenom: name, studio_name, email },
         appUrl
       );
     } catch(emailErr) {
@@ -214,6 +219,170 @@ router.get('/meta/callback', async (req, res) => {
   } catch (err) {
     console.error('Meta callback error:', err);
     res.redirect('/dashboard?meta_error=1');
+  }
+});
+
+// ============ MOT DE PASSE OUBLIÉ ============
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    if (!user) {
+      // Ne pas révéler si l'email existe
+      return res.json({ success: true, message: 'Si cet email existe, un lien de réinitialisation a été envoyé.' });
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiry = new Date(Date.now() + 3600000).toISOString(); // 1 heure
+
+    db.prepare('UPDATE users SET reset_token=?, reset_token_expiry=? WHERE id=?').run(token, expiry, user.id);
+
+    const appUrl = process.env.APP_URL || 'https://inkr-app-production.up.railway.app';
+    try {
+      const { sendEmail } = require('./campaigns');
+      await sendEmail(
+        email,
+        '🔑 Réinitialisation de ton mot de passe inkr',
+        `Bonjour !\n\nClique sur ce lien pour réinitialiser ton mot de passe (valable 1h) :\n${appUrl}/dashboard?reset_token=${token}\n\nSi tu n'as pas demandé ça, ignore cet email.\n\nL'équipe inkr`,
+        { name: user.name, email },
+        appUrl
+      );
+    } catch (emailErr) {
+      console.warn('[Auth] Email reset non envoyé:', emailErr.message);
+    }
+
+    res.json({ success: true, message: 'Si cet email existe, un lien de réinitialisation a été envoyé.' });
+  } catch (err) {
+    console.error('Forgot password error:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// ============ RÉINITIALISATION MOT DE PASSE ============
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, new_password } = req.body;
+    if (!token || !new_password) {
+      return res.status(400).json({ error: 'Token et mot de passe requis' });
+    }
+    if (new_password.length < 6) {
+      return res.status(400).json({ error: 'Mot de passe trop court (6 caractères min)' });
+    }
+
+    const user = db.prepare('SELECT * FROM users WHERE reset_token = ?').get(token);
+    if (!user) {
+      return res.status(400).json({ error: 'Lien invalide ou déjà utilisé' });
+    }
+
+    // Vérifier l'expiration
+    if (!user.reset_token_expiry || new Date().toISOString() > user.reset_token_expiry) {
+      return res.status(400).json({ error: 'Lien expiré, demande un nouveau lien' });
+    }
+
+    const hash = await bcrypt.hash(new_password, 10);
+    db.prepare('UPDATE users SET password_hash=?, reset_token=NULL, reset_token_expiry=NULL WHERE id=?').run(hash, user.id);
+
+    const jwtToken = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
+    res.cookie('inkr_token', jwtToken, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
+
+    const isMobile = req.headers['x-inkr-client'] === 'mobile';
+    res.json({
+      success: true,
+      ...(isMobile ? { token: jwtToken } : {}),
+      user: { id: user.id, email: user.email, name: user.name, studio_name: user.studio_name, avatar_seed: user.avatar_seed }
+    });
+  } catch (err) {
+    console.error('Reset password error:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// ============ ENVOI OTP SMS ============
+async function sendSMSOTP(to, code) {
+  if (!process.env.TWILIO_ACCOUNT_SID || process.env.TWILIO_ACCOUNT_SID.startsWith('ACxx')) {
+    console.log(`[OTP SIMULÉ] Code ${code} pour ${to}`);
+    return { simulated: true, code }; // retourne le code en simulation pour faciliter les tests
+  }
+  const twilio = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+  return twilio.messages.create({
+    body: `Ton code inkr : ${code}\nValable 10 minutes. Ne le partage avec personne.`,
+    from: process.env.TWILIO_PHONE,
+    to
+  });
+}
+
+router.post('/send-otp', async (req, res) => {
+  try {
+    let { phone } = req.body;
+    if (!phone) return res.status(400).json({ error: 'Numéro de téléphone requis' });
+
+    // Normaliser : supprimer les espaces, s'assurer que ça commence par +
+    phone = phone.replace(/\s/g, '');
+    if (!phone.startsWith('+')) phone = '+' + phone;
+
+    const user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
+    if (!user) {
+      return res.status(404).json({ error: 'Aucun compte trouvé avec ce numéro' });
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
+
+    db.prepare('UPDATE users SET otp_code=?, otp_expiry=? WHERE id=?').run(code, expiry, user.id);
+
+    const result = await sendSMSOTP(phone, code);
+    const simulated = !!(result && result.simulated);
+
+    res.json({
+      success: true,
+      simulated,
+      ...(simulated ? { code } : {})
+    });
+  } catch (err) {
+    console.error('Send OTP error:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// ============ VÉRIFICATION OTP ============
+router.post('/verify-otp', async (req, res) => {
+  try {
+    let { phone, code } = req.body;
+    if (!phone || !code) return res.status(400).json({ error: 'Téléphone et code requis' });
+
+    phone = phone.replace(/\s/g, '');
+    if (!phone.startsWith('+')) phone = '+' + phone;
+
+    const user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
+    if (!user) {
+      return res.status(404).json({ error: 'Aucun compte trouvé avec ce numéro' });
+    }
+
+    // Vérifier l'expiration d'abord
+    if (!user.otp_expiry || new Date().toISOString() > user.otp_expiry) {
+      return res.status(400).json({ error: 'Code expiré, demande un nouveau code' });
+    }
+
+    // Vérifier le code
+    if (user.otp_code !== String(code)) {
+      return res.status(400).json({ error: 'Code incorrect' });
+    }
+
+    // Effacer l'OTP
+    db.prepare('UPDATE users SET otp_code=NULL, otp_expiry=NULL WHERE id=?').run(user.id);
+
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
+    res.cookie('inkr_token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
+
+    const isMobile = req.headers['x-inkr-client'] === 'mobile';
+    res.json({
+      success: true,
+      ...(isMobile ? { token } : {}),
+      user: { id: user.id, email: user.email, name: user.name, studio_name: user.studio_name, avatar_seed: user.avatar_seed }
+    });
+  } catch (err) {
+    console.error('Verify OTP error:', err);
+    res.status(500).json({ error: 'Erreur serveur' });
   }
 });
 
