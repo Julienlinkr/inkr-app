@@ -3517,10 +3517,13 @@ function togglePricingCard(card){
 }
 
 function startChannelAnim(card){
-  if(card.classList.contains('open')) return;
+  // Réinitialise les messages puis les anime une fois la carte ouverte
+  card.querySelectorAll('.demo-ch-msg').forEach(m=>m.classList.remove('visible'));
   setTimeout(()=>{
-    const msgs=card.querySelectorAll('.demo-ch-msg');
-    msgs.forEach((m,i)=>setTimeout(()=>m.classList.add('visible'),i*320));
+    if(!card.classList.contains('open')) return; // n'anime que si la carte est bien ouverte
+    card.querySelectorAll('.demo-ch-msg').forEach((m,i)=>
+      setTimeout(()=>m.classList.add('visible'), i*320)
+    );
   },200);
 }
 
