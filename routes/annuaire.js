@@ -14,8 +14,23 @@ const { db }  = require('../db/database');
 // Normalise un texte pour la comparaison (accents → ASCII, lowercase)
 function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim(); }
 
-// Dérive des "slug de style" depuis le nom du style
-function styleSlug(s){ return norm(s).replace(/[\s\-]+/g,'-').replace(/[^a-z0-9\-]/g,''); }
+// Table de correspondance nom affiché → slug STYLES_DATA (frontend)
+// Doit rester synchronisé avec STYLES_DATA dans index.html
+const STYLE_SLUG_MAP = {
+  'japonais':'japonais', 'fine line':'fineline', 'fineline':'fineline',
+  'realisme':'realisme', 'réalisme':'realisme',
+  'geometrique':'geometrique', 'géométrique':'geometrique',
+  'tribal':'tribal', 'old school':'old-school', 'old-school':'old-school',
+  'aquarelle':'aquarelle', 'animaux':'animaux', 'flash':'flash',
+  'blackwork':'blackwork', 'minimaliste':'minimaliste',
+  'lettering':'lettering', 'chicano':'chicano', 'dotwork':'dotwork',
+  'neo traditionnel':'neo-traditionnel', 'néo traditionnel':'neo-traditionnel',
+};
+// Dérive des "slug de style" depuis le nom du style — doit correspondre aux slugs de STYLES_DATA
+function styleSlug(s) {
+  const key = norm(s).replace(/[\s\-]+/g,' ').trim();
+  return STYLE_SLUG_MAP[key] || norm(s).replace(/[\s\-]+/g,'-').replace(/[^a-z0-9\-]/g,'');
+}
 
 // Transforme une ligne DB en objet compatible frontend
 function toFront(t){
@@ -55,6 +70,7 @@ function toFront(t){
 
 // ─── GET /api/annuaire ─────────────────────────────────────────
 // Params: ?ville=Paris&style=fineline&q=sofia&limit=50&offset=0
+// Le paramètre style accepte le slug ("fineline") ou le nom d'affichage ("Fine Line").
 router.get('/', (req, res) => {
   try {
     const { ville, style, q, limit=50, offset=0 } = req.query;
@@ -62,12 +78,18 @@ router.get('/', (req, res) => {
     const params = [];
 
     if (ville) {
-      sql += " AND (LOWER(ville) LIKE ? OR LOWER(cp) LIKE ?)";
-      params.push(`%${norm(ville)}%`, `%${norm(ville)}%`);
+      // Cherche dans ville ET cp. norm() normalise accents + casse.
+      // On cherche aussi sans LOWER() pour compatibilité maximale.
+      const vn = `%${norm(ville)}%`;
+      sql += " AND (LOWER(ville) LIKE ? OR LOWER(cp) LIKE ? OR ville LIKE ? OR cp LIKE ?)";
+      params.push(vn, vn, `%${ville}%`, `%${ville}%`);
     }
     if (style) {
-      sql += " AND LOWER(styles) LIKE ?";
-      params.push(`%${norm(style)}%`);
+      // Normalise le style : supprime espaces et tirets pour comparer "fine line" ↔ "fineline" ↔ "fine-line"
+      // Fonctionne que le front envoie le slug (fineline) ou le nom affiché (Fine Line).
+      const styleNorm = norm(style).replace(/[\s\-]+/g, '');
+      sql += " AND REPLACE(REPLACE(LOWER(styles), ' ', ''), '-', '') LIKE ?";
+      params.push(`%${styleNorm}%`);
     }
     if (q) {
       const lq = `%${norm(q)}%`;

@@ -2799,7 +2799,9 @@ function renderArtistsFiltered() {
  * applyAdvFiltersSelect — appelé quand on change le select style dans split-left.
  */
 function applyAdvFiltersSelect(val) {
-  annuaireFilter.style = val;
+  // Convertit le slug du select (ex: "fineline") en nom d'affichage (ex: "Fine Line")
+  const styleData = STYLES_DATA.find(s => s.slug === val);
+  annuaireFilter.style = styleData ? styleData.filter : val;
   activeStyleCard = val;
   // Sync pills style cards
   document.querySelectorAll('.style-card').forEach(c => {
@@ -3249,10 +3251,14 @@ document.addEventListener('click', (e) => {
  */
 function handleHeroSearch() {
   const ville = (document.getElementById('hero-ville')?.value || '').trim();
-  const style = document.getElementById('hero-style')?.value || '';
+  const styleSlug = document.getElementById('hero-style')?.value || '';
   // Sync avec le champ de filtre avancé de la section Discover
   const afVille = document.getElementById('af-ville');
   if (afVille) afVille.value = ville;
+  // Convertit le slug (ex: "fineline") en nom d'affichage (ex: "Fine Line")
+  // pour que le backend trouve la correspondance dans le JSON des styles.
+  const styleData = STYLES_DATA.find(s => s.slug === styleSlug);
+  const style = styleData ? styleData.filter : styleSlug;
   // Appliquer aux filtres globaux
   annuaireFilter.ville = ville;
   annuaireFilter.style = style;
