@@ -53,6 +53,25 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
 
+// ============ ADMIN — Backup manuel ============
+// GET  /api/admin/backups  → liste les backups disponibles
+// POST /api/admin/backup   → déclenche un backup immédiat
+// Protégé par ADMIN_SECRET (variable Railway optionnelle)
+app.get('/api/admin/backups', (req, res) => {
+  const secret = process.env.ADMIN_SECRET;
+  if (secret && req.query.secret !== secret) return res.status(401).json({ error: 'Non autorisé' });
+  const { listBackups } = require('./services/backup');
+  res.json({ backups: listBackups() });
+});
+app.post('/api/admin/backup', (req, res) => {
+  const secret = process.env.ADMIN_SECRET;
+  if (secret && req.query.secret !== secret) return res.status(401).json({ error: 'Non autorisé' });
+  const { runBackup } = require('./services/backup');
+  const result = runBackup();
+  if (result) res.json({ success: true, file: require('path').basename(result.file), size_kb: Math.round(result.size / 1024) });
+  else res.status(500).json({ error: 'Backup échoué — voir les logs Railway' });
+});
+
 // ============ STATUS ============
 app.get('/api/status', (req, res) => {
   res.json({
@@ -68,6 +87,9 @@ app.get('/api/status', (req, res) => {
     }
   });
 });
+
+// ============ BACKUP AUTOMATIQUE ============
+const { startAutoBackup } = require('./services/backup');
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('\n🎨 ========================================');
@@ -88,4 +110,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   WHATSAPP: ${process.env.WHATSAPP_TOKEN ? '✅ Configuré' : '⚠️  Mode simulation (WHATSAPP_TOKEN manquant)'}`);
   console.log(`   DB     : ${process.env.DB_PATH || 'db/inkr.db (local)'}`);
   console.log('\n');
+
+  // Démarrage du backup automatique (après initialisation complète)
+  startAutoBackup();
 });
