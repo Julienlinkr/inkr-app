@@ -2676,6 +2676,8 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
         <div class="fg"><label class="fl">Date souhaitée</label><input class="fi" type="date" id="bk-date"/></div>
       </div>
       <div class="fg"><label class="fl">Ton idée / description du projet</label><textarea class="fi" id="bk-desc" rows="3" placeholder="Décris ton projet, le style que tu veux, les références, les couleurs, ce que ça représente pour toi..." style="resize:vertical"></textarea></div>
+      <!-- Board Pinterest / inspiration (optionnel) -->
+      <div class="fg"><label class="fl">📌 Board Pinterest / inspiration <span style="font-weight:400;color:#aaa;">(optionnel)</span></label><input class="fi" type="url" id="bk-pinterest" placeholder="https://www.pinterest.fr/ton-board…" /></div>
       <div class="fg">
         <label class="fl">Photos de référence</label>
         <div class="file-drop" onclick="document.getElementById('bk-files').click()">
@@ -4514,9 +4516,14 @@ async function submitBooking(){
   const taille=document.getElementById('bk-taille').value;
   const date=document.getElementById('bk-date').value;
   const desc=document.getElementById('bk-desc')?.value||'';
+  // Board Pinterest (optionnel — envoyé dans la description si renseigné)
+  const pinterest = document.getElementById('bk-pinterest')?.value?.trim() || '';
 
   // Message de réponse personnalisé de l'artiste (si dispo dans ARTISTS)
   const autoReply = a?.auto_reply || '';
+
+  // Enrichir la description avec le board Pinterest si fourni
+  const descFull = desc + (pinterest ? `\n\n📌 Board Pinterest : ${pinterest}` : '');
 
   // ── Stocker la conversation en base (client connecté OU invité) ──────────
   // Route connectée : POST /api/client/conversations (requiert inkr_client_token)
@@ -4535,7 +4542,7 @@ async function submitBooking(){
           booking_zone:   zone,
           booking_taille: taille,
           booking_date:   date,
-          booking_desc:   desc,
+          booking_desc:   descFull,
           auto_reply:     autoReply,
         }),
       });
@@ -4552,7 +4559,7 @@ async function submitBooking(){
           booking_zone:     zone,
           booking_taille:   taille,
           booking_date:     date,
-          booking_desc:     desc,
+          booking_desc:     descFull,
           auto_reply:       autoReply,
           guest_prenom:     prenom,
           guest_nom:        nom,

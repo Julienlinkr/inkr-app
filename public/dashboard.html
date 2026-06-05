@@ -803,13 +803,15 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
           <button class="msg-filter-btn" data-ch="whatsapp"  data-color="#25D366" style="--active-ch-color:#25D366;--active-ch-bg:rgba(37,211,102,.12);"  onclick="filterMessages('whatsapp',this)">💬 WhatsApp</button>
           <button class="msg-filter-btn" data-ch="facebook"  data-color="#1877F2" style="--active-ch-color:#1877F2;--active-ch-bg:rgba(24,119,242,.12);"  onclick="filterMessages('facebook',this)">🔵 Facebook</button>
           <button class="msg-filter-btn" data-ch="email"     data-color="#60A5FA" style="--active-ch-color:#60A5FA;--active-ch-bg:rgba(96,165,250,.12);"  onclick="filterMessages('email',this)">✉️ Email</button>
-          <button class="msg-filter-btn" data-ch="pinterest" data-color="#E60023" style="--active-ch-color:#E60023;--active-ch-bg:rgba(230,0,35,.12);"    onclick="filterMessages('pinterest',this)">📌 Pinterest</button>
+          <!-- Pinterest retiré des messages — disponible uniquement dans "Board d'inspiration" profil artiste -->
         </div>
       </div>
       <div class="msg-list" id="msg-list">
         <!-- ── Conversations réelles inkr (demandes clients) — chargées via API ── -->
         <div id="inkr-convs-list"></div>
-        <!-- ── Conversations démo canaux externes (statiques) ── -->
+        <!-- ── Threads Meta réels (Instagram / WhatsApp / Facebook) — injectés par loadMetaThreads() ── -->
+        <div id="meta-threads-list"></div>
+        <!-- ── Conversations démo canaux externes (affichées si Meta non connecté) ── -->
         <div id="demo-convs-list">
         <div class="msg-thread active" data-channel="instagram" data-name="chloé t." onclick="openThread(this,'Chloé T.','Instagram DM','chloe@example.com',null)">
           <div class="mt-av">C</div>
@@ -851,14 +853,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
             <div class="ch-tag" style="background:rgba(37,211,102,.15);color:#25D366;">💬 WhatsApp</div>
           </div>
         </div>
-        <div class="msg-thread" data-channel="pinterest" data-name="emma l." onclick="openThread(this,'Emma L.','Pinterest',null,null)">
-          <div class="mt-av">E</div>
-          <div class="mt-body">
-            <div class="mt-name">Emma L. <span class="mt-time">mer.</span></div>
-            <div class="mt-prev">J'adore ce flash 🌸</div>
-            <div class="ch-tag" style="background:rgba(230,0,35,.15);color:#E60023;">📌 Pinterest</div>
-          </div>
-        </div>
+        <!-- Thread Meta réels chargés par loadMetaThreads() ci-dessous -->
         </div><!-- /demo-convs-list -->
       </div>
     </div>
@@ -867,7 +862,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
         <div class="mt-av" id="chat-av">C</div>
         <div><div style="font-size:13px;font-weight:700;" id="chat-name">Chloé T.</div><div style="font-size:11px;color:var(--muted);" id="chat-ch">Instagram DM</div></div>
         <div style="margin-left:auto;">
-          <a href="/api/auth/meta" class="btn btn-sm" style="background:linear-gradient(135deg,#405DE6,#E1306C);color:#fff;font-size:11px;">Connecter Meta →</a>
+          <!-- Bouton Meta — mis à jour dynamiquement par loadMetaStatus() -->
+          <a id="meta-connect-btn" href="/api/meta/oauth" class="btn btn-sm" style="background:linear-gradient(135deg,#405DE6,#E1306C);color:#fff;font-size:11px;">Connecter Meta →</a>
         </div>
       </div>
       <div class="absent-banner" onclick="toggleAbsent()">
@@ -1300,7 +1296,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
       </div>
       <div class="test-box">
         <h4>📸 Connecter Instagram & Facebook</h4><p>Autorisez inkr à accéder à vos messages Meta.</p>
-        <a href="/api/auth/meta" class="btn btn-sm" style="background:linear-gradient(135deg,#405DE6,#E1306C);color:#fff;">Connecter avec Meta →</a>
+        <a href="/api/meta/oauth" class="btn btn-sm" style="background:linear-gradient(135deg,#405DE6,#E1306C);color:#fff;">Connecter avec Meta →</a>
       </div>
     </div>
   </div>
@@ -1687,6 +1683,181 @@ function restoreTheme(){
 // Appel immédiat (avant affichage) pour éviter le flash
 restoreTheme();
 
+// ══════════════════════════════════════════════════════════════
+//  META OAUTH — Statut, URL params, chargement messages réels
+//  Docs route : /api/meta/status, /api/meta/messages, /api/meta/reply
+// ══════════════════════════════════════════════════════════════
+
+let _metaStatus = null; // Cache statut Meta (mis à jour à chaque showApp)
+
+/**
+ * Appelle GET /api/meta/status et met à jour le bouton "Connecter Meta"
+ * dans le header du chat. Si connecté → bouton vert + @username.
+ */
+async function loadMetaStatus() {
+  try {
+    const r = await fetch('/api/meta/status', { credentials: 'include' });
+    if (!r.ok) return;
+    _metaStatus = await r.json();
+    renderMetaConnectBtn();
+    // Charger les vrais threads Meta dans la sidebar (en arrière-plan)
+    if (_metaStatus.connected) loadMetaThreads();
+  } catch (_) {}
+}
+
+/** Met à jour visuellement le bouton "Connecter Meta" selon l'état stocké. */
+function renderMetaConnectBtn() {
+  const btn = document.getElementById('meta-connect-btn');
+  if (!btn) return;
+  if (_metaStatus?.connected) {
+    const who = _metaStatus.ig_username ? '@' + _metaStatus.ig_username : _metaStatus.page_name || 'connecté';
+    btn.innerHTML = `✅ Meta <span style="font-size:10px;opacity:.8;">${who}</span>`;
+    btn.style.cssText = 'background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#22C55E;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;cursor:default;';
+    btn.removeAttribute('href');
+  } else {
+    btn.innerHTML = 'Connecter Meta →';
+    btn.style.cssText = 'background:linear-gradient(135deg,#405DE6,#E1306C);color:#fff;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;';
+    btn.setAttribute('href', '/api/meta/oauth');
+  }
+}
+
+/**
+ * Gère les paramètres URL renvoyés par le callback OAuth Meta :
+ *  ?meta_connected=1  → toast succès
+ *  ?meta_error=...    → toast erreur
+ */
+function handleMetaUrlParams() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('meta_connected') === '1') {
+    showNotif('✅ Meta connecté ! Instagram + Facebook actifs.', 'success');
+    history.replaceState({}, '', window.location.pathname);
+  }
+  const metaErr = params.get('meta_error');
+  if (metaErr) {
+    showNotif('❌ Erreur Meta : ' + decodeURIComponent(metaErr), 'error');
+    history.replaceState({}, '', window.location.pathname);
+  }
+}
+
+/**
+ * Charge les 30 derniers messages Meta (tous canaux) et les injecte
+ * dans la sidebar Messages sous forme de threads groupés par sender_id.
+ * Appelé automatiquement si Meta est connecté.
+ */
+async function loadMetaThreads() {
+  try {
+    const r = await fetch('/api/meta/messages?limit=30', { credentials: 'include' });
+    if (!r.ok) return;
+    const data = await r.json();
+    const msgs = data.messages || [];
+    if (!msgs.length) return;
+
+    // Grouper par sender_id pour créer un thread par interlocuteur
+    const threads = {};
+    msgs.forEach(m => {
+      const key = m.sender_id || m.phone || 'unknown';
+      if (!threads[key]) {
+        threads[key] = {
+          sender_id: m.sender_id || null,
+          phone: m.phone || null,
+          channel: m.channel,
+          client_name: m.client_name || key,
+          last_msg: m.content,
+          last_time: m.created_at,
+          id: m.id,
+        };
+      }
+    });
+
+    const chColors = { instagram: '#E1306C', whatsapp: '#25D366', facebook: '#1877F2' };
+    const chIcons  = { instagram: '📸', whatsapp: '💬', facebook: '🔵' };
+    const chLabel  = { instagram: 'Instagram DM', whatsapp: 'WhatsApp', facebook: 'Facebook Messenger' };
+
+    const html = Object.values(threads).map(t => {
+      const name = t.client_name;
+      const initials = name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
+      const color = chColors[t.channel] || '#aaa';
+      const icon = chIcons[t.channel] || '💬';
+      const label = chLabel[t.channel] || t.channel;
+      const ts = formatMsgTime(t.last_time);
+      return `
+        <div class="msg-thread" data-channel="${t.channel}" data-name="${name.toLowerCase()}"
+             onclick="openMetaThread(this,'${escHtml(name)}','${label}','${t.sender_id||''}','${t.phone||''}','${t.channel}')">
+          <div class="mt-av" style="background:${color}22;color:${color};">${initials}</div>
+          <div class="mt-body">
+            <div class="mt-name">${escHtml(name)} <span class="mt-time">${ts}</span></div>
+            <div class="mt-prev">${escHtml((t.last_msg||'').slice(0,60))}</div>
+            <div class="ch-tag" style="background:${color}22;color:${color};">${icon} ${label}</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    // Injecter dans la zone démo (remplace les threads statiques si Meta connecté)
+    const container = document.getElementById('meta-threads-list');
+    if (container) container.innerHTML = html;
+  } catch (_) {}
+}
+
+/**
+ * Ouvre un thread Meta réel dans la zone de chat et charge les messages
+ * via GET /api/meta/messages?channel=X&sender_id=Y (filtrage côté client).
+ */
+async function openMetaThread(el, name, channelLabel, senderId, phone, channel) {
+  document.querySelectorAll('.msg-thread').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+
+  document.getElementById('chat-name').textContent = name;
+  document.getElementById('chat-ch').textContent = channelLabel;
+  const av = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  document.getElementById('chat-av').textContent = av;
+
+  currentChatClientName = name;
+  currentChatClientEmail = null;
+  currentChatClientPhone = phone || null;
+  currentChatChannel = channelLabel;
+
+  // Mettre à jour la barre de composition pour ce canal
+  updateComposeBar(channelLabel, phone, null);
+
+  // Stocker le sender_id pour l'envoi de réponse
+  window._metaActiveSenderId = senderId || null;
+  window._metaActiveChannel  = channel;
+
+  // Charger tous les messages Meta puis filtrer par sender_id
+  const msgs = document.getElementById('chat-msgs');
+  msgs.innerHTML = '<div style="text-align:center;padding:20px;color:#666;font-size:12px;">Chargement…</div>';
+
+  try {
+    const r = await fetch(`/api/meta/messages?channel=${channel}&limit=60`, { credentials: 'include' });
+    if (!r.ok) throw new Error('API error');
+    const data = await r.json();
+    const all = data.messages || [];
+
+    // Filtrer par sender_id ou phone
+    const conv = all.filter(m =>
+      (senderId && m.sender_id === senderId) ||
+      (phone && m.phone === phone) ||
+      (!senderId && !phone)
+    );
+
+    if (!conv.length) {
+      msgs.innerHTML = '<div style="text-align:center;padding:30px;color:#555;font-size:12px;">Aucun message dans cette conversation.</div>';
+      return;
+    }
+
+    // Afficher du plus ancien au plus récent
+    msgs.innerHTML = conv.reverse().map(m => {
+      const isMine = m.direction === 'out';
+      const cls = isMine ? 'me' : 'them';
+      const ts = m.created_at ? new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+      return `<div class="msg ${cls}">${escHtml(m.content || '')}${ts ? `<div class="msg-meta">${isMine ? 'Vous' : name} · ${ts}</div>` : ''}</div>`;
+    }).join('');
+    msgs.scrollTop = msgs.scrollHeight;
+  } catch (e) {
+    msgs.innerHTML = `<div style="text-align:center;padding:28px;color:#ef4444;font-size:12px;">Erreur chargement : ${escHtml(e.message)}</div>`;
+  }
+}
+
 function showApp(){
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('app').style.display='block';
@@ -1694,6 +1865,9 @@ function showApp(){
   // Démarre le polling de notifications + charge les conversations inkr
   startMsgPolling();
   loadInkrConversations();
+  // Vérifier la connexion Meta + paramètres URL OAuth callback
+  handleMetaUrlParams();
+  loadMetaStatus();
 }
 function populateUser(){
   const u=currentUser;
@@ -3184,7 +3358,7 @@ function formatMsgTime(ts) {
 function sendMsg(){
   const ta=document.getElementById('chat-input');const txt=ta.value.trim();if(!txt)return;
 
-  // Si on est dans une conversation inkr → envoyer via API
+  // ── Canal inkr natif (demandes clients) ──────────────────────────────────────
   if (_activeInkrConvId && currentChatChannel === 'inkr') {
     sendInkrReply(txt).then(ok => {
       if (ok) {
@@ -3202,7 +3376,35 @@ function sendMsg(){
     return;
   }
 
-  // Sinon comportement classique (canaux simulés)
+  // ── Canaux Meta (Instagram / WhatsApp / Facebook) — envoi via /api/meta/reply ─
+  const metaChannels = { 'Instagram DM': 'instagram', 'Instagram': 'instagram',
+                         'WhatsApp': 'whatsapp', 'Facebook Messenger': 'facebook', 'Facebook': 'facebook' };
+  const metaChannel = metaChannels[currentChatChannel];
+  if (metaChannel && _metaStatus?.connected) {
+    const payload = {
+      channel: metaChannel,
+      message: txt,
+      client_name: currentChatClientName || 'Client',
+      recipient_id: window._metaActiveSenderId || null,
+      phone: currentChatClientPhone || null,
+    };
+    fetch('/api/meta/reply', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).then(async r => {
+      if (!r.ok) { const e = await r.json(); showNotif('Erreur : ' + (e.error || 'Envoi échoué'), 'error'); return; }
+      const msgs = document.getElementById('chat-msgs');
+      const d = document.createElement('div');
+      d.className = 'msg me';
+      d.innerHTML = `${escHtml(txt)}<div class="msg-meta">Vous · maintenant</div>`;
+      msgs.appendChild(d); msgs.scrollTop = msgs.scrollHeight;
+      ta.value = '';
+    }).catch(e => showNotif('Erreur réseau : ' + e.message, 'error'));
+    return;
+  }
+
+  // ── Comportement par défaut (canaux démo / non connectés) ────────────────────
   const msgs=document.getElementById('chat-msgs');const d=document.createElement('div');
   d.className='msg me';d.innerHTML=`${escHtml(txt)}<div class="msg-meta">Vous · maintenant</div>`;
   msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;ta.value='';
@@ -3288,7 +3490,7 @@ function openThread(el,name,ch,email,phone){
     <div style="font-size:26px;margin-bottom:8px;">${ch.includes('Instagram')?'📸':ch.includes('WhatsApp')?'💬':ch.includes('Pinterest')?'📌':'💬'}</div>
     <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px;">Conversation ${ch}</div>
     <div style="font-size:11px;color:#666;">Connectez votre compte pour charger les vrais messages</div>
-    <a href="/api/auth/meta" style="display:inline-block;margin-top:12px;padding:7px 16px;border-radius:8px;background:linear-gradient(135deg,#405DE6,#E1306C);color:#fff;font-size:11px;font-weight:700;text-decoration:none;">Connecter Meta →</a>
+    <a href="/api/meta/oauth" style="display:inline-block;margin-top:12px;padding:7px 16px;border-radius:8px;background:linear-gradient(135deg,#405DE6,#E1306C);color:#fff;font-size:11px;font-weight:700;text-decoration:none;">Connecter Meta →</a>
   </div>`;
   document.getElementById('chat-input').focus();
 }
