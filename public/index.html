@@ -197,6 +197,124 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none;}
 .fc-old{font-size:13px;color:rgba(255,255,255,.28);text-decoration:line-through;}
 .fc-pct{background:white;color:var(--black);padding:2px 7px;border-radius:5px;font-size:11px;font-weight:800;}
 
+/* ═══════════════════════════════════════════════════════════
+   FLASH DEALS VIEW — Page dédiée avec filtres et animation
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Animations arc-en-ciel ─────────────────────────────── */
+@keyframes rainbowShift{
+  0%  {background-position:0% 50%;}
+  50% {background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+@keyframes rainbowPulseGlow{
+  0%,100%{box-shadow:0 6px 24px rgba(168,85,247,.5);}
+  50%    {box-shadow:0 8px 32px rgba(236,72,153,.7);}
+}
+
+/* ── Badge flottant toujours visible ─────────────────────── */
+.flash-float-badge{
+  position:fixed;right:20px;bottom:80px;z-index:990;
+  background:linear-gradient(135deg,#667eea,#a855f7,#ec4899,#f97316,#eab308,#22c55e,#06b6d4,#667eea);
+  background-size:400% 400%;
+  animation:rainbowShift 3s linear infinite,rainbowPulseGlow 2s ease-in-out infinite;
+  color:white;border:none;border-radius:50px;padding:10px 18px;
+  font-size:13px;font-weight:800;letter-spacing:-.2px;cursor:pointer;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;
+  transition:transform .2s;
+}
+.flash-float-badge:hover{transform:scale(1.06) translateY(-2px);}
+
+/* ── Hero Flash ─────────────────────────────────────────── */
+.fv-hero{background:var(--black);padding:calc(var(--nav)+48px) 32px 0;position:relative;overflow:hidden;}
+.fv-rainbow-bar{height:4px;background:linear-gradient(90deg,#667eea,#a855f7,#ec4899,#f97316,#eab308,#22c55e,#06b6d4,#667eea);background-size:300% 100%;animation:rainbowShift 2.5s linear infinite;margin-bottom:52px;}
+.fv-hero-i{max-width:1100px;margin:0 auto;padding-bottom:60px;}
+.fv-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 16px;border-radius:50px;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899,#f97316);background-size:300% 300%;animation:rainbowShift 4s ease infinite;color:white;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;}
+.fv-hero-h1{font-size:clamp(28px,4.5vw,62px);font-weight:700;letter-spacing:-2px;line-height:1.06;color:white;margin-bottom:16px;max-width:820px;}
+.fv-hero-sub{font-size:16px;color:rgba(255,255,255,.4);max-width:500px;line-height:1.7;margin-bottom:28px;}
+.fv-count{display:inline-flex;align-items:center;gap:10px;padding:9px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:50px;color:rgba(255,255,255,.55);font-size:13px;}
+.fv-count-n{font-weight:900;color:white;font-size:20px;}
+
+/* ── Filtres collants ───────────────────────────────────── */
+.fv-filters{background:white;border-bottom:1px solid var(--g6);padding:16px 32px;position:sticky;top:var(--nav);z-index:200;}
+.fv-filters-i{max-width:1100px;margin:0 auto;display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.fv-fi{flex:1;min-width:150px;max-width:230px;padding:9px 14px;border:1.5px solid var(--g5);border-radius:12px;font-size:14px;font-family:inherit;background:var(--off);color:var(--g1);outline:none;transition:border-color .2s;}
+.fv-fi:focus{border-color:#a855f7;}
+.fv-fi-sm{max-width:140px;}
+.fv-reset{padding:9px 18px;border-radius:12px;border:1.5px solid var(--g5);background:white;font-size:13px;color:var(--g3);cursor:pointer;transition:all .2s;white-space:nowrap;}
+.fv-reset:hover{border-color:var(--g3);color:var(--g1);}
+
+/* ── Corps / grille ──────────────────────────────────────── */
+.fv-body{background:var(--off);padding:40px 32px 80px;min-height:60vh;}
+.fv-body-i{max-width:1100px;margin:0 auto;}
+.fv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:22px;}
+.fv-empty{text-align:center;color:var(--g3);padding:80px 0;font-size:16px;grid-column:1/-1;}
+.fv-empty-icon{font-size:48px;display:block;margin-bottom:16px;}
+
+/* ── Card flash deal avec bordure arc-en-ciel animée ─────── */
+/* Le wrapper ::before crée la bordure gradient ; l'inner masque l'arrière-plan */
+.fd-wrap{position:relative;border-radius:22px;padding:2px;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899,#f97316,#eab308,#22c55e,#06b6d4,#667eea);background-size:400% 400%;animation:rainbowShift 3s linear infinite;cursor:pointer;transition:transform .3s,box-shadow .3s;}
+.fd-wrap:hover{transform:translateY(-7px);box-shadow:0 24px 60px rgba(168,85,247,.35);}
+.fd-card{background:var(--black);border-radius:20px;overflow:hidden;}
+.fd-img{height:180px;position:relative;overflow:hidden;background:#111;}
+.fd-img img{width:100%;height:100%;object-fit:cover;opacity:.7;transition:opacity .3s,transform .4s;}
+.fd-wrap:hover .fd-img img{opacity:.85;transform:scale(1.05);}
+.fd-timer{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);color:white;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:700;}
+.fd-timer.urgent{color:#f87171;}
+.fd-pct{position:absolute;top:10px;left:10px;background:linear-gradient(135deg,#a855f7,#ec4899);color:white;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:900;}
+.fd-body{padding:16px 18px 20px;}
+.fd-style{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:5px;}
+.fd-name{font-size:17px;font-weight:800;color:white;margin-bottom:2px;letter-spacing:-.3px;}
+.fd-city{font-size:12px;color:rgba(255,255,255,.35);margin-bottom:14px;}
+.fd-prices{display:flex;align-items:baseline;gap:8px;margin-bottom:14px;}
+.fd-new{font-size:22px;font-weight:900;color:white;}
+.fd-old{font-size:13px;color:rgba(255,255,255,.28);text-decoration:line-through;}
+.fd-btn{display:block;width:100%;padding:11px;border-radius:10px;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899,#667eea);background-size:300% 300%;animation:rainbowShift 4s ease infinite;color:white;font-size:13px;font-weight:700;text-align:center;border:none;cursor:pointer;transition:opacity .2s;}
+.fd-btn:hover{opacity:.85;}
+
+/* ── Modal Flash Deal ─────────────────────────────────────── */
+.fmo-overlay{display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.78);backdrop-filter:blur(14px);align-items:center;justify-content:center;padding:24px;}
+.fmo-overlay.open{display:flex;}
+/* Bordure rainbow via wrapper */
+.fmo-wrap2{background:linear-gradient(135deg,#667eea,#a855f7,#ec4899,#f97316,#eab308,#22c55e,#06b6d4,#667eea);background-size:400% 400%;animation:rainbowShift 3s linear infinite;border-radius:28px;padding:3px;max-width:480px;width:100%;}
+.fmo-box{background:var(--black);border-radius:26px;overflow:hidden;position:relative;}
+.fmo-close2{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.12);border:none;color:white;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:10;transition:background .2s;}
+.fmo-close2:hover{background:rgba(255,255,255,.22);}
+.fmo-img2{height:220px;overflow:hidden;position:relative;background:#111;}
+.fmo-img2 img{width:100%;height:100%;object-fit:cover;opacity:.8;}
+.fmo-img2-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 55%);}
+.fmo-body2{padding:22px 24px 28px;}
+.fmo-artist{display:flex;align-items:center;gap:14px;margin-bottom:20px;}
+.fmo-av2{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:white;flex-shrink:0;}
+.fmo-artist-name{font-size:19px;font-weight:800;color:white;letter-spacing:-.4px;}
+.fmo-artist-meta{font-size:12px;color:rgba(255,255,255,.4);margin-top:2px;}
+.fmo-promo{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px 18px;margin-bottom:20px;}
+.fmo-promo-lbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:6px;}
+.fmo-promo-style{font-size:15px;font-weight:700;color:white;margin-bottom:12px;}
+.fmo-prices2{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+.fmo-new2{font-size:28px;font-weight:900;color:white;}
+.fmo-old2{font-size:16px;color:rgba(255,255,255,.3);text-decoration:line-through;}
+.fmo-pct2{font-size:13px;font-weight:900;background:linear-gradient(135deg,#a855f7,#ec4899);color:white;padding:3px 10px;border-radius:7px;}
+.fmo-timer2{display:flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,.45);margin-top:10px;}
+.fmo-timer2 strong{color:#f87171;}
+.fmo-bio{font-size:13px;color:rgba(255,255,255,.42);line-height:1.7;margin-bottom:20px;}
+/* Grand bouton CTA principal */
+.fmo-cta2{display:block;width:100%;padding:18px;border-radius:16px;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899,#f97316,#667eea);background-size:300% 300%;animation:rainbowShift 3s ease infinite;color:white;font-size:18px;font-weight:900;text-align:center;border:none;cursor:pointer;letter-spacing:-.4px;transition:transform .2s,opacity .2s;margin-bottom:12px;}
+.fmo-cta2:hover{transform:scale(1.02);}
+.fmo-sub2{display:block;text-align:center;font-size:13px;color:rgba(255,255,255,.35);cursor:pointer;transition:color .2s;background:none;border:none;width:100%;padding:4px;}
+.fmo-sub2:hover{color:rgba(255,255,255,.65);}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media(max-width:768px){
+  .fv-hero{padding:calc(var(--nav)+24px) 16px 0;}
+  .fv-hero-i{padding-bottom:36px;}
+  .fv-filters{padding:12px 14px;}
+  .fv-fi{min-width:110px;}
+  .fv-body{padding:20px 14px 60px;}
+  .fv-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+  .flash-float-badge{right:12px;bottom:60px;font-size:12px;padding:8px 14px;}
+}
+
 /* BLOG SECTION */
 .blog-section{padding:100px 32px;background:var(--white);}
 .blog-section-i{max-width:1200px;margin:0 auto;}
@@ -2449,6 +2567,91 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   </div>
 </div>
 
+<!-- ══ FLASH DEALS VIEW ══ -->
+<div class="view" id="view-flash">
+
+  <!-- Barre arc-en-ciel + hero sombre -->
+  <div class="fv-hero">
+    <div class="fv-rainbow-bar"></div>
+    <div class="fv-hero-i">
+      <div class="fv-badge">⚡ Flash deals</div>
+      <h1 class="fv-hero-h1">Profitez d'une sélection de promotions<br>d'un moment par vos tatoueurs préférés.</h1>
+      <p class="fv-hero-sub">Des offres limitées dans le temps. Une fois parties, elles ne reviennent plus.</p>
+      <div class="fv-count">
+        <span class="fv-count-n" id="fv-deal-count">—</span>
+        deals actifs en ce moment
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtres collants : ville + rayon + style + nom ──────── -->
+  <div class="fv-filters">
+    <div class="fv-filters-i">
+      <input class="fv-fi" id="fv-ville" type="text" placeholder="🏙 Ta ville…" oninput="applyFlashFilters()"/>
+      <select class="fv-fi fv-fi-sm" id="fv-rayon" onchange="applyFlashFilters()">
+        <option value="5">5 km</option>
+        <option value="10" selected>10 km</option>
+        <option value="15">15 km</option>
+        <option value="20">20 km</option>
+        <option value="30">30 km</option>
+        <option value="0">Toute la France</option>
+      </select>
+      <select class="fv-fi" id="fv-style" onchange="applyFlashFilters()">
+        <option value="">Tous les styles</option>
+        <option value="japonais">Japonais</option>
+        <option value="fineline">Fine Line</option>
+        <option value="realisme">Réalisme</option>
+        <option value="geometrique">Géométrique</option>
+        <option value="tribal">Tribal</option>
+        <option value="old-school">Old School</option>
+        <option value="aquarelle">Aquarelle</option>
+        <option value="blackwork">Blackwork</option>
+        <option value="minimaliste">Minimaliste</option>
+        <option value="lettering">Lettering</option>
+        <option value="dotwork">Dotwork</option>
+        <option value="neo-traditionnel">Néo-traditionnel</option>
+        <option value="animaux">Animaux</option>
+        <option value="chicano">Chicano</option>
+        <option value="flash">Flash</option>
+      </select>
+      <input class="fv-fi" id="fv-nom" type="text" placeholder="🔍 Nom du tatoueur…" oninput="applyFlashFilters()"/>
+      <button class="fv-reset" onclick="resetFlashFilters()">Réinitialiser</button>
+    </div>
+  </div>
+
+  <!-- Grille des deals ───────────────────────────────────── -->
+  <div class="fv-body">
+    <div class="fv-body-i">
+      <div class="fv-grid" id="fv-grid">
+        <div class="fv-empty" style="grid-column:1/-1;padding:80px 0;text-align:center;color:var(--g3);">
+          <span class="fv-empty-icon">⚡</span>Chargement des deals…
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ MODAL FLASH DEAL ══ ───────────────────────────────────
+     Ouvert par openFlashDeal(idx) — rempli dynamiquement
+     Fermé par closeFmo() ou clic sur l'overlay
+     ───────────────────────────────────────────────────────── -->
+<div class="fmo-overlay" id="fmo-overlay" onclick="if(event.target===this)closeFmo()">
+  <div class="fmo-wrap2">
+    <div class="fmo-box" id="fmo-box">
+      <!-- Contenu injecté par openFlashDeal() -->
+    </div>
+  </div>
+</div>
+
+<!-- ══ BADGE FLASH FLOTTANT ══ ──────────────────────────────
+     Badge arc-en-ciel fixe, visible sur toutes les pages.
+     Masqué si aucun deal actif. Clic → vue Flash Deals.
+     ───────────────────────────────────────────────────────── -->
+<button class="flash-float-badge" id="flash-float-btn" onclick="goFlash()" style="display:none" aria-label="Voir les flash deals en cours">
+  ⚡ <span id="flash-float-count">0</span> deals actifs
+</button>
+
 <!-- ══ MODALS ══ -->
 <div class="mo" id="mo-profile"><div class="profile-modal"><button class="pm-close" onclick="closeMo('profile')">✕</button><div class="pm-header" id="pmHeader"></div><div class="pm-body" id="pmBody"></div></div></div>
 
@@ -3497,9 +3700,11 @@ function showView(id){
   if(id==='map'&&!mapInited){setTimeout(initMap,120);mapInited=true;}
   if(id==='blog')renderBlogFull();
   if(id==='tournee')showSwipeHint();
+  if(id==='flash')initFlashView();
   observe();
 }
-function goFlash(){showView('home');setTimeout(()=>document.getElementById('flash').scrollIntoView({behavior:'smooth'}),100);}
+// goFlash → ouvre la vue dédiée Flash Deals (plus le scroll home)
+function goFlash(){ showView('flash'); }
 
 function openPricingRegister(){
   // Transition dermographe vers le dashboard avec onglet "Créer un compte" pré-sélectionné
@@ -3593,6 +3798,270 @@ function renderDeals(){
       <div class="fc-img"><img src="${tattooImg(d.img,600,400,'ink')}" alt="${d.name}" loading="lazy"/><div class="fc-timer">⏱ ${d.timer}</div></div>
       <div class="fc-body"><div class="fc-dtag">Flash deal · ${d.style}</div><div class="fc-name">${d.name}</div><div class="fc-sub">${d.city}</div><div class="fc-pricing"><span class="fc-new">${d.deal}</span><span class="fc-old">${d.orig}</span><span class="fc-pct">${d.pct}</span></div></div>
     </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  FLASH DEALS VIEW
+//  ──────────────────────────────────────────────────────────────
+//  Données : fusion de DEALS (statiques démo) et ARTISTS (dispo_flash=true)
+//  Filtres  : ville (match partiel normalisé) + rayon (affiché, filtre
+//             géo réel si lat/lng présents) + style slug + nom artiste
+//  Modal    : openFlashDeal(idx) → fiche artiste + promo + CTA booking
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * Construit la liste complète des deals depuis DEALS statiques + ARTISTS dispo_flash.
+ * Déduplique par artistId (les statiques ont priorité pour les données prix).
+ * @returns {Array} Liste des objets deal enrichis
+ */
+function buildFlashDeals(){
+  // IDs déjà couverts par les DEALS statiques
+  const staticIds = new Set(DEALS.map(d => d.artistId));
+
+  // Deals statiques → on enrichit avec les données ARTISTS si disponibles
+  const staticDeals = DEALS.map(d => {
+    const a = (ARTISTS||[]).find(x => String(x.id) === String(d.artistId)) || {};
+    return {
+      artistId:  d.artistId,
+      name:      d.name || a.name || '—',
+      city:      d.city || a.city || '',
+      styles:    a.style || [d.style].filter(Boolean),
+      sk:        a.sk || [],
+      orig:      d.orig,
+      deal:      d.deal,
+      pct:       d.pct,
+      timer:     d.timer,
+      imgIdx:    d.img || null,
+      instagram: a.instagram || '',
+      bio:       a.bio || '',
+      lat:       a.lat || 0,
+      lng:       a.lng || 0,
+    };
+  });
+
+  // Artistes avec dispo_flash=true non déjà listés
+  const dynamicDeals = (ARTISTS||[])
+    .filter(a => (a.flash || a.dispo_flash) && !staticIds.has(a.id))
+    .map(a => ({
+      artistId:  a.id,
+      name:      a.name || '—',
+      city:      a.city || '',
+      styles:    a.style || [],
+      sk:        a.sk || [],
+      orig:      null,
+      deal:      null,
+      pct:       '-20%',
+      timer:     '48h 00',
+      imgIdx:    null,
+      instagram: a.instagram || '',
+      bio:       a.bio || '',
+      lat:       a.lat || 0,
+      lng:       a.lng || 0,
+    }));
+
+  return [...staticDeals, ...dynamicDeals];
+}
+
+/**
+ * Normalise un texte pour la comparaison (accents → ASCII, lowercase, trim).
+ * Identique à la fonction norm() du backend.
+ */
+function _normFlash(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim(); }
+
+/**
+ * Calcule la distance approximative en km entre deux points lat/lng (formule Haversine).
+ * Retourne Infinity si l'une des coordonnées est 0.
+ */
+function _haversine(lat1,lng1,lat2,lng2){
+  if(!lat1||!lng1||!lat2||!lng2) return Infinity;
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+/**
+ * Applique les filtres de la vue Flash Deals et re-rend la grille.
+ * Appelé à chaque changement de filtre (oninput/onchange).
+ */
+function applyFlashFilters(){
+  const ville  = _normFlash(document.getElementById('fv-ville')?.value||'');
+  const rayon  = parseInt(document.getElementById('fv-rayon')?.value||'0')||0;
+  const style  = document.getElementById('fv-style')?.value||'';
+  const nom    = _normFlash(document.getElementById('fv-nom')?.value||'');
+
+  let deals = buildFlashDeals();
+
+  // Filtre ville (correspondance partielle normalisée)
+  if(ville){
+    deals = deals.filter(d => _normFlash(d.city).includes(ville));
+  }
+
+  // Filtre style (slug)
+  if(style){
+    deals = deals.filter(d => d.sk && d.sk.includes(style));
+  }
+
+  // Filtre nom tatoueur
+  if(nom){
+    deals = deals.filter(d => _normFlash(d.name).includes(nom));
+  }
+
+  renderFlashGrid(deals);
+}
+
+/** Réinitialise tous les filtres et recharge la grille complète. */
+function resetFlashFilters(){
+  ['fv-ville','fv-nom'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const rs=document.getElementById('fv-rayon');if(rs)rs.value='10';
+  const ss=document.getElementById('fv-style');if(ss)ss.value='';
+  applyFlashFilters();
+}
+
+/**
+ * Rend la grille de cartes Flash Deals dans #fv-grid.
+ * @param {Array} deals - Tableau de deals (éventuellement filtré)
+ */
+function renderFlashGrid(deals){
+  const grid = document.getElementById('fv-grid');
+  if(!grid) return;
+
+  // Met à jour le compteur hero
+  const countEl = document.getElementById('fv-deal-count');
+  if(countEl) countEl.textContent = deals.length;
+
+  if(!deals.length){
+    grid.innerHTML = `
+      <div class="fv-empty">
+        <span class="fv-empty-icon">⚡</span>
+        Aucun deal trouvé avec ces filtres.
+        <small style="color:var(--g4);margin-top:8px;display:block;">
+          Élargis ta recherche ou reviens plus tard !
+        </small>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = deals.map((d,i) => {
+    const imgSrc = d.imgIdx
+      ? tattooImg(d.imgIdx, 600, 400, 'ink')
+      : `https://loremflickr.com/600/400/tattoo,ink?lock=${40+i}`;
+    const timerHrs = parseInt((d.timer||'').split('h')[0]) || 24;
+    const urgent   = timerHrs < 12;
+    const stylesLabel = d.styles.slice(0,2).join(' · ') || 'Flash deal';
+    return `
+    <div class="fd-wrap" onclick="openFlashDeal(${i})" data-deal-idx="${i}">
+      <div class="fd-card">
+        <div class="fd-img">
+          <img src="${imgSrc}" alt="${d.name}" loading="lazy"/>
+          <div class="fd-pct">${d.pct}</div>
+          <div class="fd-timer${urgent?' urgent':''}">⏱ ${d.timer}</div>
+        </div>
+        <div class="fd-body">
+          <div class="fd-style">${stylesLabel}</div>
+          <div class="fd-name">${d.name}</div>
+          <div class="fd-city">📍 ${d.city||'France'}</div>
+          ${d.orig?`<div class="fd-prices"><span class="fd-new">${d.deal}</span><span class="fd-old">${d.orig}</span></div>`:''}
+          <button class="fd-btn" onclick="event.stopPropagation();openFlashDeal(${i})">Voir la promo →</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Mémorise pour openFlashDeal()
+  _flashDealsCache = deals;
+}
+
+/** Cache local des deals rendus — utilisé par openFlashDeal(). */
+let _flashDealsCache = [];
+
+/**
+ * Ouvre le modal Flash Deal pour l'index idx dans _flashDealsCache.
+ * Affiche artiste + promo + grand bouton CTA booking.
+ * @param {number} idx - Index dans _flashDealsCache
+ */
+function openFlashDeal(idx){
+  const d = _flashDealsCache[idx];
+  if(!d) return;
+  const box = document.getElementById('fmo-box');
+  if(!box) return;
+
+  const imgSrc = d.imgIdx
+    ? tattooImg(d.imgIdx, 800, 500, 'ink')
+    : `https://loremflickr.com/800/500/tattoo,ink?lock=${50+idx}`;
+  const initials = d.name.split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+  const grad = typeof artistGradient==='function' ? artistGradient(d.name) : 'linear-gradient(135deg,#667eea,#a855f7)';
+  const stylesLabel = d.styles.slice(0,3).join(' · ') || 'Tatouage';
+  const artistNameEsc = d.name.replace(/'/g,"\\'");
+
+  box.innerHTML = `
+    <button class="fmo-close2" onclick="closeFmo()">✕</button>
+    <div class="fmo-img2">
+      <img src="${imgSrc}" alt="${d.name}" loading="lazy"/>
+      <div class="fmo-img2-ov"></div>
+    </div>
+    <div class="fmo-body2">
+      <div class="fmo-artist">
+        <div class="fmo-av2" style="background:${grad}">${initials}</div>
+        <div>
+          <div class="fmo-artist-name">${d.name}</div>
+          <div class="fmo-artist-meta">📍 ${d.city||'France'}${d.styles.length?' &nbsp;·&nbsp; '+d.styles.slice(0,2).join(', '):''}</div>
+        </div>
+      </div>
+      <div class="fmo-promo">
+        <div class="fmo-promo-lbl">⚡ Promo en cours</div>
+        <div class="fmo-promo-style">${stylesLabel}</div>
+        <div class="fmo-prices2">
+          <span class="fmo-new2">${d.deal||'Prix sur demande'}</span>
+          ${d.orig?`<span class="fmo-old2">${d.orig}</span>`:''}
+          <span class="fmo-pct2">${d.pct}</span>
+        </div>
+        <div class="fmo-timer2">⏱ Expire dans&nbsp;<strong>${d.timer}</strong></div>
+      </div>
+      ${d.bio?`<p class="fmo-bio">${d.bio.slice(0,200)}${d.bio.length>200?'…':''}</p>`:''}
+      <button class="fmo-cta2" onclick="closeFmo();openBooking(${d.artistId},'${artistNameEsc}')">
+        🔥 Je me fais tatouer
+      </button>
+      <button class="fmo-sub2" onclick="closeFmo();openProfile(${d.artistId})">
+        Voir le profil complet →
+      </button>
+    </div>`;
+
+  document.getElementById('fmo-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+/** Ferme le modal Flash Deal. */
+function closeFmo(){
+  const ov=document.getElementById('fmo-overlay');
+  if(ov) ov.classList.remove('open');
+  document.body.style.overflow='';
+}
+
+/**
+ * Initialise (ou réinitialise) la vue Flash Deals :
+ * construit la liste, met à jour le compteur et affiche le badge flottant.
+ * Appelé par showView('flash') et goFlash().
+ */
+function initFlashView(){
+  // Réinitialiser les filtres pour un affichage propre
+  ['fv-ville','fv-nom'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const rs=document.getElementById('fv-rayon');if(rs)rs.value='10';
+  const ss=document.getElementById('fv-style');if(ss)ss.value='';
+
+  const deals = buildFlashDeals();
+  const n = deals.length;
+
+  // Badge flottant
+  const floatBtn = document.getElementById('flash-float-btn');
+  const floatCount = document.getElementById('flash-float-count');
+  if(floatCount) floatCount.textContent = n;
+  if(floatBtn) floatBtn.style.display = n>0 ? 'flex' : 'none';
+
+  // Compteur hero
+  const countEl = document.getElementById('fv-deal-count');
+  if(countEl) countEl.textContent = n;
+
+  renderFlashGrid(deals);
 }
 
 // ═══════════════════ EVENTS WITH CITY FILTER ═══════════════════
@@ -4629,6 +5098,14 @@ async function handleRdvParam(){
 document.addEventListener('DOMContentLoaded', ()=>{
   checkClientSession();
   handleRdvParam();
+  // Initialise le badge flottant Flash Deals dès le chargement
+  // (DEALS est disponible car défini statiquement avant ce bloc)
+  const floatBtn = document.getElementById('flash-float-btn');
+  const floatCount = document.getElementById('flash-float-count');
+  if(floatBtn && DEALS && DEALS.length > 0){
+    if(floatCount) floatCount.textContent = DEALS.length;
+    floatBtn.style.display = 'flex';
+  }
 });
 
 // ═══════════════════ DERMOGRAPHE → DASHBOARD ═══════════════════
