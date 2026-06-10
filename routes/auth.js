@@ -28,6 +28,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'inkr_secret_dev';
   'reset_token_expiry TEXT DEFAULT NULL',
   'otp_code TEXT DEFAULT NULL',
   'otp_expiry TEXT DEFAULT NULL',
+  'is_pro INTEGER DEFAULT 0',
+  'role TEXT DEFAULT \'artist\'',
 ].forEach(col => {
   try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch(_) {}
 });
@@ -145,7 +147,7 @@ router.get('/me', (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, cp, adresse, phone, instagram, pinterest, auto_reply, bio, styles, horaires, dispo_flash, photo_salon, photo_artiste, avatar_seed, en_tournee, created_at FROM users WHERE id = ?').get(decoded.userId);
+    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, cp, adresse, phone, instagram, pinterest, auto_reply, bio, styles, horaires, dispo_flash, photo_salon, photo_artiste, avatar_seed, en_tournee, is_pro, role, created_at FROM users WHERE id = ?').get(decoded.userId);
     if (!user) return res.status(401).json({ error: 'Utilisateur introuvable' });
     res.json({ user });
   } catch {

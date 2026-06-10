@@ -73,6 +73,35 @@ app.post('/api/admin/backup', (req, res) => {
   else res.status(500).json({ error: 'Backup échoué — voir les logs Railway' });
 });
 
+// ============ ADMIN — Gestion PRO / rôles ============
+// POST /api/admin/set-pro?secret=XXX  { email, is_pro: 1|0 }
+// Permet d'activer/désactiver le statut PRO d'un artiste sans passer par Stripe
+app.post('/api/admin/set-pro', (req, res) => {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret || req.query.secret !== secret) {
+    return res.status(401).json({ error: 'Non autorisé — ADMIN_SECRET requis' });
+  }
+  const { email, is_pro, role } = req.body;
+  if (!email) return res.status(400).json({ error: 'email requis' });
+  const { db } = require('./db/database');
+  const user = db.prepare('SELECT id, email, name, is_pro, role FROM users WHERE email = ?').get(email);
+  if (!user) return res.status(404).json({ error: `Utilisateur "${email}" introuvable` });
+  if (is_pro !== undefined) db.prepare('UPDATE users SET is_pro=? WHERE email=?').run(is_pro ? 1 : 0, email);
+  if (role)    db.prepare('UPDATE users SET role=? WHERE email=?').run(role, email);
+  const updated = db.prepare('SELECT id, email, name, is_pro, role FROM users WHERE email=?').get(email);
+  console.log(`[Admin] PRO mis à jour → ${email} : is_pro=${updated.is_pro}, role=${updated.role}`);
+  res.json({ success: true, user: updated });
+});
+
+// GET /api/admin/users?secret=XXX  → liste tous les artistes (debug)
+app.get('/api/admin/users', (req, res) => {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret || req.query.secret !== secret) return res.status(401).json({ error: 'Non autorisé' });
+  const { db } = require('./db/database');
+  const users = db.prepare('SELECT id, email, name, is_pro, role, created_at FROM users ORDER BY id').all();
+  res.json({ users });
+});
+
 // ============ STATUS ============
 app.get('/api/status', (req, res) => {
   res.json({

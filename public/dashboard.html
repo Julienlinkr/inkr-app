@@ -2151,9 +2151,11 @@ let _proWallDismissed=false;
 // Panels autorisés sans PRO (seulement profil)
 const PRO_FREE_PANELS=['dp-overview','dp-profil'];
 function isProUser(){
-  // currentUser.is_pro=1 → PRO actif
-  // localStorage override pour tests : inkr_pro_bypass=1
+  // currentUser.is_pro=1 → PRO actif (défini en base via /api/admin/set-pro)
+  // currentUser.role === 'dev' ou 'admin' → accès total sans paiement
+  // localStorage override pour tests rapides : inkr_pro_bypass=1
   if(localStorage.getItem('inkr_pro_bypass')==='1')return true;
+  if(currentUser&&(currentUser.role==='dev'||currentUser.role==='admin'))return true;
   return currentUser&&currentUser.is_pro===1;
 }
 function openProWall(){
