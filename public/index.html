@@ -78,9 +78,17 @@ button{font-family:inherit;cursor:pointer;border:none;outline:none;}
 .hv-img:nth-child(4){border-radius:16px 16px 56px 16px;}
 .hv-img img{width:100%;height:100%;object-fit:cover;transition:transform .5s;}
 .hv-img:hover img{transform:scale(1.05);}
-.hero-scroll{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:rgba(255,255,255,.2);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;}
-.scroll-line{width:1px;height:32px;background:linear-gradient(to bottom,rgba(255,255,255,.2),transparent);animation:sp 2.2s ease-in-out infinite;}
-@keyframes sp{0%,100%{opacity:.2;}50%{opacity:.7;}}
+/* Scroll indicator — souris animée */
+.hero-scroll{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;z-index:10;}
+.scroll-mouse{width:22px;height:34px;border:2px solid rgba(255,255,255,.35);border-radius:12px;display:flex;justify-content:center;padding-top:5px;transition:border-color .3s;}
+.hero-scroll:hover .scroll-mouse{border-color:rgba(255,255,255,.7);}
+.scroll-dot{width:3px;height:7px;background:rgba(255,255,255,.6);border-radius:2px;animation:scrollDot 2s ease-in-out infinite;}
+.scroll-chevrons{display:flex;flex-direction:column;align-items:center;gap:2px;}
+.scroll-chevrons svg{opacity:.4;animation:chevronFade 2s ease-in-out infinite;}
+.scroll-chevrons svg:nth-child(2){animation-delay:.25s;}
+.scroll-chevrons svg:nth-child(3){animation-delay:.5s;}
+@keyframes scrollDot{0%,100%{transform:translateY(0);opacity:.6;}50%{transform:translateY(9px);opacity:.15;}}
+@keyframes chevronFade{0%,100%{opacity:.2;}50%{opacity:.65;}}
 
 /* STATS — style Apple : chiffres grands, sans bordures, sans boîtes */
 .stats { padding: 64px 48px; background: white; }
@@ -1746,6 +1754,35 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 .fc-card.open .demo-stamp:nth-child(3){animation-delay:.19s!important;}
 .fc-card.open .demo-stamp:nth-child(4){animation-delay:.26s!important;}
 .fc-card.open .demo-stamp:nth-child(5){animation-delay:.33s!important;}
+
+/* ── Dispo aujourd'hui toggle dans hero search ── */
+.sb-dispo-wrap{display:flex;align-items:center;gap:8px;padding:0 6px;}
+.sb-dispo-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;white-space:nowrap;}
+.sb-dispo-toggle input[type=checkbox]{display:none;}
+.sb-dispo-track{width:36px;height:20px;border-radius:10px;background:rgba(255,255,255,.15);position:relative;transition:background .25s;flex-shrink:0;}
+.sb-dispo-thumb{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.5);transition:left .25s,background .25s;}
+.sb-dispo-toggle input:checked~.sb-dispo-track{background:#f59e0b;}
+.sb-dispo-toggle input:checked~.sb-dispo-track .sb-dispo-thumb{left:19px;background:#fff;}
+.sb-dispo-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.55);}
+.sb-dispo-toggle input:checked~.sb-dispo-label{color:#f59e0b;}
+
+/* ── Autocomplete Flash Deal ville ── */
+.fv-ville-wrap{position:relative;flex:1;}
+#fv-city-dd-flash{position:absolute;top:100%;left:0;right:0;background:#1a1a2e;border:1px solid rgba(255,255,255,.15);border-radius:0 0 10px 10px;max-height:200px;overflow-y:auto;z-index:9999;display:none;}
+
+/* ── Tournée — bouton message ── */
+.tr-msg-btn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.65);border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:12px;width:100%;}
+.tr-msg-btn:hover{background:rgba(255,255,255,.12);color:white;}
+
+/* ── Instagram followers badge sur cartes ── */
+.ac-ig-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:rgba(255,255,255,.5);margin-top:4px;}
+.ac-ig-badge .ac-ig-count{color:#c084fc;font-weight:800;}
+
+/* ── Events image fallback ── */
+.ev-card-img{background:linear-gradient(135deg,#1a1a2e,#2d1b4e);}
+
+/* ── Profil sur fond Flash Deal (z-index supérieur) ── */
+#mo-profile.on-flash{z-index:9999;}
 </style>
 </head>
 <body>
@@ -1845,6 +1882,14 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
             <option value="neo-traditionnel">Néo-trad</option>
           </select>
         </div>
+        <div class="sb-divider"></div>
+        <div class="sb-dispo-wrap">
+          <label class="sb-dispo-toggle" title="Voir uniquement les tatoueurs disponibles aujourd'hui">
+            <input type="checkbox" id="hero-dispo-toggle" onchange="handleHeroSearch()"/>
+            <div class="sb-dispo-track"><div class="sb-dispo-thumb"></div></div>
+            <span class="sb-dispo-label">⚡ Dispo aujourd'hui</span>
+          </label>
+        </div>
         <button class="sb-cta" onclick="handleHeroSearch()">
           Trouver mon tatoueur →
         </button>
@@ -1852,6 +1897,15 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 
     </div><!-- /hw-left -->
     </div><!-- /hw-inner -->
+    <!-- Scroll indicator — cliquer fait défiler vers les stats -->
+    <div class="hero-scroll" onclick="document.querySelector('.stats').scrollIntoView({behavior:'smooth'})" aria-label="Défiler vers le bas">
+      <div class="scroll-mouse"><div class="scroll-dot"></div></div>
+      <div class="scroll-chevrons">
+        <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><polyline points="1,1 6,7 11,1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><polyline points="1,1 6,7 11,1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><polyline points="1,1 6,7 11,1" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>
   </section>
 
   <section class="stats">
@@ -2005,8 +2059,8 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   <section class="acta">
     <div class="acta-i">
       <span class="acta-tag r">Pour les tatoueurs</span>
-      <h2 class="acta-h r rd1">T'es tatoueur ?<br><span class="grad-text">T'aurais dû<br>rejoindre hier.</span></h2>
-      <p class="acta-sub r rd2">Visibilité maximale, agenda en ligne, messagerie directe avec tes clients. À partir de 29€/mois.</p>
+      <h2 class="acta-h r rd1">T'es tatoueur ?<br><span class="grad-text">Moins d'admin,<br>plus de tatouages.</span></h2>
+      <p class="acta-sub r rd2">Visibilité maximale, agenda en ligne, messagerie directe avec tes clients. À partir de 39€/mois.</p>
       <div class="r rd3"><button class="cta-w" onclick="openMo('register')">Rejoindre inkr Pro</button></div>
     </div>
   </section>
@@ -2016,7 +2070,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
       <div class="footer-top">
         <div><div class="f-logo">inkr</div><p class="f-desc">La plateforme N°1 des tatoueurs professionnels en Europe.</p></div>
         <div><div class="f-col-title">Explorer</div><ul class="f-links"><li><a href="#" onclick="showView('map');return false">Carte</a></li><li><a href="#" onclick="goFlash();return false">Flash deals</a></li><li><a href="#" onclick="showView('events');return false">Événements</a></li><li><a href="#" onclick="showView('tournee');return false">En tournée</a></li><li><a href="#" onclick="showView('blog');return false">Blog tatouage</a></li></ul></div>
-        <div><div class="f-col-title">Tatoueurs</div><ul class="f-links"><li><a href="#" onclick="openMo('register');return false">Créer mon profil</a></li><li><a href="#">Gérer mon agenda</a></li><li><a href="#">Annoncer une tournée</a></li><li><a href="#">Flash deals</a></li></ul></div>
+        <div><div class="f-col-title">Tatoueurs</div><ul class="f-links"><li><a href="#" onclick="openMo('register');return false">Créer mon profil</a></li><li><a href="/dashboard" onclick="window.location.href='/dashboard';return false">Gérer mon agenda</a></li><li><a href="#" onclick="showView('tournee');return false">Annoncer une tournée</a></li><li><a href="#" onclick="goFlash();return false">Flash deals</a></li></ul></div>
         <div><div class="f-col-title">inkr</div><ul class="f-links"><li><a href="#">À propos</a></li><li><a href="#">Contact</a></li><li><a href="#">Instagram</a></li><li><a href="#">TikTok</a></li></ul></div>
       </div>
       <div class="footer-bot"><div class="footer-copy">© 2025 inkr</div><div class="footer-legal"><a href="#">Mentions légales</a><a href="#">Confidentialité</a><a href="#">CGU</a></div></div>
@@ -2428,36 +2482,6 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
           </div>
         </div>
 
-        <!-- 7 · Rapport fiscal -->
-        <div class="fc-card" onclick="togglePricingCard(this)">
-          <div class="fc-card-top">
-            <div class="fc-icon" style="background:#FEF3C7;">📊</div>
-            <span class="fc-tag tag-orange">Revenus</span>
-          </div>
-          <div class="fc-title">Rapport fiscal mensuel</div>
-          <div class="fc-desc">CA, acomptes, RDV — exportable PDF. Prêt pour votre comptable ou l'URSSAF.</div>
-          <div class="fc-arrow">
-            <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </div>
-          <div class="fc-demo">
-            <div class="fc-demo-inner">
-              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;">
-                <span style="font-size:11px;color:#AEAEB2;font-weight:700;letter-spacing:.8px;text-transform:uppercase;">CA Juin 2026</span>
-                <span style="font-size:22px;font-weight:900;color:#0A0A0A;">3 840€</span>
-              </div>
-              <div class="demo-chart">
-                <div class="demo-bar" style="height:55%;"></div>
-                <div class="demo-bar" style="height:70%;"></div>
-                <div class="demo-bar" style="height:45%;"></div>
-                <div class="demo-bar" style="height:90%;"></div>
-                <div class="demo-bar" style="height:65%;"></div>
-                <div class="demo-bar" style="height:100%;"></div>
-              </div>
-              <div class="demo-chart-label"><span>Jan</span><span>Fév</span><span>Mar</span><span>Avr</span><span>Mai</span><span>Juin</span></div>
-            </div>
-          </div>
-        </div>
-
         <!-- 8 · Moodboard client -->
         <div class="fc-card" onclick="togglePricingCard(this)">
           <div class="fc-card-top">
@@ -2519,7 +2543,6 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
             <tr><td class="pc-inkr">Suivi cicatrisation J+5 / J+30</td><td class="pc-col-inkr pc-yes">✓ Inclus</td><td class="pc-no">✗ Absent</td><td class="pc-no">✗ Absent</td></tr>
             <tr><td class="pc-inkr">Mode tournée + post Insta auto</td><td class="pc-col-inkr pc-yes">✓ Inclus</td><td class="pc-no">✗ Absent</td><td class="pc-no">✗ Absent</td></tr>
             <tr><td class="pc-inkr">Annuaire + carte nationale</td><td class="pc-col-inkr pc-yes">✓ inkr.club</td><td class="pc-no">✗ Absent</td><td class="pc-no">✗ Absent</td></tr>
-            <tr><td class="pc-inkr">Rapport fiscal mensuel</td><td class="pc-col-inkr pc-yes">✓ Inclus</td><td class="pc-no">Export basique</td><td class="pc-no">Export basique</td></tr>
           </tbody>
         </table>
       </div>
@@ -2587,7 +2610,10 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
   <!-- Filtres collants : ville + rayon + style + nom ──────── -->
   <div class="fv-filters">
     <div class="fv-filters-i">
-      <input class="fv-fi" id="fv-ville" type="text" placeholder="🏙 Ta ville…" oninput="applyFlashFilters()"/>
+      <div class="fv-ville-wrap">
+        <input class="fv-fi" id="fv-ville" type="text" placeholder="🏙 Ta ville…" oninput="showFlashCityDropdown(this.value);applyFlashFilters()" autocomplete="off"/>
+        <div id="fv-city-dd-flash"></div>
+      </div>
       <select class="fv-fi fv-fi-sm" id="fv-rayon" onchange="applyFlashFilters()">
         <option value="5">5 km</option>
         <option value="10" selected>10 km</option>
@@ -3468,6 +3494,8 @@ function handleHeroSearch() {
   annuaireFilter.ville = ville;
   annuaireFilter.style = style;
   annuaireFilter.q = '';
+  // Filtre "Dispo aujourd'hui" — pris en compte par le backend si dispo_flash=1
+  annuaireFilter.dispo = heroDispoActive() ? '1' : '';
   loadArtists(true).then(() => {
     renderArtists();
     // Scroll vers la section résultats
@@ -3589,7 +3617,7 @@ function geoLocate() {
   );
 }
 
-// Ferme les deux dropdowns ville si clic ailleurs
+// Ferme les dropdowns ville si clic ailleurs
 document.addEventListener('click', e => {
   // Dropdown hero
   if (!e.target.closest('#sb-ville-field')) {
@@ -3600,6 +3628,11 @@ document.addEventListener('click', e => {
   if (!e.target.closest('#af-ville') && !e.target.closest('#af-ville-dd')) {
     const dd2 = document.getElementById('af-ville-dd');
     if (dd2) dd2.style.display = 'none';
+  }
+  // Dropdown flash ville
+  if (!e.target.closest('.fv-ville-wrap')) {
+    const dd3 = document.getElementById('fv-city-dd-flash');
+    if (dd3) dd3.style.display = 'none';
   }
 });
 
@@ -3772,7 +3805,7 @@ function renderArtists(){
         ${artistAvatarDiv(a)}
         ${a.flash?'<div class="fl-badge">⚡ Flash</div>':''}
         ${a.dispo_flash?'<div style="position:absolute;bottom:10px;left:10px;background:#f59e0b;color:#000;font-size:9px;font-weight:800;padding:3px 7px;border-radius:20px;letter-spacing:.3px;">⚡ Dispo aujourd\'hui</div>':''}
-        ${a.instagram?`<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);border-radius:6px;padding:3px 7px;font-size:10px;font-weight:700;color:rgba(255,255,255,.7);">📸 IG</div>`:''}
+        ${a.instagram?`<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);border-radius:6px;padding:3px 7px;font-size:10px;font-weight:700;color:rgba(255,255,255,.7);">📸 ${mockIgFollowers(a.name)}</div>`:''}
         <button class="ac-shortlist ${isShortlisted(a.id)?'saved':''}" onclick="toggleShortlist(${a.id},'${a.name.replace(/'/g,"\\'")}',event)" title="Ajouter à ma shortlist">${isShortlisted(a.id)?'♥':'♡'}</button>
       </div>
       <div class="ac-body">
@@ -4023,7 +4056,7 @@ function openFlashDeal(idx){
       <button class="fmo-cta2" onclick="closeFmo();openBooking(${d.artistId},'${artistNameEsc}')">
         🔥 Je me fais tatouer
       </button>
-      <button class="fmo-sub2" onclick="closeFmo();openProfile(${d.artistId})">
+      <button class="fmo-sub2" onclick="openProfileFromFlash(${d.artistId})">
         Voir le profil complet →
       </button>
     </div>`;
@@ -4084,7 +4117,7 @@ function renderEvents(){
   const filtered=activeEvCity==='all'?EVENTS:EVENTS.filter(e=>e.city===activeEvCity);
   document.getElementById('eventsGrid').innerHTML=filtered.map(ev=>`
     <div class="ev-card" onclick="openEventDetail(${ev.id})">
-      <div class="ev-card-img"><img src="${tattooImg(ev.img,600,400,'convention,tattoo')}" alt="${ev.title}" loading="lazy"/><div class="ev-date-badge">${ev.date}</div></div>
+      <div class="ev-card-img"><img src="https://loremflickr.com/600/400/tattoo,art,ink?lock=${ev.img+180}" alt="${ev.title}" loading="lazy" onerror="this.style.display='none'"/><div class="ev-date-badge">${ev.date}</div></div>
       <div class="ev-card-body">
         <div class="ev-card-type">${ev.type} · ${ev.city}</div>
         <div class="ev-card-name">${ev.title}</div>
@@ -4100,7 +4133,16 @@ function toggleEvent(id,btn){
   const ev=EVENTS.find(e=>e.id===id);ev.going=!ev.going;
   btn.className=`ev-btn ${ev.going?'going':'interested'}`;
   btn.textContent=ev.going?'✓ Je viens !':'Je participe';
-  if(ev.going)showToast('✓',`Tu participes à "${ev.title}" — rappel 24h avant !`);
+  // Sauvegarde dans localStorage (+ backend plus tard)
+  const saved=JSON.parse(localStorage.getItem('inkr_events')||'[]');
+  if(ev.going){
+    if(!saved.includes(id)) saved.push(id);
+    localStorage.setItem('inkr_events',JSON.stringify(saved));
+    showToast('🎉',`Inscrit à "${ev.title}" — rappel J-7 par email (bientôt) !`);
+  } else {
+    localStorage.setItem('inkr_events',JSON.stringify(saved.filter(x=>x!==id)));
+    showToast('◯',`Désinscrit de "${ev.title}"`);
+  }
 }
 
 // ═══════════════════ EVENT DETAIL MODAL ═══════════════════
@@ -4120,10 +4162,10 @@ function toggleEventFromModal(){
   if(currentEventId===null) return;
   const ev = EVENTS.find(e=>e.id===currentEventId);
   if(!ev) return;
-  ev.going = !ev.going;
-  document.getElementById('evdGoing').className = `pm-follow-btn ${ev.going?'following':''}`;
-  document.getElementById('evdGoing').textContent = ev.going?'✓ Je participe !':'Je participe';
-  if(ev.going) showToast('✓',`Tu participes à "${ev.title}" — rappel 24h avant !`);
+  const btn = document.getElementById('evdGoing');
+  const savedBtn = document.getElementById(`evbtn-${ev.id}`);
+  toggleEvent(ev.id, savedBtn || {className:'',textContent:''});
+  if(btn){btn.className=`pm-follow-btn ${ev.going?'following':''}`;btn.textContent=ev.going?'✓ Je participe !':'Je participe';}
   renderEvents();
 }
 
@@ -4168,6 +4210,9 @@ function renderTournees(){
           </div>`).join('')}
         ${activeTrCity!=='all'?'':tr.dates.filter(d=>!d.soon&&activeTrCity==='all').map(d=>`<div class="tr-date-pill"><div class="tr-date-city">📍 ${d.city}</div><div class="tr-date-date">${d.date}</div><div class="tr-date-venue">${d.venue}</div></div>`).join('')}
       </div>
+      <button class="tr-msg-btn" onclick="openTourneeMsg(${tr.artistId},'${tr.name.replace(/'/g,"\\'")}')">
+        💬 Envoyer un message à ${tr.name.split(' ')[0]}
+      </button>
     </div>`).join('');
 }
 
@@ -4224,13 +4269,8 @@ function renderBlogPreview(){
   observe();
 }
 function openArticle(slug){
-  const art = BLOG_ARTICLES.find(a=>a.slug===slug);
-  if(!art){ window.location.href=`/blog/${slug}.html`; return; }
-  document.getElementById('art-title').textContent = art.title;
-  document.getElementById('art-cat').textContent = art.cat + ' · ' + art.date;
-  document.getElementById('art-excerpt').textContent = art.excerpt;
-  document.getElementById('art-img').src = tattooImg(art.img,1200,600,'tattoo,ink');
-  showView('article');
+  // Toujours ouvrir la page HTML dédiée — meilleur SEO + contenu complet
+  window.location.href = `/blog/${slug}.html`;
 }
 function renderBlogFull(){
   document.getElementById('blogGrid').innerHTML=BLOG_ARTICLES.map(a=>`
@@ -4672,6 +4712,120 @@ function renderShortlistPanel(){
 }
 
 // ═══════════════════ MODALS ═══════════════════
+// ═══════════════════ INSTAGRAM FOLLOWERS MOCK ═══════════════════
+/**
+ * Retourne un nombre de followers Instagram simulé basé sur le nom.
+ * À remplacer par un vrai appel API Instagram quand le backend sera prêt.
+ * @param {string} name - Nom de l'artiste
+ * @returns {string} Ex: "4.7k", "12.3k"
+ */
+function mockIgFollowers(name) {
+  const buckets = [1.2, 2.4, 3.1, 4.7, 5.8, 7.2, 8.9, 10.5, 12.3, 15.6, 18.9, 22.4];
+  const h = (name||'A').split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const val = buckets[h % buckets.length];
+  return val >= 10 ? `${val}k followers` : `${val}k followers`;
+}
+
+// ═══════════════════ FLASH CITY AUTOCOMPLETE ═══════════════════
+/**
+ * Autocomplete ville+CP pour le champ #fv-ville dans la vue Flash Deals.
+ * Même logique que showHeroCityDropdown + fallback VILLES_FR.
+ */
+let _flashCityTimer = null;
+function showFlashCityDropdown(val) {
+  clearTimeout(_flashCityTimer);
+  const dd = document.getElementById('fv-city-dd-flash');
+  if (!dd) return;
+  if (!val || val.length < 2) { dd.style.display = 'none'; return; }
+  dd.innerHTML = `<div class="hero-city-item" style="color:#ADADAD;pointer-events:none;"><span>🔍 Recherche…</span></div>`;
+  dd.style.display = 'block';
+  _flashCityTimer = setTimeout(async () => {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&countrycodes=fr&format=json&limit=7&addressdetails=1`;
+      const res = await fetch(url, { headers: { 'Accept-Language': 'fr', 'User-Agent': 'inkr.club/1.0' } });
+      const data = await res.json();
+      if (!data.length) { _flashCityFallback(val); return; }
+      const seen = new Set();
+      const items = data.filter(d => {
+        const city = d.address?.city || d.address?.town || d.address?.village || d.display_name.split(',')[0];
+        if (seen.has(city)) return false; seen.add(city); return true;
+      }).slice(0, 6);
+      dd.innerHTML = items.map(d => {
+        const city = d.address?.city || d.address?.town || d.address?.village || d.display_name.split(',')[0];
+        const cp = d.address?.postcode?.slice(0,5) || d.address?.county || '';
+        return `<div class="hero-city-item" onclick="selectFlashCity('${city.replace(/'/g,"\\'")}')">
+          <span class="hero-city-name">📍 ${city}</span>
+          <span class="hero-city-cp">${cp}</span>
+        </div>`;
+      }).join('');
+      dd.style.display = 'block';
+    } catch(e) { _flashCityFallback(val); }
+  }, 350);
+}
+function _flashCityFallback(val) {
+  const dd = document.getElementById('fv-city-dd-flash');
+  if (!dd) return;
+  const q = val.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const matches = VILLES_FR.filter(v => {
+    const n = v.n.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return n.startsWith(q) || n.includes(q);
+  }).slice(0, 7);
+  if (!matches.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = matches.map(v =>
+    `<div class="hero-city-item" onclick="selectFlashCity('${v.n.replace(/'/g,"\\'")}')">
+      <span class="hero-city-name">📍 ${v.n}</span>
+      <span class="hero-city-cp">${v.cp}</span>
+    </div>`
+  ).join('');
+  dd.style.display = 'block';
+}
+function selectFlashCity(name) {
+  const input = document.getElementById('fv-ville');
+  if (input) { input.value = name; applyFlashFilters(); }
+  const dd = document.getElementById('fv-city-dd-flash');
+  if (dd) dd.style.display = 'none';
+}
+
+// ═══════════════════ PROFIL DEPUIS FLASH DEAL ═══════════════════
+/**
+ * Ouvre la fiche artiste en modal au-dessus du Flash Deal (sans fermer le modal flash).
+ * L'utilisateur peut fermer le profil et retrouver le flash en dessous.
+ */
+async function openProfileFromFlash(id) {
+  const moProfile = document.getElementById('mo-profile');
+  if (moProfile) moProfile.classList.add('on-flash');
+  await openProfile(id);
+}
+
+// ═══════════════════ TOURNÉE — MESSAGERIE ═══════════════════
+/**
+ * Ouvre la messagerie avec un artiste en tournée.
+ * Si le client est connecté → pré-remplit la conversation.
+ * Sinon → redirige vers la connexion client.
+ */
+function openTourneeMsg(artistId, artistName) {
+  if (_clientUser) {
+    // Client connecté : ouvre le profil artiste sur l'onglet messagerie
+    openProfile(artistId);
+    setTimeout(() => {
+      const msgBtn = document.querySelector('#pmBody .pm-msg-btn');
+      if (msgBtn) msgBtn.click();
+    }, 400);
+  } else {
+    // Client non connecté : ouvre la modal client login
+    openMo('client');
+    showToast('💬', `Connecte-toi pour écrire à ${artistName}`);
+  }
+}
+
+// ═══════════════════ HÉRO DISPO FILTER (handleHeroSearch patch) ═══════════════════
+/**
+ * Retourne true si le toggle "Dispo aujourd'hui" est actif dans le hero.
+ */
+function heroDispoActive() {
+  return document.getElementById('hero-dispo-toggle')?.checked || false;
+}
+
 function openMo(id){document.getElementById('mo-'+id).classList.add('open');}
 function closeMo(id){document.getElementById('mo-'+id).classList.remove('open');}
 function switchMo(from,to){closeMo(from);openMo(to);}

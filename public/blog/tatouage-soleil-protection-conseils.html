@@ -3,125 +3,219 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Tatouage et soleil : tout ce que vous devez absolument savoir — Blog inkr</title>
-<meta name="description" content="Le soleil est l'ennemi numéro un de vos tatouages. Comment protéger vos encres en été, quelle crème solaire choisir et quand reprendre le bronzage."/>
-<meta property="og:title" content="Tatouage et soleil : tout ce que vous devez absolument savoir"/>
-<meta property="og:description" content="Le soleil est l'ennemi numéro un de vos tatouages. Comment protéger vos encres en été, quelle crème solaire choisir et quand reprendre le bronzage."/>
+<title>Tatouage et soleil : comment protéger son tatouage — Blog inkr</title>
+<meta name="description" content="Soleil, UV et tatouage : comment protéger votre tatouage de la dégradation solaire, quand s'exposer après une séance et quels produits utiliser pour préserver vos encres."/>
+<meta property="og:title" content="Tatouage et soleil : comment protéger son tatouage"/>
+<meta property="og:description" content="UV, bronzage, crème solaire : tout ce que vous devez savoir pour protéger votre tatouage du soleil et préserver sa longévité."/>
 <meta property="og:type" content="article"/>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<meta property="og:image" content="https://loremflickr.com/1200/500/tattoo,ink?lock=291"/>
+<meta property="og:site_name" content="inkr — L'annuaire des tatoueurs en France"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-:root{--orange:#FF5C35;--black:#0A0A0A;--white:#FFFFFF;--gray-100:#F2F2F2;--gray-600:#666666;}
-body{font-family:'Inter',sans-serif;background:var(--white);color:var(--black);line-height:1.7;}
-.nav{position:fixed;top:0;left:0;right:0;background:rgba(255,255,255,0.95);backdrop-filter:blur(10px);border-bottom:1px solid #E5E5E5;z-index:100;}
-.nav-inner{max-width:1280px;margin:0 auto;padding:0 24px;height:60px;display:flex;align-items:center;gap:24px;}
-.nav-logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--orange);}
-.nav-logo span{color:var(--black);}
-.nav-back{font-size:13px;color:var(--gray-600);margin-left:auto;}
-.nav-back:hover{color:var(--orange);}
-a{text-decoration:none;color:inherit;}
-.hero-article{padding:100px 24px 48px;max-width:760px;margin:0 auto;}
-.article-cat{display:inline-block;background:#FFF0EC;color:var(--orange);font-size:12px;font-weight:700;padding:5px 12px;border-radius:100px;letter-spacing:0.5px;text-transform:uppercase;margin-bottom:20px;}
-.article-title{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;line-height:1.15;letter-spacing:-1px;margin-bottom:20px;}
-.article-meta{font-size:14px;color:var(--gray-600);margin-bottom:40px;}
-.article-img{width:100%;height:400px;object-fit:cover;border-radius:16px;margin-bottom:48px;}
-.article-body{font-size:17px;line-height:1.8;color:#222222;}
-.article-body h2{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;margin:48px 0 16px;color:var(--black);}
-.article-body h3{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin:32px 0 12px;color:var(--black);}
-.article-body p{margin-bottom:20px;}
-.article-body ul,ol{margin:0 0 20px 24px;}
-.article-body li{margin-bottom:8px;}
-.article-body strong{font-weight:600;color:var(--black);}
-.cta-box{margin:56px 0;background:#FFF0EC;border:1.5px solid rgba(255,92,53,0.2);border-radius:16px;padding:40px;text-align:center;}
-.cta-box h3{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:12px;}
-.cta-box p{color:var(--gray-600);margin-bottom:24px;}
-.cta-btn{display:inline-block;background:var(--orange);color:white;padding:13px 28px;border-radius:10px;font-weight:700;font-size:15px;}
-footer{background:var(--black);color:white;text-align:center;padding:32px;margin-top:80px;font-size:14px;}
-footer a{color:var(--orange);}
-@media(max-width:700px){.article-title{font-size:28px;}}
+body{background:#0A0A0A;color:#fff;font-family:system-ui,-apple-system,sans-serif;line-height:1.7;}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,10,10,.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.08);padding:12px 24px;display:flex;align-items:center;gap:16px;}
+.back-btn{background:rgba(255,255,255,.1);border:none;color:white;padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;text-decoration:none;display:inline-block;}
+.back-btn:hover{background:rgba(255,255,255,.18);}
+.logo{font-size:22px;font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-img{width:100%;height:480px;object-fit:cover;margin-top:65px;display:block;}
+.article-wrap{max-width:760px;margin:0 auto;padding:48px 32px 80px;}
+.cat-tag{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:16px;}
+h1{font-size:clamp(28px,4vw,48px);font-weight:800;letter-spacing:-1.5px;line-height:1.1;margin-bottom:24px;}
+.meta{font-size:13px;color:rgba(255,255,255,.35);margin-bottom:40px;display:flex;gap:12px;flex-wrap:wrap;}
+.meta span{display:inline-flex;align-items:center;gap:4px;}
+h2{font-size:22px;font-weight:700;margin:40px 0 16px;letter-spacing:-.5px;}
+h3{font-size:17px;font-weight:700;margin:28px 0 10px;}
+p{font-size:16px;line-height:1.8;color:rgba(255,255,255,.82);margin-bottom:18px;}
+.section-img{width:100%;border-radius:16px;margin:32px 0;object-fit:cover;max-height:380px;background:rgba(255,255,255,.05);}
+ul,ol{padding-left:24px;margin-bottom:18px;}
+li{font-size:16px;line-height:1.8;color:rgba(255,255,255,.82);margin-bottom:6px;}
+blockquote{border-left:3px solid #a855f7;padding:12px 20px;margin:28px 0;background:rgba(168,85,247,.07);border-radius:0 12px 12px 0;font-style:italic;color:rgba(255,255,255,.7);}
+.highlight-box{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px 28px;margin:32px 0;}
+.warning-box{background:rgba(249,115,22,.05);border:1px solid rgba(249,115,22,.2);border-radius:16px;padding:24px 28px;margin:32px 0;}
+.warning-box h3{color:#f97316;}
+.timeline{position:relative;padding-left:32px;margin:24px 0;}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:rgba(168,85,247,.3);}
+.timeline-item{position:relative;margin-bottom:24px;}
+.timeline-item::before{content:'';position:absolute;left:-28px;top:6px;width:12px;height:12px;border-radius:50%;background:#a855f7;}
+.timeline-item .tl-time{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#a855f7;margin-bottom:4px;}
+.timeline-item .tl-title{font-weight:700;font-size:16px;margin-bottom:6px;}
+.timeline-item p{margin:0;font-size:15px;color:rgba(255,255,255,.7);}
+.cta-wrap{text-align:center;padding:48px 0 24px;}
+.cta-btn{display:inline-block;background:linear-gradient(135deg,#667eea,#a855f7);color:white;text-decoration:none;padding:16px 36px;border-radius:14px;font-size:16px;font-weight:700;transition:opacity .2s;}
+.cta-btn:hover{opacity:.85;}
+.related{margin-top:64px;padding-top:40px;border-top:1px solid rgba(255,255,255,.08);}
+.related h2{font-size:18px;margin-bottom:20px;}
+.related-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;}
+.related-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:20px;text-decoration:none;transition:background .2s;}
+.related-card:hover{background:rgba(255,255,255,.08);}
+.related-card .rc-cat{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:8px;}
+.related-card .rc-title{font-size:14px;font-weight:600;color:white;line-height:1.4;}
+@media(max-width:600px){.article-wrap{padding:32px 20px 60px;}.hero-img{height:280px;}}
 </style>
 </head>
 <body>
-<nav class="nav">
-  <div class="nav-inner">
-    <a href="/" class="nav-logo">ink<span>r</span></a>
-    <a href="/blog" class="nav-back">← Retour au blog</a>
-  </div>
+<nav>
+  <a href="../index.html" class="back-btn">← Retour</a>
+  <span class="logo">inkr</span>
 </nav>
 
-<div class="hero-article">
-  <span class="article-cat">Entretien</span>
-  <h1 class="article-title">Tatouage et soleil : tout ce que vous devez absolument savoir</h1>
-  <div class="article-meta">Publié le 16 mai 2026 · 8 min de lecture · Par la rédaction inkr</div>
-</div>
+<img class="hero-img" src="https://loremflickr.com/1200/500/tattoo,ink?lock=291" alt="Tatouage et soleil protection conseils"/>
 
-<div style="max-width:760px;margin:0 auto;padding:0 24px;">
-  <img class="article-img" src="https://picsum.photos/seed/tatouage-soleil-protection-conseils/760/400" alt="Tatouage et soleil : tout ce que vous devez absolument savoir"/>
-
-  <div class="article-body">
-    
-<h2>Le soleil : l'ennemi silencieux de vos tatouages</h2>
-<p>Si vous ne deviez retenir qu'une seule règle pour préserver vos tatouages sur le long terme, ce serait celle-ci : protégez-les du soleil. Le rayonnement UV est la principale cause du vieillissement prématuré des tatouages. Il dégrade les pigments, estompe les contours et transforme en quelques années un tatouage net en un brouillard coloré. Pourtant, c'est aussi la règle la plus souvent négligée.</p>
-
-<h2>Comment le soleil abîme-t-il un tatouage ?</h2>
-<p>Comprendre le mécanisme aide à prendre la règle au sérieux. Les rayons UV (UVA et UVB) pénètrent l'épiderme et atteignent le derme, là où réside l'encre de votre tatouage. Ces rayons provoquent plusieurs phénomènes :</p>
-<ul>
-  <li><strong>La photolyse des pigments</strong> — les UV "cassent" les molécules de pigment, les décomposant en particules plus petites qui diffusent sous la peau, créant un effet flou</li>
-  <li><strong>L'accélération du renouvellement cellulaire</strong> — exposée au soleil, la peau produit davantage de mélatonine et renouvelle ses cellules plus rapidement, emportant avec elles une partie des pigments</li>
-  <li><strong>La dégradation du collagène</strong> — le soleil abîme les fibres de collagène du derme, modifiant la structure dans laquelle l'encre est "suspendue"</li>
-</ul>
-<p>Le résultat sur 10 ou 20 ans : un tatouage qui a passé ses étés sans protection ressemble souvent à une vieille photo délavée, là où un tatouage correctement protégé garde sa netteté et sa vivacité.</p>
-
-<h2>Les tatouages fresh et le soleil : interdiction absolue</h2>
-<p>Sur un tatouage en cours de cicatrisation, la règle est sans appel : <strong>pas de soleil direct pendant au minimum 4 à 6 semaines</strong>. Un tatouage frais est une plaie ouverte en cours de guérison. Le soleil peut :</p>
-<ul>
-  <li>Provoquer des brûlures sur une peau déjà fragilisée</li>
-  <li>Déclencher des réactions inflammatoires qui perturbent la cicatrisation</li>
-  <li>Causer des allergies aux pigments activées par les UV</li>
-  <li>Déformer définitivement les couleurs en cours de stabilisation</li>
-</ul>
-<p>Si vous avez prévu des vacances à la plage dans les semaines suivant votre tatouage, couvrez-le intégralement avec un vêtement opaque. La crème solaire seule ne suffit pas sur un tatouage fresh.</p>
-
-<h2>Choisir la bonne crème solaire pour ses tatouages</h2>
-<p>Une fois cicatrisé, votre tatouage peut (et doit) être protégé avec une crème solaire dès qu'il est exposé. Quelques critères :</p>
-<p><strong>L'indice de protection</strong> — Minimum SPF 30, idéalement SPF 50+. Les dermatologues recommandent systématiquement le SPF 50 pour les zones tatouées.</p>
-<p><strong>Le spectre</strong> — Choisissez une protection "large spectre" qui couvre à la fois les UVA et les UVB. Les UVA (qui pénètrent plus profondément) sont particulièrement responsables de la dégradation des pigments.</p>
-<p><strong>La formule</strong> — Évitez les crèmes très alcoolisées qui peuvent dessécher la peau tatouée. Les crèmes minérales (à base d'oxyde de zinc ou de dioxyde de titane) sont souvent recommandées car elles créent une barrière physique en surface.</p>
-<p><strong>Les crèmes spéciales tatouage</strong> — Des marques comme Tattoo Goo, Hustle Butter ou Balm Tattoo proposent des crèmes solaires formulées spécifiquement pour les peaux tatouées. Elles ne sont pas indispensables mais peuvent être une bonne option.</p>
-
-<h2>La routine solaire pour les peaux tatouées</h2>
-<p>En pratique, voici comment intégrer la protection solaire dans votre routine estivale :</p>
-<ol>
-  <li>Appliquez la crème solaire 20 à 30 minutes avant l'exposition</li>
-  <li>Renouvelez toutes les 2 heures en cas d'exposition continue</li>
-  <li>Réappliquez immédiatement après chaque baignade, même avec une crème "waterproof"</li>
-  <li>En milieu de journée (11h-16h), privilégiez l'ombre ou couvrez vos tatouages</li>
-  <li>Après l'exposition au soleil, hydratez bien la peau tatouée</li>
-</ol>
-
-<h2>Et le bronzage artificiel ?</h2>
-<p>Les cabines UV sont encore plus agressives pour les tatouages que le soleil naturel car elles concentrent un spectre UV très intense sur une courte durée. Si vous utilisez des cabines de bronzage (ce que les dermatologues déconseillent pour tout le monde, tatoué ou non), couvrez systématiquement vos tatouages avec un pansement ou un vêtement opaque.</p>
-<p>L'autobronzant, en revanche, ne pose pas de problème particulier pour les tatouages. Évitez simplement d'en appliquer sur un tatouage en cours de cicatrisation.</p>
-
-<h2>Peut-on rattraper les dégâts du soleil ?</h2>
-<p>Si vos tatouages ont souffert d'années d'exposition sans protection, tout n'est pas perdu. Une retouche (touch-up) par votre tatoueur peut raviver les couleurs et redessiner des contours estompés. Cela ne remettra pas le tatouage dans son état d'origine, mais peut considérablement améliorer le rendu.</p>
-<p>Certaines techniques de relookage (retracing des contours, ajout de fond pour masquer les dégradés) permettent de "remettre à neuf" un tatouage bien abîmé. C'est un investissement supplémentaire qui aurait pu être évité avec une simple routine de protection.</p>
-
-<h2>Conclusion</h2>
-<p>La protection solaire est le geste le plus important pour la longévité de vos tatouages. C'est simple, peu coûteux et ses effets se voient sur le long terme. Considérez ça comme l'entretien régulier d'un bien précieux : quelques minutes de précaution en été vous éviteront des années de regrets.</p>
-
+<div class="article-wrap">
+  <div class="cat-tag">Soins</div>
+  <h1>Tatouage et soleil : comment protéger son tatouage</h1>
+  <div class="meta">
+    <span>Par la rédaction inkr</span>
+    <span>·</span>
+    <span>15 mai 2024</span>
+    <span>·</span>
+    <span>10 min de lecture</span>
   </div>
 
-  <div class="cta-box">
-    <h3>Trouvez votre artiste sur inkr 🎨</h3>
-    <p>4 847 tatoueurs référencés en France. Filtrez par style, ville et disponibilité.</p>
-    <a href="/" class="cta-btn">Explorer l'annuaire</a>
+  <p>L'été arrive, vous avez un nouveau tatouage ou vous prévoyez d'en faire un prochainement. La question du soleil est l'une des premières qui se pose — et l'une des plus importantes pour la longévité de votre tatouage. Le rayonnement ultraviolet est l'ennemi numéro un des pigments de tatouage : il les dégrade, les décolore et les diffuse. Mais avec les bons réflexes, vous pouvez profiter du soleil sans sacrifier la qualité de votre tatouage sur le long terme.</p>
+
+  <h2>Pourquoi le soleil abîme-t-il les tatouages ?</h2>
+  <p>Pour comprendre l'impact du soleil sur un tatouage, il faut comprendre ce qui se passe au niveau moléculaire. Les pigments de tatouage sont des particules chimiques encapsulées dans le derme, la couche profonde de la peau. Ces molécules ne sont pas infiniment stables — elles réagissent à leur environnement, notamment aux rayonnements UV.</p>
+
+  <p>Les rayons UV (ultraviolets A et B) pénètrent la peau jusqu'au derme et attaquent les liaisons chimiques des molécules de pigment selon deux mécanismes :</p>
+
+  <ul>
+    <li><strong>La photolyse :</strong> les UV brisent directement les liaisons moléculaires des pigments, les fragmentant en particules plus petites qui sont alors emportées par le système lymphatique. C'est la raison pour laquelle les tatouages s'estompent avec l'âge, et d'autant plus vite si la personne s'expose souvent au soleil.</li>
+    <li><strong>La dégradation oxydative :</strong> les UV génèrent des radicaux libres dans les tissus cutanés, qui à leur tour oxydent les pigments et modifient leur couleur. Ce phénomène est particulièrement visible sur les rouges, oranges et jaunes qui ont tendance à "virer" ou à foncer sous l'effet du soleil.</li>
+  </ul>
+
+  <p>À cela s'ajoute un effet indirect : les UV stimulent la mélanogenèse (production de mélanine), ce qui fait bronzer la peau. Ce bronzage crée un fond plus sombre qui réduit le contraste et la lisibilité du tatouage, notamment pour les couleurs claires et les fins dégradés de gris.</p>
+
+  <img class="section-img" src="https://loremflickr.com/800/400/tattoo,art?lock=292" alt="Protection tatouage soleil UV"/>
+
+  <h2>La règle d'or : aucune exposition pendant la cicatrisation</h2>
+  <p>Cette règle est absolue et ne souffre aucune exception : un tatouage en cours de cicatrisation ne doit jamais être exposé aux rayons UV — ni soleil direct, ni cabine de bronzage, ni même soleil filtré à travers une vitre.</p>
+
+  <div class="timeline">
+    <div class="timeline-item">
+      <div class="tl-time">J+1 à J+14</div>
+      <div class="tl-title">Exposition solaire : absolument interdite</div>
+      <p>La peau est une plaie ouverte en phase de cicatrisation active. Les UV provoquent une inflammation supplémentaire, perturbent le processus de guérison et favorisent les infections. Ils dégradent également les pigments avant même qu'ils soient stabilisés dans le derme.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-time">J+14 à J+30</div>
+      <div class="tl-title">Exposition avec protection maximale uniquement</div>
+      <p>La peau est refermée mais la cicatrisation derme est encore en cours. Si l'exposition est inévitable, couvrir physiquement la zone (vêtement opaque) est préférable à tout écran solaire. Si le tatouage doit être exposé, SPF 50+ sans exception, renouvelé toutes les 2 heures.</p>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-time">M+1 et au-delà</div>
+      <div class="tl-title">Protection systématique à vie</div>
+      <p>Même un tatouage entièrement cicatrisé doit être protégé des UV lors de chaque exposition. Ce reflexe à long terme fait la différence entre un tatouage qui reste net 20 ans et un tatouage qui s'estompe en 5 ans.</p>
+    </div>
+  </div>
+
+  <div class="warning-box">
+    <h3>Attention aux faux protecteurs</h3>
+    <p>Certaines idées reçues circulent sur la "protection" des tatouages en cours de cicatrisation. Voici ce qui ne protège pas :</p>
+    <ul>
+      <li>Le film plastique transparent (film alimentaire) ne bloque pas les UV — il laisse passer les UVA et UVB</li>
+      <li>Un t-shirt blanc fin n'offre qu'un SPF équivalent à 5-10 — insuffisant</li>
+      <li>Un parasol ne protège pas complètement — les UV se réfléchissent sur le sable (jusqu'à 25% de réverbération), l'eau et les surfaces claires</li>
+    </ul>
+  </div>
+
+  <h2>Quelle crème solaire choisir pour un tatouage ?</h2>
+  <p>Tous les écrans solaires ne se valent pas quand il s'agit de protéger un tatouage cicatrisé. Voici les critères essentiels :</p>
+
+  <h3>L'indice de protection (SPF)</h3>
+  <p>Pour un tatouage, ne descendez jamais en dessous de <strong>SPF 50</strong>. Le SPF 50 filtre 98% des UVB (responsables des coups de soleil et de la dégradation des pigments superficiels). Un SPF 30 ne filtre que 97% — cela peut sembler proche, mais l'exposition cumulée sur des années fait une différence significative.</p>
+
+  <p>Pour une protection optimale, choisissez un <strong>écran à large spectre UVA/UVB</strong> (mention "broad spectrum" ou cercle UVA). Les UVA pénètrent plus profondément dans le derme et sont les principaux responsables du vieillissement et de la décoloration des pigments sur le long terme.</p>
+
+  <h3>Les formules à privilégier</h3>
+  <ul>
+    <li><strong>Écrans minéraux (oxyde de zinc, dioxyde de titane) :</strong> forment une barrière physique sur la peau qui réfléchit les UV. Moins irritants pour les tatouages récents, mais peuvent laisser un film blanc visible. Excellents sur les tatouages colorés sensibles.</li>
+    <li><strong>Écrans chimiques (avobenzone, tinosorb) :</strong> absorbent les UV et les transforment en chaleur. Formules plus fluides et transparentes, idéales pour les tatouages sombres ou les grandes surfaces. Attendre que le tatouage soit complètement cicatrisé avant utilisation (pas avant M+1).</li>
+    <li><strong>Formules mixtes :</strong> la plupart des crèmes solaires SPF 50+ modernes combinent les deux types de filtres pour maximiser l'efficacité.</li>
+  </ul>
+
+  <img class="section-img" src="https://loremflickr.com/800/400/tattoo,summer?lock=293" alt="Crème solaire tatouage conseils"/>
+
+  <h3>Les ingrédients à éviter</h3>
+  <p>Certains composants courants dans les crèmes solaires peuvent être irritants ou déconseillés sur des tatouages, notamment récents :</p>
+  <ul>
+    <li>Alcool (alcool dénaturé, éthanol) — dessèche et irrite</li>
+    <li>Parfums synthétiques — risques allergiques augmentés sur peau tatouée sensible</li>
+    <li>Parabènes — évitables par précaution, notamment sur tatouages récents</li>
+    <li>Octocrylène à forte concentration — certaines études suggèrent une instabilité sur les encres de tatouage (à confirmer)</li>
+  </ul>
+
+  <h2>Application et renouvellement : les erreurs à ne pas faire</h2>
+  <p>Avoir la bonne crème solaire ne suffit pas si elle est mal appliquée :</p>
+
+  <ol>
+    <li><strong>Appliquez 20 à 30 minutes avant l'exposition</strong> — les filtres chimiques ont besoin de ce temps pour s'activer et se lier à la peau</li>
+    <li><strong>Soyez généreux :</strong> la plupart des gens sous-dosent massivement leur crème solaire. Pour un avant-bras, une cuillère à café de produit est un minimum. La dose standard pour le corps entier est d'environ 35 ml (7 cuillères à café).</li>
+    <li><strong>Renouvelez toutes les 2 heures</strong> — et immédiatement après chaque baignade ou forte transpiration, même avec un produit "waterproof"</li>
+    <li><strong>N'oubliez pas les zones de transition</strong> — les bords du tatouage, la zone autour, sont tout aussi importants à protéger pour maintenir un contraste net</li>
+    <li><strong>Hydratez après l'exposition</strong> — le soleil déshydrate la peau, et une peau sèche vieillit plus vite, ce qui accélère la dégradation des pigments. Appliquez une crème hydratante après la douche d'après-plage.</li>
+  </ol>
+
+  <blockquote>
+    "J'ai deux tatouages réalisés la même année, au même endroit, par le même artiste. Celui que j'exposais l'été sans crème a commencé à griser et s'estomper au bout de 5 ans. Celui que j'ai toujours protégé est encore aussi net qu'à 2 mois. C'est la seule variable qui comptait." — Témoignage client
+  </blockquote>
+
+  <h2>Et les cabines de bronzage UV ?</h2>
+  <p>Les cabines de bronzage (solarium) sont à proscrire absolument sur et autour d'un tatouage, sans exception. Les lampes UV artificielles des solariums émettent essentiellement des UVA à haute intensité — précisément les rayonnements qui pénètrent le plus profondément dans le derme et qui dégradent les pigments de l'intérieur. L'intensité d'une session de solarium peut être équivalente à plusieurs heures d'exposition solaire estivale directe.</p>
+
+  <p>Par ailleurs, les solariums sont associés à un risque significatif de mélanome et d'autres cancers cutanés. L'Organisation Mondiale de la Santé les classe dans le groupe 1 des agents cancérigènes certains pour l'homme depuis 2009.</p>
+
+  <div class="highlight-box">
+    <h3>Plan de protection solaire par saison</h3>
+    <ul>
+      <li><strong>Printemps (mars-mai) :</strong> SPF 30 minimum lors des expositions prolongées, SPF 50 dès que le soleil devient intense (au-dessus de l'indice UV 5)</li>
+      <li><strong>Été (juin-août) :</strong> SPF 50+ systématique sur les zones tatouées exposées. Privilégier la couverture physique (vêtements) pendant les heures de pointe (11h-16h)</li>
+      <li><strong>Automne-hiver :</strong> ne pas négliger la protection — les UV de faible intensité s'accumulent aussi, et le rayonnement en altitude (ski, randonnée) peut être très intense même par temps couvert</li>
+      <li><strong>Voyages en pays chauds / équatoriaux :</strong> SPF 50+ toutes les 2 heures, couvrir les tatouages pendant les heures les plus chaudes, hydrater intensément le soir</li>
+    </ul>
+  </div>
+
+  <h2>Tatouage récent et vacances d'été : faut-il planifier ?</h2>
+  <p>Si vous prévoyez des vacances à la mer ou à la montagne, il est fortement recommandé de planifier votre tatouage en conséquence. Idéalement, faites-vous tatouer au moins 4 à 6 semaines avant vos vacances pour que la cicatrisation superficielle soit complète. Une zone tatouée en cours de cicatrisation exposée au soleil et à l'eau salée ou chlorée peut non seulement être abîmée, mais aussi présenter un risque infectieux réel.</p>
+
+  <p>Si vous partez dans les deux semaines suivant une séance, couvrez physiquement votre tatouage avec un vêtement opaque ou un bandage léger pendant toute exposition solaire. À la plage ou à la piscine, la seule solution vraiment efficace est de garder la zone hors de l'eau et à l'ombre pendant la cicatrisation active.</p>
+
+  <img class="section-img" src="https://loremflickr.com/800/400/tattoo,art?lock=294" alt="Protéger tatouage plage été"/>
+
+  <h2>Les tatouages qui souffrent le plus du soleil</h2>
+  <p>Tous les tatouages ne sont pas égaux face aux UV. Voici les styles et couleurs les plus vulnérables :</p>
+
+  <ul>
+    <li><strong>Les pastels et les couleurs claires</strong> (roses pâles, jaunes, bleus ciel) — peu de pigment, très sensibles à la décoloration UV</li>
+    <li><strong>Les aquarelles</strong> — leurs dégradés légers et leurs zones de transition sont particulièrement sensibles aux UV qui effacent les nuances les plus délicates</li>
+    <li><strong>Les rouges et oranges</strong> — ces pigments (notamment les azoïques) sont chimiquement parmi les plus instables face aux UV</li>
+    <li><strong>Le fine line</strong> — les traits très fins ont moins de "réserve" pigmentaire et s'estompent plus vite</li>
+    <li><strong>Les tatouages anciens déjà dégradés</strong> — une zone qui a déjà perdu du pigment se dégrade encore plus vite lors des expositions suivantes</li>
+  </ul>
+
+  <p>Le tatouage le plus résistant au soleil ? Le blackwork dense en noir de carbone. Sa concentration en pigment est élevée et le noir de carbone est chimiquement plus stable face aux UV que la plupart des pigments colorés. C'est une raison supplémentaire pour laquelle le blackwork est considéré comme le style le plus durable techniquement.</p>
+
+  <div class="cta-wrap">
+    <a href="../index.html" class="cta-btn">Trouver un tatoueur</a>
+  </div>
+
+  <div class="related">
+    <h2>Articles liés</h2>
+    <div class="related-grid">
+      <a href="cicatrisation-tatouage-guide-complet.html" class="related-card">
+        <div class="rc-cat">Soins</div>
+        <div class="rc-title">Cicatrisation d'un tatouage : les 5 phases</div>
+      </a>
+      <a href="guide-complet-fine-line-tatouage.html" class="related-card">
+        <div class="rc-cat">Styles</div>
+        <div class="rc-title">Guide complet du Fine Line Tattoo</div>
+      </a>
+      <a href="tatouage-blackwork-guide.html" class="related-card">
+        <div class="rc-cat">Styles</div>
+        <div class="rc-title">Blackwork : le guide complet du tatouage noir</div>
+      </a>
+    </div>
   </div>
 </div>
-
-<footer>
-  <p>© 2026 <a href="/">inkr</a> — L'annuaire des tatoueurs en France</p>
-</footer>
 </body>
 </html>
