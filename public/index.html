@@ -1882,14 +1882,6 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
             <option value="neo-traditionnel">Néo-trad</option>
           </select>
         </div>
-        <div class="sb-divider"></div>
-        <div class="sb-dispo-wrap">
-          <label class="sb-dispo-toggle" title="Voir uniquement les tatoueurs disponibles aujourd'hui">
-            <input type="checkbox" id="hero-dispo-toggle" onchange="handleHeroSearch()"/>
-            <div class="sb-dispo-track"><div class="sb-dispo-thumb"></div></div>
-            <span class="sb-dispo-label">⚡ Dispo aujourd'hui</span>
-          </label>
-        </div>
         <button class="sb-cta" onclick="handleHeroSearch()">
           Trouver mon tatoueur →
         </button>
@@ -1984,6 +1976,11 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
             <option value="tribal">Tribal</option>
             <option value="neo-traditionnel">Néo-trad</option>
           </select>
+          <label class="sb-dispo-toggle" title="Voir uniquement les tatoueurs disponibles aujourd'hui" style="white-space:nowrap;">
+            <input type="checkbox" id="hero-dispo-toggle" onchange="applyDispoFilter()"/>
+            <div class="sb-dispo-track"><div class="sb-dispo-thumb"></div></div>
+            <span class="sb-dispo-label" style="color:var(--g2);font-size:13px;">⚡ Dispo aujourd'hui</span>
+          </label>
           <button class="split-reset" onclick="resetSplitFilters()">✕ Réinitialiser</button>
         </div>
 
@@ -3548,7 +3545,8 @@ function showHeroCityDropdown(val) {
         const city    = d.address?.city || d.address?.town || d.address?.village || d.address?.municipality || d.display_name.split(',')[0];
         const dept    = d.address?.county || d.address?.state || '';
         const cp      = d.address?.postcode?.slice(0,5) || '';
-        const escaped = city.replace(/'/g, "\\'");
+        const label   = cp ? `${city} (${cp})` : city;
+        const escaped = label.replace(/'/g, "\\'");
         return `<div class="hero-city-item" onclick="selectHeroCity('${escaped}')">
           <span class="hero-city-name">📍 ${city}</span>
           <span class="hero-city-cp">${cp || dept}</span>
@@ -3573,12 +3571,13 @@ function _showLocalCityFallback(val) {
     return n.startsWith(q) || n.includes(q);
   }).slice(0, 7);
   if (!matches.length) { dd.style.display = 'none'; return; }
-  dd.innerHTML = matches.map(v =>
-    `<div class="hero-city-item" onclick="selectHeroCity('${v.n.replace(/'/g, "\\'")}')">
+  dd.innerHTML = matches.map(v => {
+    const label = v.cp ? `${v.n} (${v.cp})` : v.n;
+    return `<div class="hero-city-item" onclick="selectHeroCity('${label.replace(/'/g,"\\'")}')">
        <span class="hero-city-name">📍 ${v.n}</span>
        <span class="hero-city-cp">${v.cp}</span>
-     </div>`
-  ).join('');
+     </div>`;
+  }).join('');
   dd.style.display = 'block';
 }
 
@@ -3669,7 +3668,8 @@ function showSplitCityDropdown(val) {
       dd.innerHTML = items.map(d => {
         const city    = d.address?.city || d.address?.town || d.address?.village || d.address?.municipality || d.display_name.split(',')[0];
         const cp      = d.address?.postcode?.slice(0,5) || '';
-        const escaped = city.replace(/'/g, "\\'");
+        const label   = cp ? `${city} (${cp})` : city;
+        const escaped = label.replace(/'/g, "\\'");
         return `<div class="hero-city-item" onclick="selectSplitCity('${escaped}')">
           <span class="hero-city-name">📍 ${city}</span>
           <span class="hero-city-cp">${cp}</span>
@@ -3692,12 +3692,13 @@ function _showSplitCityFallback(val) {
     return n.startsWith(q) || n.includes(q);
   }).slice(0, 7);
   if (!matches.length) { dd.style.display = 'none'; return; }
-  dd.innerHTML = matches.map(v =>
-    `<div class="hero-city-item" onclick="selectSplitCity('${v.n.replace(/'/g, "\\'")}')">
+  dd.innerHTML = matches.map(v => {
+    const label = v.cp ? `${v.n} (${v.cp})` : v.n;
+    return `<div class="hero-city-item" onclick="selectSplitCity('${label.replace(/'/g,"\\'")}')">
        <span class="hero-city-name">📍 ${v.n}</span>
        <span class="hero-city-cp">${v.cp}</span>
-     </div>`
-  ).join('');
+     </div>`;
+  }).join('');
   dd.style.display = 'block';
 }
 
@@ -4113,11 +4114,29 @@ function filterEvCity(city,btn){
   btn.classList.add('on');
   renderEvents();
 }
+/**
+ * Retourne l'URL d'image pour un événement.
+ * Priorité : /images/events/event-{id}.jpg → /images/events/event-{id}.png → fallback CSS gradient
+ */
+function evImgSrc(ev) {
+  // L'image locale est testée côté navigateur via onerror
+  return ev.localImg || `/images/events/event-${ev.id}.jpg`;
+}
+/** Gradients de fallback par type d'event */
+const EV_GRADIENTS = {
+  'Convention':'linear-gradient(135deg,#1e1b4b,#4c1d95)',
+  'Festival':'linear-gradient(135deg,#1a1a2e,#7c3aed)',
+  'Guest Spot':'linear-gradient(135deg,#0f172a,#1d4ed8)',
+  'Pop-up':'linear-gradient(135deg,#0c0a09,#92400e)',
+  'Exposition':'linear-gradient(135deg,#0f172a,#065f46)',
+};
+function evFallbackGrad(ev){return EV_GRADIENTS[ev.type]||'linear-gradient(135deg,#0A0A0A,#1e1b4b)';}
+
 function renderEvents(){
   const filtered=activeEvCity==='all'?EVENTS:EVENTS.filter(e=>e.city===activeEvCity);
   document.getElementById('eventsGrid').innerHTML=filtered.map(ev=>`
     <div class="ev-card" onclick="openEventDetail(${ev.id})">
-      <div class="ev-card-img"><img src="https://loremflickr.com/600/400/tattoo,art,ink?lock=${ev.img+180}" alt="${ev.title}" loading="lazy" onerror="this.style.display='none'"/><div class="ev-date-badge">${ev.date}</div></div>
+      <div class="ev-card-img" style="background:${evFallbackGrad(ev)};"><img src="${evImgSrc(ev)}" alt="${ev.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove()"/><div class="ev-date-badge">${ev.date}</div></div>
       <div class="ev-card-body">
         <div class="ev-card-type">${ev.type} · ${ev.city}</div>
         <div class="ev-card-name">${ev.title}</div>
@@ -4258,7 +4277,7 @@ function filterTrArtist(q){
 function renderBlogPreview(){
   document.getElementById('blogPreview').innerHTML=BLOG_ARTICLES.slice(0,3).map(a=>`
     <div class="bc r" onclick="openArticle('${a.slug}')">
-      <div class="bc-img"><img src="${tattooImg(a.img,600,300,'tattoo,ink')}" alt="${a.title}" loading="lazy"/></div>
+      <div class="bc-img" style="background:linear-gradient(135deg,#1a1a2e,#2d1b4e);"><img src="/images/blog/${a.slug}.jpg" alt="${a.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove()"/></div>
       <div class="bc-body">
         <div class="bc-cat">${a.cat}</div>
         <div class="bc-title">${a.title}</div>
@@ -4275,7 +4294,7 @@ function openArticle(slug){
 function renderBlogFull(){
   document.getElementById('blogGrid').innerHTML=BLOG_ARTICLES.map(a=>`
     <div class="bc r" onclick="openArticle('${a.slug}')">
-      <div class="bc-img"><img src="${tattooImg(a.img,600,300,'tattoo,ink')}" alt="${a.title}" loading="lazy"/></div>
+      <div class="bc-img" style="background:linear-gradient(135deg,#1a1a2e,#2d1b4e);"><img src="/images/blog/${a.slug}.jpg" alt="${a.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove()"/></div>
       <div class="bc-body">
         <div class="bc-cat">${a.cat}</div>
         <div class="bc-title">${a.title}</div>
@@ -4751,9 +4770,10 @@ function showFlashCityDropdown(val) {
         if (seen.has(city)) return false; seen.add(city); return true;
       }).slice(0, 6);
       dd.innerHTML = items.map(d => {
-        const city = d.address?.city || d.address?.town || d.address?.village || d.display_name.split(',')[0];
-        const cp = d.address?.postcode?.slice(0,5) || d.address?.county || '';
-        return `<div class="hero-city-item" onclick="selectFlashCity('${city.replace(/'/g,"\\'")}')">
+        const city  = d.address?.city || d.address?.town || d.address?.village || d.display_name.split(',')[0];
+        const cp    = d.address?.postcode?.slice(0,5) || d.address?.county || '';
+        const label = cp ? `${city} (${cp})` : city;
+        return `<div class="hero-city-item" onclick="selectFlashCity('${label.replace(/'/g,"\\'")}')">
           <span class="hero-city-name">📍 ${city}</span>
           <span class="hero-city-cp">${cp}</span>
         </div>`;
@@ -4820,10 +4840,18 @@ function openTourneeMsg(artistId, artistName) {
 
 // ═══════════════════ HÉRO DISPO FILTER (handleHeroSearch patch) ═══════════════════
 /**
- * Retourne true si le toggle "Dispo aujourd'hui" est actif dans le hero.
+ * Retourne true si le toggle "Dispo aujourd'hui" est actif.
  */
 function heroDispoActive() {
   return document.getElementById('hero-dispo-toggle')?.checked || false;
+}
+/**
+ * Applique le filtre "Dispo aujourd'hui" sur la liste des tatoueurs.
+ * Appelé quand le toggle change dans la section discover.
+ */
+function applyDispoFilter() {
+  annuaireFilter.dispo = heroDispoActive() ? '1' : '';
+  loadArtists(true).then(() => renderArtists());
 }
 
 function openMo(id){document.getElementById('mo-'+id).classList.add('open');}
