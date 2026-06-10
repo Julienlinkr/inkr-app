@@ -407,9 +407,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
 .notif.error{background:var(--red);color:#fff;}
 
 /* ===== COMPOSE MODAL (tous écrans) ===== */
-.compose-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;display:none;align-items:flex-end;justify-content:center;}
+.compose-modal{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;display:none;align-items:center;justify-content:center;}
 .compose-modal.open{display:flex;}
-.compose-sheet{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;}
+.compose-sheet{background:var(--surface);border-radius:var(--rl);width:100%;max-width:520px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.8);}
 .compose-hdr{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .compose-search{padding:10px 14px;border-bottom:1px solid var(--border);}
 .compose-search input{width:100%;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;color:var(--txt);font-size:14px;outline:none;}
@@ -604,6 +604,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
     <div class="dni" id="nav-documents" onclick="dashGo('dp-documents',this)"><span class="dni-icon">📄</span> Documents</div>
     <div class="sec-lbl">Compte</div>
     <div class="dni" id="nav-profil" onclick="dashGo('dp-profil',this)"><span class="dni-icon">👤</span> Mon profil</div>
+    <div class="dni" id="nav-connexion" onclick="dashGo('dp-connexion',this)"><span class="dni-icon">🔗</span> Connexion app</div>
+    <div class="dni" id="nav-facturation" onclick="dashGo('dp-facturation',this)"><span class="dni-icon">💶</span> Facturation</div>
     <div class="dni" id="nav-tests" onclick="dashGo('dp-tests',this)"><span class="dni-icon">🧪</span> Tests & Config</div>
     <div class="dni-sep"></div>
     <div class="dni" onclick="logout()"><span class="dni-icon">🚪</span> Déconnexion</div>
@@ -632,7 +634,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
         <div class="stat-card"><div class="stat-val" style="color:var(--accent)" id="stat-rdv">—</div><div class="stat-lbl">RDV période</div></div>
         <div class="stat-card"><div class="stat-val" style="color:var(--green)" id="stat-clients">—</div><div class="stat-lbl">Clients</div></div>
         <div class="stat-card"><div class="stat-val" style="color:var(--blue)" id="stat-camps">—</div><div class="stat-lbl">Campagnes</div></div>
-        <div class="stat-card"><div class="stat-val" style="color:var(--gold)" id="stat-pending">—</div><div class="stat-lbl">En attente</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:var(--gold)" id="stat-pending">—</div><div class="stat-lbl">RDV en attente</div></div>
       </div>
       <!-- Pending preview (above grid) -->
       <div id="pending-rdv-preview" style="margin-bottom:14px;"></div>
@@ -769,11 +771,19 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
         <label class="toggle"><input type="checkbox" id="tournee-toggle" onchange="toggleTourneeMode()"><span class="toggle-slider"></span></label>
       </div>
       <div id="tr-form" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:16px;margin-bottom:16px;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:12px;">Nouvelle date</div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;">Nouvelle date de tournée</div>
         <div class="grid-3">
-          <div class="form-group"><label>Ville *</label><input class="form-control" id="tr-city" placeholder="Lyon, Bordeaux..."></div>
+          <div class="form-group" style="position:relative;">
+            <label>Ville + CP *</label>
+            <input class="form-control" id="tr-city" placeholder="Lyon (69)..." autocomplete="off" oninput="trCityInput(this.value)">
+            <div id="tr-city-dd" style="position:absolute;top:100%;left:0;right:0;background:#1a1a2e;border:1px solid #333;border-radius:var(--r);z-index:9999;display:none;max-height:180px;overflow-y:auto;"></div>
+          </div>
           <div class="form-group"><label>Du *</label><input class="form-control" id="tr-from" type="date"></div>
           <div class="form-group"><label>Au *</label><input class="form-control" id="tr-to" type="date"></div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label>Nom du studio d'accueil</label><input class="form-control" id="tr-studio-name" placeholder="Ex: InkLab Studio"></div>
+          <div class="form-group"><label>Adresse du studio</label><input class="form-control" id="tr-studio-addr" placeholder="Ex: 12 rue Victor Hugo"></div>
         </div>
         <div class="form-group"><label>Description (visible par les clients)</label><input class="form-control" id="tr-desc" placeholder="Ex: Je serai au studio InkLab, RDV dispo !"></div>
         <div class="form-group"><label>Places disponibles</label><input class="form-control" id="tr-spots" type="number" value="5" min="1" max="50" style="width:80px;"></div>
@@ -898,7 +908,26 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
     <div class="clients-sidebar-col">
       <div class="cl-hdr">
         <div style="font-size:12px;font-weight:700;margin-bottom:8px;">Mes clients</div>
-        <input class="form-control" placeholder="Rechercher…" style="font-size:11px;margin-bottom:6px;" oninput="filterClients(this.value)">
+        <input class="form-control" id="crm-search-input" placeholder="Rechercher…" style="font-size:11px;margin-bottom:6px;" oninput="filterClients(this.value)">
+        <!-- Filtre par style -->
+        <div style="margin-bottom:6px;">
+          <select class="form-control" id="crm-style-filter" style="font-size:11px;" onchange="filterClients(document.getElementById('crm-search-input').value)">
+            <option value="">— Tous les styles —</option>
+            <option value="fine line">Fine Line</option>
+            <option value="flash">Flash</option>
+            <option value="japonais">Japonais</option>
+            <option value="realisme">Réalisme</option>
+            <option value="blackwork">Blackwork</option>
+            <option value="old school">Old School</option>
+            <option value="geometrique">Géométrique</option>
+            <option value="chicano">Chicano</option>
+            <option value="lettering">Lettering</option>
+            <option value="dotwork">Dotwork</option>
+            <option value="aquarelle">Aquarelle</option>
+            <option value="tribal">Tribal</option>
+            <option value="animaux">Animaux</option>
+          </select>
+        </div>
         <button class="btn btn-primary btn-full btn-sm" onclick="showAddClient()">+ Ajouter un client</button>
       </div>
       <div class="cl-list" id="clients-list"></div>
@@ -1101,14 +1130,40 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
           <div style="font-size:32px;margin-bottom:10px;">📋</div>
           <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">Décharge pour mineur</div>
           <div style="font-size:12px;color:#888;margin-bottom:14px;">Consentement parental pré-rempli avec les données du CRM client</div>
-          <button class="btn btn-primary btn-sm" onclick="openMinorWaiver()">Générer</button>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="openMinorWaiver()">Générer</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleDocEdit('minor')">✏️ Personnaliser</button>
+          </div>
         </div>
         <div style="background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);padding:20px;">
           <div style="font-size:32px;margin-bottom:10px;">✍️</div>
           <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:6px;">Fiche de consentement adulte</div>
           <div style="font-size:12px;color:#888;margin-bottom:14px;">Acceptation des risques et soins post-tatouage</div>
-          <button class="btn btn-primary btn-sm" onclick="openAdultConsent()">Générer</button>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="openAdultConsent()">Générer</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleDocEdit('adult')">✏️ Personnaliser</button>
+          </div>
         </div>
+      </div>
+      <!-- Zone d'édition du template -->
+      <div id="doc-edit-zone" style="display:none;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);padding:20px;margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-size:13px;font-weight:700;" id="doc-edit-title">Personnaliser la décharge</div>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('doc-edit-zone').style.display='none'">✕ Fermer</button>
+        </div>
+        <div class="form-group">
+          <label>Texte de consentement (affiché en bas du document)</label>
+          <textarea class="form-control" id="doc-custom-text" style="min-height:120px;font-size:12px;line-height:1.7;"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Mentions légales personnalisées (optionnel)</label>
+          <textarea class="form-control" id="doc-custom-legal" style="min-height:70px;font-size:11px;" placeholder="Ex: Conformément au RGPD, vos données sont conservées 5 ans..."></textarea>
+        </div>
+        <div style="display:flex;gap:7px;">
+          <button class="btn btn-primary btn-sm" onclick="saveDocTemplate()">💾 Sauvegarder</button>
+          <button class="btn btn-ghost btn-sm" onclick="resetDocTemplate()">↩ Remettre par défaut</button>
+        </div>
+        <div id="doc-edit-saved" style="display:none;font-size:11px;color:var(--green);margin-top:6px;">✅ Template sauvegardé</div>
       </div>
       <div id="doc-generator" style="display:none;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--rl);padding:22px;">
         <div style="font-size:14px;font-weight:700;margin-bottom:16px;" id="doc-title">Décharge pour mineur</div>
@@ -1164,10 +1219,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
           <div class="form-group"><label>Ville</label><input class="form-control" id="p-city" placeholder="Bordeaux"></div>
         </div>
         <div class="form-group"><label>Téléphone</label><input class="form-control" id="p-phone" type="tel"></div>
-        <div class="grid-2">
-          <div class="form-group"><label>Instagram</label><input class="form-control" id="p-instagram" placeholder="@studio_inkr"></div>
-          <div class="form-group"><label>Pinterest</label><input class="form-control" id="p-pinterest" placeholder="@studio_inkr"></div>
-        </div>
+        <div class="form-group"><label>Instagram</label><input class="form-control" id="p-instagram" placeholder="@studio_inkr"></div>
         <div class="form-group"><label>Email</label><input class="form-control" id="p-email" type="email" disabled></div>
         <div class="grid-2">
           <div class="form-group"><label>Photo du salon (URL)</label><input class="form-control" id="p-photo-salon" placeholder="https://..."></div>
@@ -1274,6 +1326,176 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
     </div>
   </div>
 
+  <!-- CONNEXION SITE/APPLICATION -->
+  <div class="dash-panel" id="dp-connexion">
+    <div class="dp-inner">
+      <div class="dp-hdr">
+        <div><div class="dp-title">🔗 Connexion Site / Application</div><div class="dp-sub">Synchronisation des données entre inkr et votre site ou app</div></div>
+      </div>
+      <div class="info-banner info-blue">💡 Toutes vos données (RDV, clients, messages) sont synchronisées en temps réel entre le dashboard inkr et votre espace client public.</div>
+
+      <!-- État de la sync -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">État de la synchronisation</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div style="text-align:center;padding:14px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:var(--r);">
+            <div style="font-size:24px;font-weight:900;color:var(--green);">●</div>
+            <div style="font-size:11px;color:var(--green);font-weight:700;margin-top:4px;">RDV</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">Synchronisé</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:var(--r);">
+            <div style="font-size:24px;font-weight:900;color:var(--green);">●</div>
+            <div style="font-size:11px;color:var(--green);font-weight:700;margin-top:4px;">Profil</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">Synchronisé</div>
+          </div>
+          <div style="text-align:center;padding:14px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:var(--r);">
+            <div style="font-size:24px;font-weight:900;color:var(--green);">●</div>
+            <div style="font-size:11px;color:var(--green);font-weight:700;margin-top:4px;">Messages</div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;">Synchronisé</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Intégration widget externe -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">📦 Widget de réservation</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Intégrez le formulaire de réservation inkr sur votre site existant avec ce snippet.</div>
+        <div style="background:#0a0a0a;border:1px solid #2a2a2a;border-radius:var(--r);padding:12px 14px;font-family:monospace;font-size:11px;color:#9b9b9b;margin-bottom:10px;line-height:1.7;" id="widget-snippet">&lt;script src="https://inkr.club/widget.js"&gt;&lt;/script&gt;<br>&lt;div id="inkr-booking" data-artist="<span id="widget-artist-id" style="color:#a855f7;">VOTRE_ID</span>"&gt;&lt;/div&gt;</div>
+        <button class="btn btn-ghost btn-sm" onclick="copyWidgetSnippet()">📋 Copier le code</button>
+      </div>
+
+      <!-- API Webhook -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">🔔 Webhook (notifications)</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Recevez une notification HTTP à chaque nouveau RDV, message ou acompte.</div>
+        <div class="form-group">
+          <label>URL de votre endpoint</label>
+          <div style="display:flex;gap:8px;">
+            <input class="form-control" id="webhook-url" placeholder="https://votre-app.com/webhook/inkr" style="flex:1;">
+            <button class="btn btn-primary btn-sm" onclick="saveWebhook()">Sauvegarder</button>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--muted);">inkr envoie un POST JSON à cette URL avec les événements : <code>rdv.created</code>, <code>rdv.confirmed</code>, <code>message.new</code>, <code>acompte.paid</code>.</div>
+      </div>
+
+      <!-- QR Code lien direct -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:20px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">📲 QR Code — lien de réservation</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Imprimez ce QR Code et placez-le en studio. Vos clients scannent et arrivent directement sur votre fiche inkr.</div>
+        <div id="qr-placeholder" style="width:130px;height:130px;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:10px;">📱</div>
+        <button class="btn btn-ghost btn-sm" onclick="generateQR()">Générer le QR Code</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FACTURATION -->
+  <div class="dash-panel" id="dp-facturation">
+    <div class="dp-inner">
+      <div class="dp-hdr">
+        <div><div class="dp-title">💶 Facturation</div><div class="dp-sub">Abonnement, coordonnées bancaires, intégrations</div></div>
+      </div>
+
+      <!-- Abonnement actif -->
+      <div style="background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(236,72,153,.08));border:1px solid rgba(168,85,247,.25);border-radius:var(--rl);padding:22px;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#a855f7;margin-bottom:4px;">Plan actif</div>
+            <div style="font-size:26px;font-weight:900;letter-spacing:-.5px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">inkr Pro</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:3px;">39€ / mois · Renouvellement automatique</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:6px;">Prochain prélèvement</div>
+            <div style="font-size:14px;font-weight:700;" id="fact-next-date">—</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="showCancelSub()">Résilier l'abonnement</button>
+          <button class="btn btn-ghost btn-sm" onclick="dashGo('dp-tests',document.getElementById('nav-tests'))">Gérer le paiement</button>
+        </div>
+      </div>
+
+      <!-- Résiliation popup -->
+      <div id="cancel-sub-form" style="display:none;background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.2);border-radius:var(--rl);padding:18px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;color:var(--red);margin-bottom:10px;">⚠️ Résilier mon abonnement</div>
+        <div class="form-group">
+          <label>Raison de résiliation</label>
+          <select class="form-control" id="cancel-reason">
+            <option value="">— Sélectionner une raison —</option>
+            <option value="trop_cher">Trop cher</option>
+            <option value="manque_fonctions">Fonctionnalités manquantes</option>
+            <option value="bug">Bugs ou problèmes techniques</option>
+            <option value="plus_utilise">Je ne tatoue plus</option>
+            <option value="concurrent">J'utilise un autre outil</option>
+            <option value="autre">Autre</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Précisions (optionnel)</label><textarea class="form-control" id="cancel-detail" style="min-height:65px;" placeholder="Aidez-nous à nous améliorer..."></textarea></div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap;">
+          <button class="btn btn-danger btn-sm" onclick="confirmCancelSub()">Confirmer la résiliation</button>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('cancel-sub-form').style.display='none'">Annuler</button>
+        </div>
+      </div>
+
+      <!-- Coordonnées bancaires (RIB pour virements) -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">🏦 RIB — Virement de mes revenus</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Coordonnées pour les virements de vos acomptes et paiements inkr vers votre compte bancaire.</div>
+        <div class="grid-2">
+          <div class="form-group"><label>Titulaire du compte</label><input class="form-control" id="fact-rib-name" placeholder="Prénom Nom ou Raison sociale"></div>
+          <div class="form-group"><label>IBAN</label><input class="form-control" id="fact-iban" placeholder="FR76 xxxx xxxx xxxx xxxx xxxx xxx" maxlength="34" oninput="formatIban(this)"></div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label>BIC / SWIFT</label><input class="form-control" id="fact-bic" placeholder="BNPAFRPP" maxlength="11"></div>
+          <div class="form-group"><label>Banque</label><input class="form-control" id="fact-bank" placeholder="BNP Paribas, Crédit Agricole..."></div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="saveRIB()">Sauvegarder</button>
+        <div id="fact-rib-saved" style="display:none;font-size:11px;color:var(--green);margin-top:6px;">✅ RIB enregistré</div>
+      </div>
+
+      <!-- Numéro SIRET -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">🏢 Informations légales</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Utilisées pour les factures et les documents légaux.</div>
+        <div class="grid-2">
+          <div class="form-group"><label>SIRET</label><input class="form-control" id="fact-siret" placeholder="XXX XXX XXX XXXXX" maxlength="17"></div>
+          <div class="form-group"><label>Numéro TVA intracommunautaire</label><input class="form-control" id="fact-tva" placeholder="FR XX XXX XXX XXX"></div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label>Forme juridique</label>
+            <select class="form-control" id="fact-forme">
+              <option value="">— Sélectionner —</option>
+              <option>Auto-entrepreneur / Micro-entreprise</option>
+              <option>EURL</option><option>SARL</option><option>SAS / SASU</option>
+              <option>Artiste-auteur</option><option>Autre</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Numéro de TVA sur marge (si applicable)</label><input class="form-control" id="fact-tva-margin" placeholder="Optionnel"></div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="saveLegalInfo()">Sauvegarder</button>
+        <div id="fact-legal-saved" style="display:none;font-size:11px;color:var(--green);margin-top:6px;">✅ Informations légales enregistrées</div>
+      </div>
+
+      <!-- Intégration MALT -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:20px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="font-size:20px;">🎯</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">Intégration MALT</div>
+            <div style="font-size:11px;color:var(--muted);">Synchronisez vos disponibilités et prestations avec votre profil MALT</div>
+          </div>
+        </div>
+        <div class="form-group"><label>URL de votre profil MALT</label>
+          <div style="display:flex;gap:8px;">
+            <input class="form-control" id="malt-url" placeholder="https://www.malt.fr/profile/votre-nom" style="flex:1;">
+            <button class="btn btn-primary btn-sm" onclick="saveMaltUrl()">Connecter</button>
+          </div>
+        </div>
+        <div id="malt-status" style="display:none;font-size:11px;margin-top:6px;"></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px;">En connectant MALT, vos disponibilités inkr sont automatiquement synchronisées avec votre profil freelance.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- TESTS -->
   <div class="dash-panel" id="dp-tests">
     <div class="dp-inner">
@@ -1304,6 +1526,36 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
 </div>
 </div>
 
+<!-- PRO WALL MODAL -->
+<div class="acompte-modal" id="pro-wall-modal" style="z-index:2000;background:rgba(0,0,0,.92);">
+  <div style="background:#0f0f0f;border:1px solid #2a2a2a;border-radius:var(--rl);padding:40px 36px;max-width:500px;width:94vw;text-align:center;box-shadow:0 32px 100px rgba(0,0,0,.9);">
+    <!-- Logo gradiant -->
+    <div style="font-size:42px;font-weight:900;letter-spacing:-2.5px;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px;">inkr</div>
+    <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#555;margin-bottom:28px;">Pro Studio</div>
+    <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.5px;margin-bottom:8px;">Débloquez toutes les fonctionnalités</div>
+    <div style="font-size:13px;color:#888;line-height:1.7;margin-bottom:24px;">Votre profil est prêt. Passez à inkr Pro pour accéder à l'agenda, la messagerie, le CRM, les campagnes et bien plus.</div>
+    <!-- Feature list -->
+    <div style="text-align:left;background:#161616;border:1px solid #2a2a2a;border-radius:var(--r);padding:14px 18px;margin-bottom:24px;">
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="font-size:12px;color:#d0d0d0;display:flex;align-items:center;gap:9px;"><span style="color:#22C55E;font-size:13px;">✓</span> Agenda & gestion des rendez-vous</div>
+        <div style="font-size:12px;color:#d0d0d0;display:flex;align-items:center;gap:9px;"><span style="color:#22C55E;font-size:13px;">✓</span> Messagerie unifiée (inkr, Instagram, WhatsApp)</div>
+        <div style="font-size:12px;color:#d0d0d0;display:flex;align-items:center;gap:9px;"><span style="color:#22C55E;font-size:13px;">✓</span> CRM Clients — fiches, historique, relances</div>
+        <div style="font-size:12px;color:#d0d0d0;display:flex;align-items:center;gap:9px;"><span style="color:#22C55E;font-size:13px;">✓</span> Campagnes marketing automatisées</div>
+        <div style="font-size:12px;color:#d0d0d0;display:flex;align-items:center;gap:9px;"><span style="color:#22C55E;font-size:13px;">✓</span> Documents & consentements signés numériquement</div>
+        <div style="font-size:12px;color:#d0d0d0;display:flex;align-items:center;gap:9px;"><span style="color:#22C55E;font-size:13px;">✓</span> Tournée — visible sur la carte inkr</div>
+        <div style="font-size:12px;color:#d0d0d0;display:flex;align-items:center;gap:9px;"><span style="color:#22C55E;font-size:13px;">✓</span> Automations (rappels, relances, anniversaires)</div>
+      </div>
+    </div>
+    <!-- Price -->
+    <div style="margin-bottom:20px;">
+      <div style="font-size:38px;font-weight:900;letter-spacing:-2px;color:#fff;">39<span style="font-size:20px;font-weight:700;color:#666;">€</span><span style="font-size:14px;font-weight:500;color:#666;letter-spacing:0;">/mois</span></div>
+      <div style="font-size:11px;color:#555;margin-top:2px;">Sans engagement · Résiliable à tout moment</div>
+    </div>
+    <a href="/pricing" class="btn btn-primary" style="width:100%;justify-content:center;font-size:15px;padding:14px;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899);border:none;letter-spacing:.3px;border-radius:10px;">Activer inkr Pro — 39€/mois →</a>
+    <button onclick="closeProWall()" style="margin-top:12px;background:none;border:none;color:#555;font-size:12px;cursor:pointer;padding:4px 0;display:block;width:100%;">Continuer avec le profil de base</button>
+  </div>
+</div>
+
 <!-- EMAIL COMPOSE MODAL -->
 <div class="acompte-modal" id="email-modal">
   <div class="acompte-box" style="max-width:480px;width:100%;">
@@ -1330,10 +1582,29 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
 <div class="acompte-modal" id="acompte-modal">
   <div class="acompte-box">
     <div style="font-size:15px;font-weight:800;margin-bottom:3px;">💳 Demander un acompte</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Un lien de paiement Stripe sera envoyé au client par email</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Un lien de paiement sera envoyé au client par email</div>
     <div class="form-group"><label>Montant (€) *</label><input class="form-control" id="ac-amount" type="number" placeholder="50" min="1"></div>
+    <div class="form-group">
+      <label>Moyen de paiement</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
+        <label id="ac-pay-stripe" onclick="selectAcPayment('stripe',this)" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r);cursor:pointer;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--card);transition:all .12s;border-color:#635BFF;background:rgba(99,91,255,.08);color:#8a83ff;">
+          <svg width="16" height="16" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#635BFF"/><path d="M13.5 20c-.3-1.4.5-2.8 1.9-3.2l3.2-1c1.4-.4 2.3-1.7 2.1-3.2-.2-1.5-1.5-2.6-3-2.6H13" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Stripe
+          <span style="font-size:9px;padding:1px 5px;background:rgba(99,91,255,.2);border-radius:3px;color:#8a83ff;font-weight:700;margin-left:auto;">SÉLECTIONNÉ</span>
+        </label>
+        <label id="ac-pay-paypal" onclick="selectAcPayment('paypal',this)" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r);cursor:pointer;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--card);transition:all .12s;color:var(--muted);">
+          <svg width="16" height="16" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#003087"/><path d="M9 23l3-13h5.5c2.5 0 4 1.2 3.6 3.5-.4 2.3-2.2 3.5-4.5 3.5H14l-1 4H9zm5-7h2c1 0 1.8-.5 2-1.5s-.5-1.5-1.5-1.5h-2l-.5 3z" fill="#009CDE"/><path d="M16 23l2-9h2.5c2.5 0 4 1.2 3.6 3.5-.4 2.3-2.2 3.5-4.5 3.5H18l-.5 2H16z" fill="#001C64"/></svg>
+          PayPal
+          <span id="ac-paypal-badge" style="display:none;font-size:9px;padding:1px 5px;background:rgba(0,156,222,.2);border-radius:3px;color:#009CDE;font-weight:700;margin-left:auto;">SÉLECTIONNÉ</span>
+        </label>
+      </div>
+      <input type="hidden" id="ac-payment-method" value="stripe">
+    </div>
+    <div id="ac-paypal-config" style="display:none;background:rgba(0,156,222,.05);border:1px solid rgba(0,156,222,.2);border-radius:var(--r);padding:10px 12px;font-size:11px;color:#5badcf;margin-bottom:2px;line-height:1.5;">
+      💡 Un lien <strong>PayPal.me</strong> sera créé. Configurez <code>PAYPAL_ME_URL</code> dans .env (ex: <code>https://paypal.me/votrenom</code>).
+    </div>
     <div style="background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:var(--r);padding:10px 12px;font-size:11px;color:var(--gold);margin-bottom:14px;line-height:1.5;">
-      💡 <strong>En production :</strong> configurez <code>STRIPE_SECRET_KEY</code> dans .env pour que le lien de paiement soit réel.
+      💡 <strong>En production :</strong> configurez <code>STRIPE_SECRET_KEY</code> (Stripe) ou <code>PAYPAL_ME_URL</code> (PayPal) dans .env.
     </div>
     <div style="display:flex;gap:7px;">
       <button class="btn btn-primary btn-sm" onclick="sendAcompte()">Envoyer la demande</button>
@@ -1370,16 +1641,33 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
     </div>
     <!-- Document preview -->
     <div id="sig-doc-preview" style="background:#f9f9f9;color:#111;padding:24px 28px;font-size:12px;line-height:1.8;overflow-y:auto;flex:1;min-height:0;max-height:260px;"></div>
-    <!-- Signature zone -->
+    <!-- Signature zone — 2 colonnes : Client + Artiste -->
     <div style="padding:18px 22px;background:#111;flex-shrink:0;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#777;margin-bottom:8px;">
-        Signature &nbsp;<span style="font-weight:400;color:#555;font-size:10px;text-transform:none;letter-spacing:0;">— souris, doigt ou stylet</span>
-      </div>
-      <div style="position:relative;background:#0a0a0a;border:2px dashed #2a2a2a;border-radius:var(--r);overflow:hidden;">
-        <canvas id="sig-canvas" style="display:block;width:100%;touch-action:none;cursor:crosshair;" height="160"></canvas>
-        <button onclick="clearSigCanvas()" style="position:absolute;top:8px;right:8px;background:rgba(0,0,0,.75);border:1px solid #3a3a3a;color:#aaa;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;backdrop-filter:blur(4px);">Effacer</button>
-        <div style="position:absolute;bottom:28px;left:16px;right:16px;border-bottom:1px dashed #2a2a2a;pointer-events:none;"></div>
-        <div style="position:absolute;bottom:10px;left:16px;font-size:9px;color:#333;pointer-events:none;letter-spacing:.5px;text-transform:uppercase;">Signature</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <!-- Signature CLIENT -->
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#777;margin-bottom:6px;">
+            Signature client
+          </div>
+          <div style="position:relative;background:#0a0a0a;border:2px dashed #2a2a2a;border-radius:var(--r);overflow:hidden;">
+            <canvas id="sig-canvas" style="display:block;width:100%;touch-action:none;cursor:crosshair;" height="110"></canvas>
+            <button onclick="clearSigCanvas()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.75);border:1px solid #3a3a3a;color:#aaa;padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer;">Effacer</button>
+            <div style="position:absolute;bottom:20px;left:10px;right:10px;border-bottom:1px dashed #2a2a2a;pointer-events:none;"></div>
+            <div style="position:absolute;bottom:5px;left:10px;font-size:9px;color:#333;pointer-events:none;text-transform:uppercase;letter-spacing:.5px;">Client(e)</div>
+          </div>
+        </div>
+        <!-- Signature ARTISTE -->
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#777;margin-bottom:6px;">
+            Signature artiste
+          </div>
+          <div style="position:relative;background:#0a0a0a;border:2px dashed #2a2a2a;border-radius:var(--r);overflow:hidden;">
+            <canvas id="sig-canvas-artist" style="display:block;width:100%;touch-action:none;cursor:crosshair;" height="110"></canvas>
+            <button onclick="clearSigCanvasArtist()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.75);border:1px solid #3a3a3a;color:#aaa;padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer;">Effacer</button>
+            <div style="position:absolute;bottom:20px;left:10px;right:10px;border-bottom:1px dashed #2a2a2a;pointer-events:none;"></div>
+            <div style="position:absolute;bottom:5px;left:10px;font-size:9px;color:#333;pointer-events:none;text-transform:uppercase;letter-spacing:.5px;">Tatoueur</div>
+          </div>
+        </div>
       </div>
       <div id="sig-timestamp" style="font-size:11px;color:#666;margin-top:9px;font-style:italic;"></div>
       <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
@@ -1858,6 +2146,24 @@ async function openMetaThread(el, name, channelLabel, senderId, phone, channel) 
   }
 }
 
+// ── PRO WALL ──────────────────────────────────────────────────
+let _proWallDismissed=false;
+// Panels autorisés sans PRO (seulement profil)
+const PRO_FREE_PANELS=['dp-overview','dp-profil'];
+function isProUser(){
+  // currentUser.is_pro=1 → PRO actif
+  // localStorage override pour tests : inkr_pro_bypass=1
+  if(localStorage.getItem('inkr_pro_bypass')==='1')return true;
+  return currentUser&&currentUser.is_pro===1;
+}
+function openProWall(){
+  document.getElementById('pro-wall-modal').classList.add('open');
+}
+function closeProWall(){
+  _proWallDismissed=true;
+  document.getElementById('pro-wall-modal').classList.remove('open');
+}
+
 function showApp(){
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('app').style.display='block';
@@ -1868,6 +2174,10 @@ function showApp(){
   // Vérifier la connexion Meta + paramètres URL OAuth callback
   handleMetaUrlParams();
   loadMetaStatus();
+  // PRO WALL — afficher pour les nouveaux artistes sans abonnement
+  if(!isProUser()&&!_proWallDismissed){
+    setTimeout(openProWall, 800);
+  }
 }
 function populateUser(){
   const u=currentUser;
@@ -1890,7 +2200,6 @@ function populateUser(){
   document.getElementById('p-phone').value=u.phone||'';
   document.getElementById('p-email').value=u.email||'';
   document.getElementById('p-instagram').value=u.instagram||'';
-  document.getElementById('p-pinterest').value=u.pinterest||'';
   document.getElementById('p-photo-salon').value=u.photo_salon||'';
   document.getElementById('p-photo-artiste').value=u.photo_artiste||'';
   document.getElementById('p-auto-reply').value=u.auto_reply||'';
@@ -1913,6 +2222,21 @@ function populateUser(){
   updateBookingLink(u);
   // Charger la galerie photos
   loadMyPhotos();
+  // PRO lock icons — montrer 🔒 sur les items bloqués pour non-PRO
+  if(!isProUser()){
+    const lockedNavIds=['nav-agenda','nav-tournee','nav-messages','nav-clients','nav-campaigns','nav-fidelite','nav-automations','nav-documents','nav-connexion','nav-facturation'];
+    lockedNavIds.forEach(id=>{
+      const el=document.getElementById(id);if(!el)return;
+      // Ajouter 🔒 si pas déjà là
+      if(!el.querySelector('.pro-lock')){
+        const lock=document.createElement('span');
+        lock.className='pro-lock';
+        lock.style.cssText='margin-left:auto;font-size:9px;opacity:.5;';
+        lock.textContent='PRO';
+        el.appendChild(lock);
+      }
+    });
+  }
 }
 async function logout(){
   await fetch('/api/auth/logout',{method:'POST',credentials:'include'});
@@ -1921,17 +2245,109 @@ async function logout(){
   currentUser=null;
 }
 
+// ======== FACTURATION ========
+function formatIban(inp){
+  let v=inp.value.replace(/\s/g,'').toUpperCase();
+  inp.value=v.match(/.{1,4}/g)?.join(' ')||v;
+}
+function saveRIB(){
+  const rib={name:document.getElementById('fact-rib-name').value.trim(),iban:document.getElementById('fact-iban').value.trim(),bic:document.getElementById('fact-bic').value.trim(),bank:document.getElementById('fact-bank').value.trim()};
+  localStorage.setItem('inkr_rib',JSON.stringify(rib));
+  const s=document.getElementById('fact-rib-saved');if(s){s.style.display='block';setTimeout(()=>s.style.display='none',2500);}
+  showNotif('✅ RIB enregistré','success');
+}
+function loadRIB(){
+  try{const rib=JSON.parse(localStorage.getItem('inkr_rib')||'{}');
+    if(rib.name)document.getElementById('fact-rib-name').value=rib.name;
+    if(rib.iban)document.getElementById('fact-iban').value=rib.iban;
+    if(rib.bic)document.getElementById('fact-bic').value=rib.bic;
+    if(rib.bank)document.getElementById('fact-bank').value=rib.bank;
+  }catch(e){}
+}
+function saveLegalInfo(){
+  const info={siret:document.getElementById('fact-siret').value.trim(),tva:document.getElementById('fact-tva').value.trim(),forme:document.getElementById('fact-forme').value,tva_margin:document.getElementById('fact-tva-margin').value.trim()};
+  localStorage.setItem('inkr_legal',JSON.stringify(info));
+  const s=document.getElementById('fact-legal-saved');if(s){s.style.display='block';setTimeout(()=>s.style.display='none',2500);}
+  showNotif('✅ Informations légales enregistrées','success');
+}
+function loadLegalInfo(){
+  try{const info=JSON.parse(localStorage.getItem('inkr_legal')||'{}');
+    if(info.siret)document.getElementById('fact-siret').value=info.siret;
+    if(info.tva)document.getElementById('fact-tva').value=info.tva;
+    if(info.forme)document.getElementById('fact-forme').value=info.forme;
+    if(info.tva_margin)document.getElementById('fact-tva-margin').value=info.tva_margin;
+  }catch(e){}
+}
+function saveMaltUrl(){
+  const url=document.getElementById('malt-url').value.trim();
+  if(!url){showNotif('Entrez votre URL MALT','error');return;}
+  localStorage.setItem('inkr_malt_url',url);
+  const s=document.getElementById('malt-status');
+  if(s){s.style.display='block';s.style.color='var(--green)';s.textContent='✅ Profil MALT connecté : '+url;}
+  showNotif('✅ MALT connecté !','success');
+}
+function showCancelSub(){document.getElementById('cancel-sub-form').style.display='block';document.getElementById('cancel-sub-form').scrollIntoView({behavior:'smooth'});}
+function confirmCancelSub(){
+  const reason=document.getElementById('cancel-reason').value;
+  if(!reason){showNotif('Sélectionnez une raison','error');return;}
+  showNotif('Demande de résiliation envoyée — vous recevrez un email de confirmation.','success');
+  document.getElementById('cancel-sub-form').style.display='none';
+}
+// Init facturation panel when opened
+function initFacturation(){
+  loadRIB();loadLegalInfo();
+  const malt=localStorage.getItem('inkr_malt_url');
+  if(malt){const inp=document.getElementById('malt-url');if(inp)inp.value=malt;
+    const s=document.getElementById('malt-status');if(s){s.style.display='block';s.style.color='var(--green)';s.textContent='✅ Profil MALT connecté : '+malt;}}
+  // Simulate next payment date
+  const nd=document.getElementById('fact-next-date');
+  if(nd){const d=new Date();d.setMonth(d.getMonth()+1);nd.textContent=d.toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});}
+}
+
+// ======== CONNEXION APP ========
+function copyWidgetSnippet(){
+  const txt=document.getElementById('widget-snippet')?.textContent||'';
+  navigator.clipboard.writeText(txt.replace(/\n/g,'').trim()).then(()=>showNotif('📋 Code copié !','success')).catch(()=>{});
+}
+function saveWebhook(){
+  const url=document.getElementById('webhook-url')?.value.trim();
+  if(!url){showNotif('Entrez une URL de webhook','error');return;}
+  localStorage.setItem('inkr_webhook',url);
+  showNotif('✅ Webhook enregistré','success');
+}
+function generateQR(){
+  const qrDiv=document.getElementById('qr-placeholder');if(!qrDiv)return;
+  const slug=currentUser?.slug||currentUser?.id||'demo';
+  const bookingUrl=`https://inkr.club/artiste/${slug}`;
+  // Use free QR API
+  qrDiv.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(bookingUrl)}&bgcolor=111111&color=ffffff&qzone=1" style="width:130px;height:130px;border-radius:var(--r);" alt="QR Code">`;
+}
+function initConnexion(){
+  const artistId=currentUser?.id||'?';
+  const widgetEl=document.getElementById('widget-artist-id');
+  if(widgetEl)widgetEl.textContent=artistId;
+  const wh=localStorage.getItem('inkr_webhook');
+  if(wh){const inp=document.getElementById('webhook-url');if(inp)inp.value=wh;}
+}
+
 // ======== NAVIGATION ========
 function dashGo(id,el){
+  // PRO wall — bloquer les panels non autorisés pour artistes sans abonnement
+  if(!isProUser()&&!PRO_FREE_PANELS.includes(id)){
+    openProWall();return;
+  }
   document.querySelectorAll('.dash-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.dni').forEach(d=>d.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  document.getElementById(id)?.classList.add('active');
   if(el)el.classList.add('active');
   if(id==='dp-agenda')loadAppointments();
   if(id==='dp-tournee')loadTournee();
   if(id==='dp-automations')loadAutomations();
+  if(id==='dp-facturation')setTimeout(initFacturation,50);
+  if(id==='dp-connexion')setTimeout(initConnexion,50);
+  if(id==='dp-fidelite')setTimeout(renderLoyaltyPrograms,50);
 }
-async function loadAll(){loadClients();loadCampaigns();loadStatus();loadAppointments();}
+async function loadAll(){loadClients();loadCampaigns();loadStatus();loadAppointments();setTimeout(renderLoyaltyPrograms,300);}
 
 // ======== AGENDA ========
 let rdvView='list';
@@ -2207,6 +2623,7 @@ function renderRDV(){
         ${a.status==='pending'?`<button class="btn btn-primary btn-sm" onclick="updateRDV(${a.id},'confirmed')">✓</button><button class="btn btn-danger btn-sm" onclick="updateRDV(${a.id},'cancelled')">✗</button>`:''}
         ${a.status==='confirmed'?`<button class="btn btn-ghost btn-sm" onclick="updateRDV(${a.id},'done')">Terminé</button>`:''}
         ${(a.status==='confirmed'||a.status==='manual')&&a.acompte_status==='none'?`<button class="btn btn-gold btn-sm" onclick="openAcompteModal(${a.id})">💳 Acompte</button>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="openConsentFromRDV(${a.id})" title="Générer consentement">✍️</button>
       </div>
     </div>`;
   }).join('');
@@ -2222,12 +2639,34 @@ async function updateRDV(id,status){
 // ACOMPTE
 function openAcompteModal(id){currentAcompteId=id;document.getElementById('ac-amount').value='';document.getElementById('ac-result').style.display='none';document.getElementById('acompte-modal').classList.add('open');}
 function closeAcompteModal(){document.getElementById('acompte-modal').classList.remove('open');currentAcompteId=null;}
+function selectAcPayment(method,el){
+  document.getElementById('ac-payment-method').value=method;
+  // Reset both labels
+  const sl=document.getElementById('ac-pay-stripe');const pl=document.getElementById('ac-pay-paypal');
+  if(sl){sl.style.borderColor='var(--border)';sl.style.background='var(--card)';sl.style.color='var(--muted)';}
+  if(pl){pl.style.borderColor='var(--border)';pl.style.background='var(--card)';pl.style.color='var(--muted)';}
+  const sb=sl?.querySelector('span');const pb=document.getElementById('ac-paypal-badge');
+  if(sb)sb.style.display='none';if(pb)pb.style.display='none';
+  // Activate selected
+  if(method==='stripe'&&sl){sl.style.borderColor='#635BFF';sl.style.background='rgba(99,91,255,.08)';sl.style.color='#8a83ff';if(sb)sb.style.display='';}
+  if(method==='paypal'&&pl){pl.style.borderColor='#009CDE';pl.style.background='rgba(0,156,222,.08)';pl.style.color='#5badcf';if(pb)pb.style.display='';}
+  document.getElementById('ac-paypal-config').style.display=method==='paypal'?'block':'none';
+}
 async function sendAcompte(){
   const amount=parseFloat(document.getElementById('ac-amount').value);
   if(!amount||amount<1){showNotif('Entrez un montant valide','error');return;}
+  const method=document.getElementById('ac-payment-method')?.value||'stripe';
+  const el=document.getElementById('ac-result');el.style.display='block';
+  if(method==='paypal'){
+    // PayPal.me link — open in new tab
+    const paypalUrl=`https://paypal.me/inkrpro/${amount}EUR`;
+    el.style.color='var(--green)';
+    el.innerHTML=`✅ Lien PayPal créé ! <a href="${paypalUrl}" target="_blank" style="color:#009CDE;text-decoration:underline;">Envoyer ${amount}€ via PayPal</a>`;
+    showNotif(`✅ Lien PayPal ${amount}€ prêt !`,'success');
+    return;
+  }
   const res=await fetch(`/api/appointments/${currentAcompteId}/acompte`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount})});
   const data=await res.json();
-  const el=document.getElementById('ac-result');el.style.display='block';
   if(res.ok){el.style.color='var(--green)';el.textContent=`✅ Demande envoyée ! Lien : ${data.url}`;showNotif('✅ Demande d\'acompte envoyée !','success');setTimeout(()=>{closeAcompteModal();loadAppointments();},2500);}
   else{el.style.color='var(--red)';el.textContent='❌ '+data.error;}
 }
@@ -2266,12 +2705,50 @@ function showTrForm(show){
   document.getElementById('tr-form').style.display=show?'block':'none';
   if(show){const today=new Date().toISOString().split('T')[0];document.getElementById('tr-from').value=today;document.getElementById('tr-to').value=today;}
 }
+// ── Tournée city autocomplete ──
+let _trCityTimer=null;
+function trCityInput(val){
+  clearTimeout(_trCityTimer);
+  const dd=document.getElementById('tr-city-dd');if(!dd)return;
+  if(val.length<2){dd.style.display='none';return;}
+  _trCityTimer=setTimeout(()=>_trCitySearch(val),250);
+}
+async function _trCitySearch(val){
+  const dd=document.getElementById('tr-city-dd');if(!dd)return;
+  // Fallback local
+  const results=(typeof VILLES_FR!=='undefined'?VILLES_FR:[]).filter(v=>v.name.toLowerCase().startsWith(val.toLowerCase())).slice(0,6);
+  if(results.length){_renderTrDd(results,dd);return;}
+  try{
+    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(val)}&countrycodes=fr&format=json&addressdetails=1&limit=6`,{headers:{'Accept-Language':'fr'}});
+    const data=await r.json();
+    const mapped=data.filter(x=>x.address?.city||x.address?.town||x.address?.village).map(x=>{
+      const city=x.address.city||x.address.town||x.address.village||x.display_name;
+      const cp=x.address.postcode?x.address.postcode.substring(0,2):'';
+      return{name:city,cp};
+    });
+    if(mapped.length)_renderTrDd(mapped,dd);else dd.style.display='none';
+  }catch(e){dd.style.display='none';}
+}
+function _renderTrDd(items,dd){
+  dd.innerHTML=items.map(v=>{
+    const label=v.cp?`${v.name} (${v.cp})`:v.name;
+    return`<div onclick="selectTrCity('${label.replace(/'/g,"\\'")}'); this.parentNode.style.display='none';" style="padding:8px 12px;cursor:pointer;font-size:12px;color:var(--txt);border-bottom:1px solid rgba(255,255,255,.05);" onmouseover="this.style.background='rgba(255,255,255,.07)'" onmouseout="this.style.background=''">${label}</div>`;
+  }).join('');
+  dd.style.display='block';
+}
+function selectTrCity(name){
+  const inp=document.getElementById('tr-city');if(inp)inp.value=name;
+  document.getElementById('tr-city-dd').style.display='none';
+}
 async function saveTournee(){
   const city=document.getElementById('tr-city').value.trim();
   const date_from=document.getElementById('tr-from').value;
   const date_to=document.getElementById('tr-to').value;
   if(!city||!date_from||!date_to){showNotif('Ville et dates requises','error');return;}
-  const res=await fetch('/api/tournee',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({city,date_from,date_to,description:document.getElementById('tr-desc').value,spots:parseInt(document.getElementById('tr-spots').value)||5})});
+  const studioName=document.getElementById('tr-studio-name')?.value.trim()||'';
+  const studioAddr=document.getElementById('tr-studio-addr')?.value.trim()||'';
+  const description=[document.getElementById('tr-desc').value.trim(),studioName?'Studio : '+studioName:'',studioAddr?studioAddr:''].filter(Boolean).join(' · ');
+  const res=await fetch('/api/tournee',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({city,date_from,date_to,description,spots:parseInt(document.getElementById('tr-spots').value)||5})});
   if(res.ok){
     showNotif('✅ Date ajoutée ! Les clients de '+city+' seront notifiés.','success');
     const desc=document.getElementById('tr-desc').value;
@@ -2279,6 +2756,8 @@ async function saveTournee(){
     showTrForm(false);
     document.getElementById('tr-city').value='';
     document.getElementById('tr-desc').value='';
+    const snEl=document.getElementById('tr-studio-name');if(snEl)snEl.value='';
+    const saEl=document.getElementById('tr-studio-addr');if(saEl)saEl.value='';
     loadTournee();
     // Proposer le post Instagram IA
     setTimeout(()=>openIgPostModal(city,date_from,date_to,desc,spotsVal),400);
@@ -2349,7 +2828,13 @@ async function loadClients(){
   clients=data.clients||[];document.getElementById('stat-clients').textContent=clients.length;renderClients(clients);
   if(typeof renderOverview==='function')renderOverview();
 }
-function filterClients(q){renderClients(q?clients.filter(c=>(c.name||'').toLowerCase().includes(q.toLowerCase())||(c.prenom||'').toLowerCase().includes(q.toLowerCase())||(c.email||'').includes(q)):clients);}
+function filterClients(q){
+  const style=(document.getElementById('crm-style-filter')?.value||'').toLowerCase();
+  let list=clients;
+  if(q){const ql=q.toLowerCase();list=list.filter(c=>(c.name||'').toLowerCase().includes(ql)||(c.prenom||'').toLowerCase().includes(ql)||(c.email||'').includes(ql));}
+  if(style){list=list.filter(c=>{let tags=[];try{tags=JSON.parse(c.tags||'[]');}catch(e){}return tags.map(t=>t.toLowerCase()).includes(style);});}
+  renderClients(list);
+}
 function renderClients(list){
   const el=document.getElementById('clients-list');
   if(!list.length){el.innerHTML='<div style="padding:14px;text-align:center;color:var(--muted);font-size:11px;">Aucun client.</div>';return;}
@@ -2520,9 +3005,7 @@ function renderClientCard(id, editMode=false){
         </div>`).join('')}
       </div>`:''}
       <div class="crm-actions-row">
-        <button class="crm-act" onclick="dashGo('dp-campaigns',document.getElementById('nav-campaigns'));showNewCamp();">Campagne</button>
-        ${c.email?`<div class="crm-act-sep"></div><button class="crm-act" onclick="openClientEmail(${id})">Email</button>`:''}
-        <div class="crm-act-sep"></div>
+        ${c.email?`<button class="crm-act" onclick="openClientEmail(${id})">Email</button><div class="crm-act-sep"></div>`:''}
         <button class="crm-act" onclick="dashGo('dp-documents',document.getElementById('nav-documents'));setTimeout(()=>{prefillDocFromClient(${c.id});},200);">Document</button>
         <div class="crm-act-sep"></div>
         <button class="crm-act" onclick="deleteClient(${c.id})" style="color:rgba(255,70,70,.35);">Supprimer</button>
@@ -2581,6 +3064,23 @@ async function loadCampaigns(){
   const res=await fetch('/api/campaigns',{credentials:'include'});const data=await res.json();
   campaigns=data.campaigns||[];document.getElementById('stat-camps').textContent=campaigns.length;renderCampaigns();
 }
+function campAffectedClients(c){
+  const aud=c.audience||'all';
+  if(aud==='all'||!aud) return clients;
+  if(aud.startsWith('tags:')){
+    const tags=aud.replace('tags:','').split(',').map(t=>t.toLowerCase());
+    return clients.filter(cl=>{let t=[];try{t=JSON.parse(cl.tags||'[]');}catch(e){}return t.some(x=>tags.includes(x.toLowerCase()));});
+  }
+  return clients;
+}
+function toggleCampClients(id){
+  const el=document.getElementById('camp-clients-'+id);
+  if(!el)return;
+  const open=el.style.display!=='none';
+  el.style.display=open?'none':'block';
+  const btn=document.getElementById('camp-clients-btn-'+id);
+  if(btn)btn.textContent=open?'👥 Voir les clients':'👥 Masquer';
+}
 function renderCampaigns(){
   const el=document.getElementById('camp-list');
   if(!campaigns.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:20px 0;text-align:center;">Aucune campagne. Créez-en une !</div>';return;}
@@ -2590,6 +3090,15 @@ function renderCampaigns(){
     const channels=JSON.parse(c.channels||'[]');
     const sentDate=c.sent_at?new Date(c.sent_at).toLocaleDateString('fr-FR',{day:'numeric',month:'short',year:'numeric'}):'—';
     const preview=c.message?c.message.replace(/\{\{[^}]+\}\}/g,'…').substring(0,120)+(c.message.length>120?'…':''):'';
+    const affected=campAffectedClients(c);
+    const clientsHtml=affected.length?affected.map(cl=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
+        <div style="width:28px;height:28px;border-radius:4px;background:#222;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">${(cl.prenom||cl.name||'?').charAt(0).toUpperCase()}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:600;color:var(--txt);">${[cl.prenom,cl.name].filter(Boolean).join(' ')||'—'}</div>
+          <div style="font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${cl.email||cl.phone||'Pas de contact'}</div>
+        </div>
+      </div>`).join(''):'<div style="font-size:12px;color:var(--muted);padding:8px 0;">Aucun client correspondant</div>';
     return`<div class="camp-item">
       <div class="ci-top">
         <div>
@@ -2612,8 +3121,13 @@ function renderCampaigns(){
       </div>
       <div class="ci-actions">
         ${c.status==='draft'?`<button class="btn btn-primary btn-sm" onclick="sendCampId(${c.id})">🚀 Envoyer</button>`:''}
+        <button class="btn btn-ghost btn-sm" id="camp-clients-btn-${c.id}" onclick="toggleCampClients(${c.id})">👥 Voir les clients (${affected.length})</button>
         <button class="btn btn-ghost btn-sm" onclick="duplicateCamp(${c.id})">📋 Dupliquer</button>
         <button class="btn btn-danger btn-sm" onclick="deleteCamp(${c.id})">🗑 Supprimer</button>
+      </div>
+      <div id="camp-clients-${c.id}" style="display:none;margin-top:10px;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);max-height:200px;overflow-y:auto;">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px;">Clients ciblés (${affected.length})</div>
+        ${clientsHtml}
       </div>
     </div>`;
   }).join('');
@@ -2697,7 +3211,7 @@ async function sendCampId(id){
 }
 
 // ======== AUTOMATIONS ========
-const AUTO_LABELS={sms_24h_before:{icon:'💬',title:'WhatsApp / Email 24h avant le RDV',desc:'Rappel automatique avec conseils de préparation'},followup_j5:{icon:'🩹',title:'Suivi cicatrisation J+5',desc:'WhatsApp/Email 5 jours après la séance'},retouche_j30:{icon:'🔄',title:'Offre retouche J+30',desc:'WhatsApp/Email retouche gratuite à 1 mois'},relance_m3:{icon:'💬',title:'Relance inactivité 3 mois',desc:'WhatsApp/Email si client absent depuis 3 mois'},birthday:{icon:'🎂',title:'Message anniversaire',desc:'Offre spéciale le jour de l\'anniversaire'}};
+const AUTO_LABELS={sms_24h_before:{icon:'💬',title:'WhatsApp / Email 24h avant le RDV',desc:'Rappel automatique avec conseils de préparation'},followup_j5:{icon:'🩹',title:'Suivi cicatrisation J+5',desc:'WhatsApp/Email 5 jours après la séance'},retouche_j30:{icon:'🔄',title:'Offre retouche J+30',desc:'WhatsApp/Email retouche gratuite à 1 mois'},relance_m3:{icon:'💬',title:'Relance inactivité (personnalisable)',desc:'WhatsApp/Email si client absent depuis X mois'},birthday:{icon:'🎂',title:'Message anniversaire',desc:'Offre spéciale le jour de l\'anniversaire'}};
 async function loadAutomations(){
   const res=await fetch('/api/clients/automations',{credentials:'include'});if(!res.ok)return;
   const data=await res.json();automations=data.automations||[];renderAutomations();
@@ -2705,17 +3219,35 @@ async function loadAutomations(){
 function renderAutomations(){
   const el=document.getElementById('auto-list');if(!el||!automations.length)return;
   el.innerHTML=automations.map(a=>{const lbl=AUTO_LABELS[a.type]||{icon:'🔔',title:a.type,desc:''};
+    const isRelance=a.type==='relance_m3';
+    const relanceMonths=parseInt(localStorage.getItem('relance_months')||'3');
     return`<div class="auto-item">
       <div class="auto-icon">${lbl.icon}</div>
       <div class="auto-body" style="flex:1;">
         <div class="auto-title">${lbl.title}</div><div class="auto-desc">${lbl.desc}</div>
-        <div class="auto-delay">${a.delay_value} ${a.delay_unit==='hour'?'heure(s)':a.delay_unit==='day'?'jour(s)':'mois'} ${a.type.includes('before')?'avant':'après'}</div>
+        ${isRelance?`<div style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+          <span style="font-size:11px;color:var(--muted);">Délai d'inactivité :</span>
+          <select class="form-control" id="relance-months-sel" style="width:auto;font-size:11px;padding:4px 8px;" onchange="saveRelanceDelay(this.value)">
+            <option value="1" ${relanceMonths===1?'selected':''}>1 mois</option>
+            <option value="2" ${relanceMonths===2?'selected':''}>2 mois</option>
+            <option value="3" ${relanceMonths===3?'selected':''}>3 mois</option>
+            <option value="4" ${relanceMonths===4?'selected':''}>4 mois</option>
+            <option value="6" ${relanceMonths===6?'selected':''}>6 mois</option>
+            <option value="9" ${relanceMonths===9?'selected':''}>9 mois</option>
+            <option value="12" ${relanceMonths===12?'selected':''}>12 mois</option>
+          </select>
+          <span style="font-size:10px;color:var(--dim);">sans RDV</span>
+        </div>`:`<div class="auto-delay">${a.delay_value} ${a.delay_unit==='hour'?'heure(s)':a.delay_unit==='day'?'jour(s)':'mois'} ${a.type.includes('before')?'avant':'après'}</div>`}
         <textarea class="form-control" id="amsg-${a.id}" style="margin-top:8px;font-size:11px;min-height:52px;">${a.message||''}</textarea>
         <button class="btn btn-ghost btn-sm" style="margin-top:4px;font-size:11px;" onclick="saveAutoMsg(${a.id})">Sauvegarder le message</button>
       </div>
       <label class="toggle" style="flex-shrink:0;margin-top:1px;"><input type="checkbox" ${a.enabled?'checked':''} onchange="toggleAuto(${a.id},this.checked)"><span class="toggle-slider"></span></label>
     </div>`;
   }).join('');
+}
+function saveRelanceDelay(v){
+  localStorage.setItem('relance_months',v);
+  showNotif('✅ Délai mis à jour : relance après '+v+' mois sans RDV','success');
 }
 async function toggleAuto(id,enabled){
   const a=automations.find(x=>x.id===id);
@@ -3524,6 +4056,7 @@ function sendOnPinterest(){showNotif('Connectez Pinterest dans Paramètres','');
 
 // ======== FIDELITE ========
 let loyaltyPrograms=[];
+try{loyaltyPrograms=JSON.parse(localStorage.getItem('inkr_loyalty_programs')||'[]');}catch(e){}
 function showNewLoyaltyForm(){
   const f=document.getElementById('new-loyalty-form');
   f.style.display='block';
@@ -3535,6 +4068,7 @@ function selectLoyaltyType(type,el){
   document.querySelectorAll('.loy-config').forEach(c=>c.style.display='none');
   document.getElementById('loy-config-'+type).style.display='block';
 }
+function _saveLoyaltyToLS(){localStorage.setItem('inkr_loyalty_programs',JSON.stringify(loyaltyPrograms));}
 function saveLoyaltyProgram(){
   const name=document.getElementById('loy-name').value.trim();
   if(!name){showNotif('Donnez un nom au programme','error');return;}
@@ -3542,6 +4076,7 @@ function saveLoyaltyProgram(){
   const type=typeEl?typeEl.value:'points';
   const prog={id:Date.now(),name,type,active:true,clients:[],created:new Date().toISOString()};
   loyaltyPrograms.push(prog);
+  _saveLoyaltyToLS();
   renderLoyaltyPrograms();
   document.getElementById('new-loyalty-form').style.display='none';
   document.getElementById('loy-name').value='';
@@ -3574,6 +4109,7 @@ function renderLoyaltyPrograms(){
 function deleteLoyaltyProgram(id){
   if(!confirm('Supprimer ce programme ?'))return;
   loyaltyPrograms=loyaltyPrograms.filter(p=>p.id!==id);
+  _saveLoyaltyToLS();
   renderLoyaltyPrograms();
   showNotif('Programme supprimé','');
 }
@@ -3592,6 +4128,7 @@ function updateLoyaltyProgram(id){
   const type=typeEl?typeEl.value:'points';
   const p=loyaltyPrograms.find(x=>x.id===id);if(!p)return;
   p.name=name;p.type=type;
+  _saveLoyaltyToLS();
   renderLoyaltyPrograms();
   document.getElementById('new-loyalty-form').style.display='none';
   document.getElementById('loy-name').value='';
@@ -3638,6 +4175,42 @@ function prefillDocFromClient(clientId){
 
 // ======== DOCUMENTS ========
 let currentDocType='minor';
+const DOC_DEFAULT_TEXT={
+  minor:`Je soussigné(e), représentant(e) légal(e), autorise librement la réalisation de ce tatouage et certifie que l'enfant ne présente aucune allergie connue. Je m'engage à respecter les soins post-tatouage et dégage le tatoueur de toute responsabilité en cas de non-respect.`,
+  adult:`Je soussigné(e) déclare être majeur(e) et consentir librement à ce tatouage. Je certifie ne pas être sous l'influence de substances altérant mon jugement, ne pas présenter de contre-indication médicale connue, et avoir été informé(e) du caractère permanent et irréversible du tatouage. Je m'engage à respecter les soins post-tatouage.`
+};
+function getDocCustomText(type){return localStorage.getItem('doc_custom_'+type)||DOC_DEFAULT_TEXT[type]||'';}
+function getDocCustomLegal(type){return localStorage.getItem('doc_custom_legal_'+type)||'';}
+function toggleDocEdit(type){
+  const zone=document.getElementById('doc-edit-zone');
+  const title=document.getElementById('doc-edit-title');
+  const ta=document.getElementById('doc-custom-text');
+  const tl=document.getElementById('doc-custom-legal');
+  const saved=document.getElementById('doc-edit-saved');
+  if(zone.style.display!=='none'&&zone.dataset.type===type){zone.style.display='none';return;}
+  zone.dataset.type=type;
+  title.textContent=type==='minor'?'✏️ Personnaliser la décharge pour mineur':'✏️ Personnaliser la fiche consentement adulte';
+  ta.value=getDocCustomText(type);
+  tl.value=getDocCustomLegal(type);
+  if(saved)saved.style.display='none';
+  zone.style.display='block';
+  zone.scrollIntoView({behavior:'smooth'});
+}
+function saveDocTemplate(){
+  const type=document.getElementById('doc-edit-zone').dataset.type||'adult';
+  localStorage.setItem('doc_custom_'+type,document.getElementById('doc-custom-text').value);
+  localStorage.setItem('doc_custom_legal_'+type,document.getElementById('doc-custom-legal').value);
+  const s=document.getElementById('doc-edit-saved');if(s){s.style.display='block';setTimeout(()=>s.style.display='none',2500);}
+  showNotif('✅ Template sauvegardé','success');
+}
+function resetDocTemplate(){
+  const type=document.getElementById('doc-edit-zone').dataset.type||'adult';
+  document.getElementById('doc-custom-text').value=DOC_DEFAULT_TEXT[type]||'';
+  document.getElementById('doc-custom-legal').value='';
+  localStorage.removeItem('doc_custom_'+type);
+  localStorage.removeItem('doc_custom_legal_'+type);
+  showNotif('↩ Template remis à défaut','success');
+}
 function openMinorWaiver(){
   currentDocType='minor';
   document.getElementById('doc-title').textContent='📋 Décharge pour mineur';
@@ -3822,11 +4395,8 @@ function buildPrintHtml(sigImage,sigTimestamp){
       <div class="tattoo-label">Tatouage prévu</div>
       <div class="tattoo-box">${f.tattooDesc||'—'}</div>
       <hr>
-      <p class="clauses">Je soussigné(e), représentant(e) légal(e) de l'enfant désigné(e) ci-dessus, autorise <strong>${f.artistFull}</strong>${f.studio?' ('+f.studio+')':''} à réaliser le tatouage décrit. Je certifie :<br>
-      — être le/la représentant(e) légal(e) et consentir librement ;<br>
-      — que l'enfant ne présente aucune allergie connue aux encres et produits utilisés ;<br>
-      — que je serai présent(e) pendant l'intégralité de la séance ;<br>
-      — m'engager à veiller au respect des soins post-tatouage.</p>
+      <p class="clauses">${getDocCustomText('minor').replace(/\n/g,'<br>')}</p>
+      ${getDocCustomLegal('minor')?`<p style="font-size:9px;color:#999;margin-top:12px;border-top:1px dashed #ddd;padding-top:8px;">${getDocCustomLegal('minor')}</p>`:''}
       ${sigBlockHtml}
       <div class="footer">Document généré via inkr Pro · ${f.studio||f.artistFull} · ${f.dateFr}</div>
     </body></html>`;
@@ -3846,12 +4416,8 @@ function buildPrintHtml(sigImage,sigTimestamp){
       <div class="tattoo-label">Tatouage prévu</div>
       <div class="tattoo-box">${f.tattooDesc||'—'}</div>
       <hr>
-      <p class="clauses">Je soussigné(e) déclare :<br>
-      — être majeur(e) et consentir librement à ce tatouage réalisé par <strong>${f.artistFull}</strong>${f.studio?' ('+f.studio+')':''} ;<br>
-      — ne pas être sous l'influence de substances altérant mon jugement ;<br>
-      — ne pas présenter de contre-indication médicale connue (diabète non contrôlé, troubles de la coagulation, grossesse, etc.) ;<br>
-      — avoir été informé(e) du caractère permanent et irréversible du tatouage ;<br>
-      — m'engager à respecter scrupuleusement les soins post-tatouage recommandés.</p>
+      <p class="clauses">${getDocCustomText('adult').replace(/\n/g,'<br>')}</p>
+      ${getDocCustomLegal('adult')?`<p style="font-size:9px;color:#999;margin-top:12px;border-top:1px dashed #ddd;padding-top:8px;">${getDocCustomLegal('adult')}</p>`:''}
       ${sigBlockHtml}
       <div class="footer">Document généré via inkr Pro · ${f.studio||f.artistFull} · ${f.dateFr}</div>
     </body></html>`;
@@ -3941,27 +4507,52 @@ function buildDocPreviewHtml(){
     </div>`;
   }
 }
-function initSigCanvas(){
-  const canvas=document.getElementById('sig-canvas');if(!canvas)return;
-  canvas.width=canvas.offsetWidth||640;
+function _initCanvas(canvas){
+  if(!canvas)return;
+  canvas.width=canvas.offsetWidth||320;
   const ctx=canvas.getContext('2d');
   ctx.strokeStyle='#eeeeee';ctx.lineWidth=2.2;ctx.lineCap='round';ctx.lineJoin='round';
-  function getPos(e,canvas){
+  let drawing=false,lx=0,ly=0;
+  function getPos(e){
     const r=canvas.getBoundingClientRect();
     const sx=canvas.width/r.width,sy=canvas.height/r.height;
     if(e.touches){const t=e.touches[0];return{x:(t.clientX-r.left)*sx,y:(t.clientY-r.top)*sy};}
     return{x:(e.clientX-r.left)*sx,y:(e.clientY-r.top)*sy};
   }
-  canvas.onmousedown=(e)=>{sigDrawing=true;const p=getPos(e,canvas);sigLastX=p.x;sigLastY=p.y;};
-  canvas.onmousemove=(e)=>{if(!sigDrawing)return;const p=getPos(e,canvas);ctx.beginPath();ctx.moveTo(sigLastX,sigLastY);ctx.lineTo(p.x,p.y);ctx.stroke();sigLastX=p.x;sigLastY=p.y;};
-  canvas.onmouseup=canvas.onmouseleave=()=>{sigDrawing=false;};
-  canvas.ontouchstart=(e)=>{e.preventDefault();sigDrawing=true;const p=getPos(e,canvas);sigLastX=p.x;sigLastY=p.y;};
-  canvas.ontouchmove=(e)=>{e.preventDefault();if(!sigDrawing)return;const p=getPos(e,canvas);ctx.beginPath();ctx.moveTo(sigLastX,sigLastY);ctx.lineTo(p.x,p.y);ctx.stroke();sigLastX=p.x;sigLastY=p.y;};
-  canvas.ontouchend=()=>{sigDrawing=false;};
+  canvas.onmousedown=(e)=>{drawing=true;const p=getPos(e);lx=p.x;ly=p.y;};
+  canvas.onmousemove=(e)=>{if(!drawing)return;const p=getPos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y;};
+  canvas.onmouseup=canvas.onmouseleave=()=>{drawing=false;};
+  canvas.ontouchstart=(e)=>{e.preventDefault();drawing=true;const p=getPos(e);lx=p.x;ly=p.y;};
+  canvas.ontouchmove=(e)=>{e.preventDefault();if(!drawing)return;const p=getPos(e);ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(p.x,p.y);ctx.stroke();lx=p.x;ly=p.y;};
+  canvas.ontouchend=()=>{drawing=false;};
+}
+function initSigCanvas(){
+  _initCanvas(document.getElementById('sig-canvas'));
+  _initCanvas(document.getElementById('sig-canvas-artist'));
 }
 function clearSigCanvas(){
   const canvas=document.getElementById('sig-canvas');if(!canvas)return;
   canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+}
+function clearSigCanvasArtist(){
+  const canvas=document.getElementById('sig-canvas-artist');if(!canvas)return;
+  canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+}
+// Ouvrir consentement directement depuis un RDV
+function openConsentFromRDV(rdvId){
+  const rdv=appointments.find(a=>a.id===rdvId);if(!rdv)return;
+  dashGo('dp-documents',document.getElementById('nav-documents'));
+  setTimeout(()=>{
+    openAdultConsent();
+    const sel=document.getElementById('doc-client-select');
+    if(sel&&rdv.client_email){
+      const c=clients.find(x=>x.email===rdv.client_email);
+      if(c){sel.value=c.id;prefillDocClient(c.id);}
+    }
+    const dd=document.getElementById('doc-session-date');if(dd&&rdv.date)dd.value=rdv.date.split('T')[0];
+    const td=document.getElementById('doc-tattoo-desc');if(td&&rdv.style)td.value=rdv.style;
+    document.getElementById('doc-generator')?.scrollIntoView({behavior:'smooth'});
+  },300);
 }
 function confirmSignature(){
   const canvas=document.getElementById('sig-canvas');if(!canvas)return;
