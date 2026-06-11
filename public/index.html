@@ -2185,28 +2185,6 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
           Démarrer gratuitement — 14 jours →
         </button>
         <div class="pricing-cta-note">Sans CB · Résiliable à tout moment · 39€/mois ensuite</div>
-
-        <!-- Paiement direct -->
-        <div style="display:flex;align-items:center;gap:10px;margin-top:18px;">
-          <div style="flex:1;height:1px;background:#e5e5e5;"></div>
-          <span style="font-size:11px;color:#aaa;white-space:nowrap;">ou payer directement</span>
-          <div style="flex:1;height:1px;background:#e5e5e5;"></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;">
-          <!-- Stripe -->
-          <button onclick="subscribeStripe()" style="display:flex;align-items:center;justify-content:center;gap:9px;padding:13px 16px;background:#635BFF;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;color:#fff;transition:all .15s;letter-spacing:.2px;" onmouseover="this.style.background='#5046e5'" onmouseout="this.style.background='#635BFF'">
-            <svg width="18" height="18" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="white" fill-opacity=".2"/><path d="M15.4 12.3c0-.8.7-1.1 1.8-1.1 1.6 0 3.6.5 5.2 1.4V8.3c-1.7-.7-3.5-1-5.2-1-4.3 0-7.2 2.2-7.2 6 0 5.8 8 4.9 8 7.4 0 .9-.8 1.2-1.9 1.2-1.7 0-3.9-.7-5.6-1.7v4.4c1.9.8 3.8 1.2 5.6 1.2 4.3 0 7.3-2.1 7.3-6 0-6.3-8.1-5.2-8-7.5z" fill="white"/></svg>
-            Payer avec Stripe
-          </button>
-          <!-- PayPal -->
-          <button onclick="subscribePayPal()" style="display:flex;align-items:center;justify-content:center;gap:9px;padding:13px 16px;background:#FFC439;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;color:#003087;transition:all .15s;" onmouseover="this.style.background='#f0b828'" onmouseout="this.style.background='#FFC439'">
-            <svg width="18" height="18" viewBox="0 0 32 32" fill="none"><path d="M8 6h10c3.5 0 6 1.8 5.5 5.5-.5 3.5-3 5.5-6.5 5.5H14l-1.5 7H8L11 6z" fill="#003087"/><path d="M12 10h7c2.5 0 4.5 1.3 4 4-.5 2.7-2.5 4-5 4h-2.5L14 26H9.5L12 10z" fill="#009CDE"/></svg>
-            Payer avec PayPal
-          </button>
-        </div>
-        <div style="font-size:11px;color:#aaa;text-align:center;margin-top:10px;">
-          Paiement sécurisé · Annulation possible à tout moment
-        </div>
       </div>
 
       <!-- GARANTIES -->
@@ -2220,8 +2198,20 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
             <div class="fc-icon" style="background:#D1FAE5;">💳</div>
             <span class="fc-tag tag-green">Revenus</span>
           </div>
-          <div class="fc-title">Dépôt en ligne (Stripe)</div>
+          <div class="fc-title">Dépôt en ligne</div>
           <div class="fc-desc">Encaissez 50–150€ à la réservation. Zéro no-show, zéro perte de journée.</div>
+          <div style="display:flex;align-items:center;gap:7px;margin-top:8px;">
+            <!-- Stripe badge -->
+            <span style="display:inline-flex;align-items:center;gap:5px;background:#635BFF;color:#fff;font-size:11px;font-weight:700;padding:4px 9px;border-radius:6px;letter-spacing:.2px;">
+              <svg width="11" height="11" viewBox="0 0 32 32" fill="none"><path d="M15.4 12.3c0-.8.7-1.1 1.8-1.1 1.6 0 3.6.5 5.2 1.4V8.3c-1.7-.7-3.5-1-5.2-1-4.3 0-7.2 2.2-7.2 6 0 5.8 8 4.9 8 7.4 0 .9-.8 1.2-1.9 1.2-1.7 0-3.9-.7-5.6-1.7v4.4c1.9.8 3.8 1.2 5.6 1.2 4.3 0 7.3-2.1 7.3-6 0-6.3-8.1-5.2-8-7.5z" fill="white"/></svg>
+              Stripe
+            </span>
+            <!-- PayPal badge -->
+            <span style="display:inline-flex;align-items:center;gap:5px;background:#FFC439;color:#003087;font-size:11px;font-weight:700;padding:4px 9px;border-radius:6px;letter-spacing:.2px;">
+              <svg width="11" height="11" viewBox="0 0 32 32" fill="none"><path d="M8 6h10c3.5 0 6 1.8 5.5 5.5-.5 3.5-3 5.5-6.5 5.5H14l-1.5 7H8L11 6z" fill="#003087"/><path d="M12 10h7c2.5 0 4.5 1.3 4 4-.5 2.7-2.5 4-5 4h-2.5L14 26H9.5L12 10z" fill="#009CDE"/></svg>
+              PayPal
+            </span>
+          </div>
           <div class="fc-arrow">
             <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </div>
@@ -2555,7 +2545,24 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
             </tr>
           </thead>
           <tbody>
-            <tr><td class="pc-inkr">Commission sur acomptes</td><td class="pc-col-inkr pc-yes">✓ 0% — Stripe direct</td><td class="pc-no">✗ +1,5–2%</td><td class="pc-no">✗ +2–3%</td></tr>
+            <tr>
+  <td class="pc-inkr">Commission sur acomptes</td>
+  <td class="pc-col-inkr pc-yes" style="vertical-align:middle;">
+    <span style="display:flex;align-items:center;gap:6px;justify-content:center;flex-wrap:wrap;">
+      <span style="color:#16a34a;font-weight:700;">✓ 0%</span>
+      <span style="display:inline-flex;align-items:center;gap:4px;background:#635BFF;color:#fff;font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;">
+        <svg width="9" height="9" viewBox="0 0 32 32" fill="none"><path d="M15.4 12.3c0-.8.7-1.1 1.8-1.1 1.6 0 3.6.5 5.2 1.4V8.3c-1.7-.7-3.5-1-5.2-1-4.3 0-7.2 2.2-7.2 6 0 5.8 8 4.9 8 7.4 0 .9-.8 1.2-1.9 1.2-1.7 0-3.9-.7-5.6-1.7v4.4c1.9.8 3.8 1.2 5.6 1.2 4.3 0 7.3-2.1 7.3-6 0-6.3-8.1-5.2-8-7.5z" fill="white"/></svg>
+        Stripe
+      </span>
+      <span style="display:inline-flex;align-items:center;gap:4px;background:#FFC439;color:#003087;font-size:10px;font-weight:700;padding:3px 7px;border-radius:5px;">
+        <svg width="9" height="9" viewBox="0 0 32 32" fill="none"><path d="M8 6h10c3.5 0 6 1.8 5.5 5.5-.5 3.5-3 5.5-6.5 5.5H14l-1.5 7H8L11 6z" fill="#003087"/><path d="M12 10h7c2.5 0 4.5 1.3 4 4-.5 2.7-2.5 4-5 4h-2.5L14 26H9.5L12 10z" fill="#009CDE"/></svg>
+        PayPal
+      </span>
+    </span>
+  </td>
+  <td class="pc-no">✗ +1,5–2%</td>
+  <td class="pc-no">✗ +2–3%</td>
+</tr>
             <tr><td class="pc-inkr">Spécifique tatouage</td><td class="pc-col-inkr pc-yes">✓ 100% dédié</td><td class="pc-no">✗ Généraliste</td><td class="pc-no">✗ Généraliste</td></tr>
             <tr><td class="pc-inkr">Flash sale automatisé</td><td class="pc-col-inkr pc-yes">✓ Inclus</td><td class="pc-no">✗ Absent</td><td class="pc-no">✗ Absent</td></tr>
             <tr><td class="pc-inkr">Consentement numérique tatouage</td><td class="pc-col-inkr pc-yes">✓ Inclus</td><td class="pc-no">✗ Absent</td><td class="pc-no">✗ Absent</td></tr>
@@ -2601,17 +2608,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
       <div style="text-align:center;padding:40px 0 20px;">
         <div style="font-size:clamp(28px,4vw,44px);font-weight:900;letter-spacing:-2px;color:#0A0A0A;margin-bottom:16px;">Prêt à passer au niveau supérieur ?</div>
         <p style="font-size:16px;color:#6E6E73;margin-bottom:32px;">Rejoignez les tatoueurs inkr Pro. 14 jours d'essai gratuit, résiliation libre.</p>
-        <button class="pricing-cta-main" onclick="openPricingRegister()">Essai gratuit 14 jours →</button>
-        <div style="display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap;">
-          <button onclick="subscribeStripe()" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#635BFF;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;color:#fff;transition:all .15s;" onmouseover="this.style.background='#5046e5'" onmouseout="this.style.background='#635BFF'">
-            <svg width="16" height="16" viewBox="0 0 32 32" fill="none"><path d="M15.4 12.3c0-.8.7-1.1 1.8-1.1 1.6 0 3.6.5 5.2 1.4V8.3c-1.7-.7-3.5-1-5.2-1-4.3 0-7.2 2.2-7.2 6 0 5.8 8 4.9 8 7.4 0 .9-.8 1.2-1.9 1.2-1.7 0-3.9-.7-5.6-1.7v4.4c1.9.8 3.8 1.2 5.6 1.2 4.3 0 7.3-2.1 7.3-6 0-6.3-8.1-5.2-8-7.5z" fill="white"/></svg>
-            Stripe — 39€/mois
-          </button>
-          <button onclick="subscribePayPal()" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:#FFC439;border:none;border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;color:#003087;transition:all .15s;" onmouseover="this.style.background='#f0b828'" onmouseout="this.style.background='#FFC439'">
-            <svg width="16" height="16" viewBox="0 0 32 32" fill="none"><path d="M8 6h10c3.5 0 6 1.8 5.5 5.5-.5 3.5-3 5.5-6.5 5.5H14l-1.5 7H8L11 6z" fill="#003087"/><path d="M12 10h7c2.5 0 4.5 1.3 4 4-.5 2.7-2.5 4-5 4h-2.5L14 26H9.5L12 10z" fill="#009CDE"/></svg>
-            PayPal — 39€/mois
-          </button>
-        </div>
+        <button class="pricing-cta-main" onclick="openPricingRegister()">Créer mon compte inkr Pro →</button>
         <div class="pricing-cta-note" style="margin-top:12px;">Déjà inkr Pro ? <a href="/dashboard" style="color:#8B5CF6;font-weight:700;text-decoration:underline;">Accéder au dashboard →</a></div>
       </div>
 
