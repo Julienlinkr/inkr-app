@@ -53,6 +53,84 @@ app.get('/dashboard', (req, res) => {
   res.set('Expires', '0');
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
+// ============ ACCÈS ADMIN RAPIDE ============
+// GET /admin         → page de connexion admin (formulaire mot de passe unique)
+// GET /admin?key=XXX → connexion directe via ADMIN_SECRET, redirige vers /dashboard
+// Pas besoin d'email — un seul mot de passe (ADMIN_SECRET défini dans Railway)
+app.get('/admin', (req, res) => {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret) {
+    return res.status(503).send('<h2 style="font-family:sans-serif;padding:40px">ADMIN_SECRET non configuré dans les variables Railway.</h2>');
+  }
+
+  // ── Connexion directe via ?key=XXX (URL bookmarkable) ──
+  if (req.query.key) {
+    if (req.query.key !== secret) {
+      return res.status(401).send(`
+        <html><head><title>Accès refusé</title></head>
+        <body style="font-family:sans-serif;background:#0d0d1a;color:#fff;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
+          <div style="text-align:center"><div style="font-size:48px;margin-bottom:16px">🔐</div>
+          <h2>Clé incorrecte</h2>
+          <a href="/admin" style="color:#a855f7">← Retour</a></div>
+        </body></html>`);
+    }
+    // Clé valide → trouver ou créer le compte dev
+    const { db } = require('./db/database');
+    const jwt = require('jsonwebtoken');
+    const JWT_SECRET = process.env.JWT_SECRET || 'inkr_secret_dev';
+
+    let user = db.prepare("SELECT * FROM users WHERE role='dev' OR role='admin' ORDER BY id LIMIT 1").get();
+    if (!user) user = db.prepare('SELECT * FROM users ORDER BY id LIMIT 1').get();
+    if (!user) {
+      return res.status(404).send(`
+        <html><body style="font-family:sans-serif;background:#0d0d1a;color:#fff;padding:40px">
+          <h2>Aucun compte trouvé</h2>
+          <p>Crée d'abord un compte sur <a href="/" style="color:#a855f7">inkr.club</a>, puis reviens ici.</p>
+        </body></html>`);
+    }
+    // Activer PRO + rôle dev sur ce compte automatiquement
+    db.prepare("UPDATE users SET is_pro=1, role='dev' WHERE id=?").run(user.id);
+
+    const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '90d' });
+    res.cookie('inkr_token', token, { httpOnly: true, maxAge: 90 * 24 * 60 * 60 * 1000 });
+    console.log(`[Admin] Connexion rapide → ${user.email} (id=${user.id})`);
+    return res.redirect('/dashboard');
+  }
+
+  // ── Page de login admin (formulaire) ──
+  res.send(`<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>inkr · Accès Admin</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#0d0d1a;min-height:100vh;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+    .card{background:#1a1a2e;border:1px solid #2a2a3e;border-radius:16px;padding:40px 36px;width:100%;max-width:380px;text-align:center}
+    .logo{font-size:32px;font-weight:800;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;letter-spacing:-1px}
+    .sub{color:#666;font-size:13px;margin-bottom:32px;letter-spacing:2px;text-transform:uppercase}
+    label{display:block;text-align:left;font-size:12px;color:#888;margin-bottom:6px;letter-spacing:.5px}
+    input{width:100%;padding:12px 14px;background:#0d0d1a;border:1px solid #333;border-radius:10px;color:#fff;font-size:15px;outline:none;transition:.2s}
+    input:focus{border-color:#a855f7}
+    button{margin-top:20px;width:100%;padding:13px;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899);border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:.3px;transition:.15s}
+    button:hover{opacity:.9;transform:translateY(-1px)}
+    .err{margin-top:14px;color:#f87171;font-size:13px;display:none}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">inkr</div>
+    <div class="sub">Back Office</div>
+    <form method="GET" action="/admin">
+      <label>Mot de passe admin</label>
+      <input type="password" name="key" placeholder="••••••••••••" autofocus autocomplete="current-password">
+      <button type="submit">Accéder au dashboard →</button>
+    </form>
+  </div>
+</body>
+</html>`);
+});
+
 // /pricing → SPA index.html (la vue "pricing" est affichée via showView côté client)
 app.get('/pricing', (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate');

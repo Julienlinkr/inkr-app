@@ -99,19 +99,22 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
 /* LAYOUT */
 .dash-layout{display:grid;grid-template-columns:220px 1fr;height:calc(100vh - 58px);margin-top:58px;}
 .dash-sidebar{background:var(--sidebar-bg);border-right:1px solid var(--sidebar-border);padding:8px;display:flex;flex-direction:column;gap:1px;overflow-y:auto;transition:background .25s,border-color .25s;}
-.dai{display:flex;align-items:center;gap:10px;padding:10px 11px;margin-bottom:10px;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);}
-.dai-av{width:34px;height:34px;border-radius:4px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--txt);flex-shrink:0;overflow:hidden;}
+.dai{display:flex;align-items:center;gap:10px;padding:10px 11px 14px;margin-bottom:4px;}
+.dai-av{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#1e1e2e,#2a2a3e);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;border:1px solid #2a2a3a;}
 .dai-av img{width:100%;height:100%;object-fit:cover;}
-.dai-name{font-size:13px;font-weight:700;line-height:1.2;color:var(--txt);}
-.dai-studio{font-size:11px;color:var(--dim);}
-.dni{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--r);cursor:pointer;font-size:13px;color:var(--muted);font-weight:500;transition:all .12s;position:relative;}
-.dni:hover{background:var(--card);color:var(--txt);}
-.dni.active{background:var(--acl);color:var(--txt);font-weight:600;}
-.dni.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2px;height:18px;background:var(--txt);border-radius:0 2px 2px 0;}
-.dni-icon{font-size:14px;width:18px;text-align:center;}
-.notif-dot{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:5px;height:5px;border-radius:50%;background:var(--txt);}
-.dni-sep{height:1px;background:var(--border);margin:5px 0;}
-.sec-lbl{font-size:9px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1.2px;padding:10px 11px 4px;}
+.dai-name{font-size:13px;font-weight:600;line-height:1.25;color:var(--txt);letter-spacing:-.1px;}
+.dai-studio{font-size:11px;color:var(--dim);margin-top:1px;}
+.dai-sep{height:1px;background:var(--border);margin:0 4px 8px;opacity:.5;}
+.dni{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted);font-weight:500;transition:all .12s;position:relative;}
+.dni:hover{background:rgba(255,255,255,.05);color:var(--txt);}
+.dni.active{background:rgba(255,255,255,.07);color:#fff;font-weight:600;}
+.dni.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2.5px;height:16px;background:#fff;border-radius:0 2px 2px 0;opacity:.7;}
+.dni-icon{width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.dni-icon svg{width:15px;height:15px;opacity:.45;transition:opacity .12s;}
+.dni:hover .dni-icon svg,.dni.active .dni-icon svg{opacity:.9;}
+.notif-dot{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:5px;height:5px;border-radius:50%;background:#fff;}
+.dni-sep{height:1px;background:var(--border);margin:6px 4px;opacity:.4;}
+.sec-lbl{font-size:9px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:1.5px;padding:12px 11px 3px;opacity:.5;}
 
 /* PANELS */
 .dash-panel{display:none;height:calc(100vh - 58px);overflow-y:auto;overflow-x:hidden;}
@@ -122,15 +125,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
 
 /* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px;}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:20px 22px;position:relative;overflow:hidden;transition:border-color .15s,transform .12s;}
-.stat-card:hover{border-color:#333;transform:translateY(-1px);}
-.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;}
-.stat-card:nth-child(1)::before{background:linear-gradient(90deg,rgba(255,255,255,.35),transparent);}
-.stat-card:nth-child(2)::before{background:linear-gradient(90deg,rgba(34,197,94,.5),transparent);}
-.stat-card:nth-child(3)::before{background:linear-gradient(90deg,rgba(96,165,250,.5),transparent);}
-.stat-card:nth-child(4)::before{background:linear-gradient(90deg,rgba(245,158,11,.5),transparent);}
-.stat-val{font-size:34px;font-weight:900;margin-bottom:4px;color:#fff;letter-spacing:-2px;line-height:1;font-variant-numeric:tabular-nums;}
-.stat-lbl{font-size:10px;color:var(--dim);font-weight:600;letter-spacing:.8px;text-transform:uppercase;}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px 20px 18px;position:relative;overflow:hidden;transition:border-color .2s,transform .15s,background .2s;}
+.stat-card:hover{border-color:#2e2e2e;transform:translateY(-2px);background:#1c1c1c;}
+.stat-card-icon{position:absolute;top:18px;right:18px;opacity:.18;}
+.stat-card-icon svg{width:22px;height:22px;}
+.stat-val{font-size:36px;font-weight:800;margin-bottom:6px;color:#fff;letter-spacing:-2.5px;line-height:1;font-variant-numeric:tabular-nums;}
+.stat-lbl{font-size:11px;color:var(--dim);font-weight:500;letter-spacing:.2px;}
 
 /* PANEL HEADER */
 .dp-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:26px;}
@@ -591,24 +591,25 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
         <div class="dai-studio" id="sid-studio"></div>
       </div>
     </div>
+    <div class="dai-sep"></div>
     <div class="sec-lbl">Général</div>
-    <div class="dni active" id="nav-overview" onclick="dashGo('dp-overview',this)"><span class="dni-icon">📊</span> Vue d'ensemble</div>
-    <div class="dni" id="nav-agenda" onclick="dashGo('dp-agenda',this)"><span class="dni-icon">📅</span> Agenda <span class="notif-dot" id="rdv-dot" style="display:none"></span></div>
-    <div class="dni" id="nav-tournee" onclick="dashGo('dp-tournee',this)"><span class="dni-icon">✈️</span> En tournée</div>
+    <div class="dni active" id="nav-overview" onclick="dashGo('dp-overview',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span> Vue d'ensemble</div>
+    <div class="dni" id="nav-agenda" onclick="dashGo('dp-agenda',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> Agenda <span class="notif-dot" id="rdv-dot" style="display:none"></span></div>
+    <div class="dni" id="nav-tournee" onclick="dashGo('dp-tournee',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span> En tournée</div>
     <div class="sec-lbl">Clients & Marketing</div>
-    <div class="dni" id="nav-messages" onclick="dashGo('dp-messages',this);loadInkrConversations()"><span class="dni-icon">💬</span> Messages <span class="msg-badge" id="msg-unread-badge" style="display:none;background:#ef4444;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span></div>
-    <div class="dni" id="nav-clients" onclick="dashGo('dp-clients',this)"><span class="dni-icon">👥</span> CRM Clients</div>
-    <div class="dni" id="nav-campaigns" onclick="dashGo('dp-campaigns',this)"><span class="dni-icon">📣</span> Campagnes</div>
-    <div class="dni" id="nav-fidelite" onclick="dashGo('dp-fidelite',this)"><span class="dni-icon">⭐</span> Fidélité</div>
-    <div class="dni" id="nav-automations" onclick="dashGo('dp-automations',this)"><span class="dni-icon">🤖</span> Automations</div>
-    <div class="dni" id="nav-documents" onclick="dashGo('dp-documents',this)"><span class="dni-icon">📄</span> Documents</div>
+    <div class="dni" id="nav-messages" onclick="dashGo('dp-messages',this);loadInkrConversations()"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Messages <span class="msg-badge" id="msg-unread-badge" style="display:none;background:#ef4444;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span></div>
+    <div class="dni" id="nav-clients" onclick="dashGo('dp-clients',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> CRM Clients</div>
+    <div class="dni" id="nav-campaigns" onclick="dashGo('dp-campaigns',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></span> Campagnes</div>
+    <div class="dni" id="nav-fidelite" onclick="dashGo('dp-fidelite',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> Fidélité</div>
+    <div class="dni" id="nav-automations" onclick="dashGo('dp-automations',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Automations</div>
+    <div class="dni" id="nav-documents" onclick="dashGo('dp-documents',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></span> Documents</div>
     <div class="sec-lbl">Compte</div>
-    <div class="dni" id="nav-profil" onclick="dashGo('dp-profil',this)"><span class="dni-icon">👤</span> Mon profil</div>
-    <div class="dni" id="nav-connexion" onclick="dashGo('dp-connexion',this)"><span class="dni-icon">🔗</span> Connexion app</div>
-    <div class="dni" id="nav-facturation" onclick="dashGo('dp-facturation',this)"><span class="dni-icon">💶</span> Facturation</div>
-    <div class="dni" id="nav-tests" onclick="dashGo('dp-tests',this)"><span class="dni-icon">🧪</span> Tests & Config</div>
+    <div class="dni" id="nav-profil" onclick="dashGo('dp-profil',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span> Mon profil</div>
+    <div class="dni" id="nav-connexion" onclick="dashGo('dp-connexion',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span> Connexion app</div>
+    <div class="dni" id="nav-facturation" onclick="dashGo('dp-facturation',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span> Facturation</div>
+    <div class="dni" id="nav-tests" onclick="dashGo('dp-tests',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> Tests & Config</div>
     <div class="dni-sep"></div>
-    <div class="dni" onclick="logout()"><span class="dni-icon">🚪</span> Déconnexion</div>
+    <div class="dni" onclick="logout()"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span> Déconnexion</div>
   </div>
 
   <!-- PANELS -->
@@ -631,10 +632,26 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
       </div>
       <!-- Stats -->
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-val" style="color:var(--accent)" id="stat-rdv">—</div><div class="stat-lbl">RDV période</div></div>
-        <div class="stat-card"><div class="stat-val" style="color:var(--green)" id="stat-clients">—</div><div class="stat-lbl">Clients</div></div>
-        <div class="stat-card"><div class="stat-val" style="color:var(--blue)" id="stat-camps">—</div><div class="stat-lbl">Campagnes</div></div>
-        <div class="stat-card"><div class="stat-val" style="color:var(--gold)" id="stat-pending">—</div><div class="stat-lbl">RDV en attente</div></div>
+        <div class="stat-card">
+          <div class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg></div>
+          <div class="stat-lbl" style="margin-bottom:8px">RDV période</div>
+          <div class="stat-val" style="color:#fff" id="stat-rdv">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+          <div class="stat-lbl" style="margin-bottom:8px">Clients</div>
+          <div class="stat-val" style="color:var(--green)" id="stat-clients">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div>
+          <div class="stat-lbl" style="margin-bottom:8px">Campagnes</div>
+          <div class="stat-val" style="color:var(--blue)" id="stat-camps">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="stat-lbl" style="margin-bottom:8px">En attente</div>
+          <div class="stat-val" style="color:var(--gold)" id="stat-pending">—</div>
+        </div>
       </div>
       <!-- Pending preview (above grid) -->
       <div id="pending-rdv-preview" style="margin-bottom:14px;"></div>
