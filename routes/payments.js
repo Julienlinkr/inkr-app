@@ -167,13 +167,70 @@ router.get('/status/:appt_id', requireAuth, (req, res) => {
 });
 
 // ─── GET /config ─────────────────────────────────────────────────────────────
-// Renvoie la clé publique Stripe et l'état de configuration.
-// Utilisé par le front pour initialiser Stripe.js si besoin.
 router.get('/config', (req, res) => {
   res.json({
     publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || null,
     configured: !!process.env.STRIPE_SECRET_KEY,
+    paypalLink: process.env.PAYPAL_SUBSCRIPTION_LINK || null,
   });
+});
+
+// ─── POST /subscribe ─────────────────────────────────────────────────────────
+// Crée une session Stripe Checkout pour l'abonnement inkr Pro 39€/mois.
+// Pas de compte requis — utilisé depuis la page /pricing.
+// Body (optionnel) : { email }
+// Retourne : { url } → redirect vers Stripe Checkout
+router.post('/subscribe', async (req, res) => {
+  try {
+    const appUrl = process.env.APP_URL || 'https://inkr.club';
+
+    // ── Mode simulation ────────────────────────────────────────────────────
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.json({
+        url: `${appUrl}/dashboard?action=register&plan=pro`,
+        simulated: true,
+      });
+    }
+
+    const stripe = getStripe();
+    const email = req.body?.email || undefined;
+
+    // Utilise le STRIPE_PRICE_ID si configuré, sinon crée un prix inline
+    let line_items;
+    if (process.env.STRIPE_PRICE_ID) {
+      line_items = [{ price: process.env.STRIPE_PRICE_ID, quantity: 1 }];
+    } else {
+      line_items = [{
+        price_data: {
+          currency: 'eur',
+          product_data: {
+            name: 'inkr Pro',
+            description: 'Agenda, messagerie, CRM, campagnes, documents et plus',
+            images: [`${appUrl}/images/inkr_logo.png`],
+          },
+          unit_amount: 3900, // 39.00€
+          recurring: { interval: 'month' },
+        },
+        quantity: 1,
+      }];
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'subscription',
+      line_items,
+      customer_email: email,
+      allow_promotion_codes: true,
+      success_url: `${appUrl}/dashboard?subscribed=1&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appUrl}/pricing?cancelled=1`,
+      metadata: { plan: 'inkr_pro' },
+    });
+
+    res.json({ url: session.url, session_id: session.id });
+  } catch (err) {
+    console.error('[Stripe subscribe]', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ─── POST /webhook ──────────────────────────────────────────────────────────

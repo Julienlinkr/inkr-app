@@ -47,9 +47,15 @@ const {
   'ALTER TABLE users ADD COLUMN meta_page_id          TEXT DEFAULT NULL',
   'ALTER TABLE users ADD COLUMN meta_page_name        TEXT DEFAULT NULL',
   'ALTER TABLE users ADD COLUMN meta_page_token       TEXT DEFAULT NULL',
+  'ALTER TABLE users ADD COLUMN meta_ig_page_id       TEXT DEFAULT NULL',
   'ALTER TABLE users ADD COLUMN meta_ig_username      TEXT DEFAULT NULL',
+  'ALTER TABLE users ADD COLUMN meta_wa_phone_id      TEXT DEFAULT NULL',
   'ALTER TABLE users ADD COLUMN meta_connected_at     DATETIME DEFAULT NULL',
   'ALTER TABLE messages       ADD COLUMN sender_id    TEXT DEFAULT NULL',
+  'ALTER TABLE messages       ADD COLUMN external_id  TEXT DEFAULT NULL',
+  'ALTER TABLE messages       ADD COLUMN phone        TEXT DEFAULT NULL',
+  'ALTER TABLE messages       ADD COLUMN is_read      INTEGER DEFAULT 0',
+  'ALTER TABLE messages       ADD COLUMN client_id    INTEGER DEFAULT NULL',
 ].forEach(sql => { try { db.exec(sql); } catch (_) {} });
 
 // ── Middleware auth artiste ───────────────────────────────────────────────────
