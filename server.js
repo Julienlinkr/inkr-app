@@ -53,6 +53,11 @@ app.get('/dashboard', (req, res) => {
   res.set('Expires', '0');
   res.sendFile(path.join(__dirname, 'public', 'dashboard.html'));
 });
+// /pricing → SPA index.html (la vue "pricing" est affichée via showView côté client)
+app.get('/pricing', (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // ============ ADMIN — Backup manuel ============
 // GET  /api/admin/backups  → liste les backups disponibles

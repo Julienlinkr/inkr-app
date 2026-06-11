@@ -5285,6 +5285,8 @@ async function handleRdvParam(){
 
 // ── Init au chargement de page ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', ()=>{
+  // Auto-affiche la vue pricing si on arrive via /pricing
+  if(window.location.pathname==='/pricing'){showView('pricing');}
   checkClientSession();
   handleRdvParam();
   // Initialise le badge flottant Flash Deals dès le chargement
