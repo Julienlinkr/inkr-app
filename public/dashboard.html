@@ -1237,6 +1237,28 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
         </div>
         <div class="form-group"><label>Téléphone</label><input class="form-control" id="p-phone" type="tel"></div>
         <div class="form-group"><label>Instagram</label><input class="form-control" id="p-instagram" placeholder="@studio_inkr"></div>
+
+        <!-- PAIEMENTS — reçu directement par l'artiste pour les acomptes clients -->
+        <div style="margin:12px 0 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);">💳 Recevoir les acomptes clients</div>
+        <div class="grid-2">
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" stroke="#009CDE" stroke-width="2"/><path d="M16 12h.01" stroke="#009CDE" stroke-width="2" stroke-linecap="round"/></svg>
+              Votre lien PayPal.me
+            </label>
+            <input class="form-control" id="p-paypal-me" placeholder="https://paypal.me/votrenom" autocomplete="off">
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;">Vos clients paieront directement sur votre PayPal</div>
+          </div>
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="#635BFF" stroke-width="2"/><path d="M2 10h20" stroke="#635BFF" stroke-width="2"/></svg>
+              Lien Stripe (optionnel)
+            </label>
+            <input class="form-control" id="p-stripe-me" placeholder="https://buy.stripe.com/xxx" autocomplete="off">
+            <div style="font-size:10px;color:var(--muted);margin-top:4px;">Lien Stripe Checkout personnalisé</div>
+          </div>
+        </div>
+
         <div class="form-group"><label>Email</label><input class="form-control" id="p-email" type="email" disabled></div>
         <div class="grid-2">
           <div class="form-group"><label>Photo du salon (URL)</label><input class="form-control" id="p-photo-salon" placeholder="https://..."></div>
@@ -1619,12 +1641,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
       </div>
       <input type="hidden" id="ac-payment-method" value="stripe">
     </div>
-    <div id="ac-paypal-config" style="display:none;background:rgba(0,156,222,.05);border:1px solid rgba(0,156,222,.2);border-radius:var(--r);padding:10px 12px;font-size:11px;color:#5badcf;margin-bottom:2px;line-height:1.5;">
-      💡 Un lien <strong>PayPal.me</strong> sera créé. Configurez <code>PAYPAL_ME_URL</code> dans .env (ex: <code>https://paypal.me/votrenom</code>).
-    </div>
-    <div style="background:rgba(240,180,41,.08);border:1px solid rgba(240,180,41,.2);border-radius:var(--r);padding:10px 12px;font-size:11px;color:var(--gold);margin-bottom:14px;line-height:1.5;">
-      💡 <strong>En production :</strong> configurez <code>STRIPE_SECRET_KEY</code> (Stripe) ou <code>PAYPAL_ME_URL</code> (PayPal) dans .env.
-    </div>
+    <div id="ac-paypal-config" style="display:none;border-radius:var(--r);padding:10px 12px;font-size:11px;margin-bottom:2px;line-height:1.5;"></div>
     <div style="display:flex;gap:7px;">
       <button class="btn btn-primary btn-sm" onclick="sendAcompte()">Envoyer la demande</button>
       <button class="btn btn-ghost btn-sm" onclick="closeAcompteModal()">Annuler</button>
@@ -2221,6 +2238,8 @@ function populateUser(){
   document.getElementById('p-phone').value=u.phone||'';
   document.getElementById('p-email').value=u.email||'';
   document.getElementById('p-instagram').value=u.instagram||'';
+  document.getElementById('p-paypal-me').value=u.paypal_me_url||'';
+  document.getElementById('p-stripe-me').value=u.stripe_me_link||'';
   document.getElementById('p-photo-salon').value=u.photo_salon||'';
   document.getElementById('p-photo-artiste').value=u.photo_artiste||'';
   document.getElementById('p-auto-reply').value=u.auto_reply||'';
@@ -2658,7 +2677,21 @@ async function updateRDV(id,status){
 }
 
 // ACOMPTE
-function openAcompteModal(id){currentAcompteId=id;document.getElementById('ac-amount').value='';document.getElementById('ac-result').style.display='none';document.getElementById('acompte-modal').classList.add('open');}
+function openAcompteModal(id){
+  currentAcompteId=id;
+  document.getElementById('ac-amount').value='';
+  document.getElementById('ac-result').style.display='none';
+  // PayPal badge : actif si l'artiste a configuré son lien PayPal.me
+  const hasPaypal=!!(currentUser?.paypal_me_url);
+  const pb=document.getElementById('ac-paypal-badge');
+  if(pb){pb.style.display=hasPaypal?'':'none';pb.textContent=hasPaypal?'✓ ACTIF':'';pb.style.background=hasPaypal?'rgba(0,156,222,.2)':'transparent';pb.style.color='#009CDE';}
+  // Stripe badge
+  const sb=document.getElementById('ac-stripe-badge');
+  if(sb){sb.style.display='';sb.textContent='✓ ACTIF';}
+  // Sélection par défaut : Stripe
+  selectAcPayment('stripe',document.getElementById('ac-pay-stripe'));
+  document.getElementById('acompte-modal').classList.add('open');
+}
 function closeAcompteModal(){document.getElementById('acompte-modal').classList.remove('open');currentAcompteId=null;}
 function selectAcPayment(method,el){
   document.getElementById('ac-payment-method').value=method;
@@ -2670,7 +2703,7 @@ function selectAcPayment(method,el){
   if(sl){sl.style.borderColor='var(--border)';sl.style.background='var(--card)';sl.style.color='var(--muted)';}
   if(pl){pl.style.borderColor='var(--border)';pl.style.background='var(--card)';pl.style.color='var(--muted)';}
   if(sb)sb.style.display='none';
-  if(pb)pb.style.display='none';
+  if(pb)pb.style.display=currentUser?.paypal_me_url?'':'none';
   // Activer le sélectionné
   if(method==='stripe'&&sl){
     sl.style.borderColor='#635BFF';sl.style.background='rgba(99,91,255,.1)';sl.style.color='#a89fff';
@@ -2678,9 +2711,23 @@ function selectAcPayment(method,el){
   }
   if(method==='paypal'&&pl){
     pl.style.borderColor='#009CDE';pl.style.background='rgba(0,156,222,.08)';pl.style.color='#5badcf';
-    if(pb)pb.style.display='';
+    if(pb&&currentUser?.paypal_me_url)pb.style.display='';
   }
-  document.getElementById('ac-paypal-config').style.display=method==='paypal'?'block':'none';
+  // Message d'info PayPal
+  const cfg=document.getElementById('ac-paypal-config');
+  if(cfg){
+    cfg.style.display=method==='paypal'?'block':'none';
+    if(method==='paypal'){
+      const hasPaypal=!!(currentUser?.paypal_me_url);
+      if(hasPaypal){
+        cfg.style.background='rgba(0,156,222,.05)';cfg.style.border='1px solid rgba(0,156,222,.2)';cfg.style.color='#5badcf';
+        cfg.innerHTML=`✅ Votre PayPal.me est configuré : <strong>${currentUser.paypal_me_url}</strong><br>Le client sera redirigé directement sur votre PayPal.`;
+      } else {
+        cfg.style.background='rgba(240,180,41,.07)';cfg.style.border='1px solid rgba(240,180,41,.2)';cfg.style.color='var(--gold)';
+        cfg.innerHTML=`⚠️ Vous n'avez pas encore configuré votre lien PayPal.me.<br>Allez dans <strong>Mon profil → Recevoir les acomptes</strong> pour l'ajouter.`;
+      }
+    }
+  }
 }
 async function sendAcompte(){
   const amount=parseFloat(document.getElementById('ac-amount').value);
@@ -2688,10 +2735,15 @@ async function sendAcompte(){
   const method=document.getElementById('ac-payment-method')?.value||'stripe';
   const el=document.getElementById('ac-result');el.style.display='block';
   if(method==='paypal'){
-    // PayPal.me link — open in new tab
-    const paypalUrl=`https://paypal.me/inkrpro/${amount}EUR`;
+    const paypalBase=(currentUser?.paypal_me_url||'').replace(/\/+$/,'');
+    if(!paypalBase){
+      el.style.color='var(--gold)';
+      el.innerHTML='⚠️ Configurez votre lien PayPal.me dans <strong>Mon profil</strong> d\'abord.';
+      return;
+    }
+    const paypalUrl=`${paypalBase}/${amount}`;
     el.style.color='var(--green)';
-    el.innerHTML=`✅ Lien PayPal créé ! <a href="${paypalUrl}" target="_blank" style="color:#009CDE;text-decoration:underline;">Envoyer ${amount}€ via PayPal</a>`;
+    el.innerHTML=`✅ Lien PayPal créé ! <a href="${paypalUrl}" target="_blank" style="color:#009CDE;text-decoration:underline;">Copier le lien ${amount}€</a> et l'envoyer au client.`;
     showNotif(`✅ Lien PayPal ${amount}€ prêt !`,'success');
     return;
   }
@@ -3377,6 +3429,8 @@ async function saveProfil(){
     adresse:document.getElementById('p-adresse').value,
     phone:document.getElementById('p-phone').value,
     instagram:document.getElementById('p-instagram').value,
+    paypal_me_url:document.getElementById('p-paypal-me').value.trim()||null,
+    stripe_me_link:document.getElementById('p-stripe-me').value.trim()||null,
     pinterest:document.getElementById('p-pinterest').value,
     photo_salon:document.getElementById('p-photo-salon').value.trim(),
     photo_artiste:document.getElementById('p-photo-artiste').value.trim(),

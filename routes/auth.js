@@ -30,6 +30,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'inkr_secret_dev';
   'otp_expiry TEXT DEFAULT NULL',
   'is_pro INTEGER DEFAULT 0',
   'role TEXT DEFAULT \'artist\'',
+  'paypal_me_url TEXT DEFAULT NULL',
+  'stripe_me_link TEXT DEFAULT NULL',
 ].forEach(col => {
   try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch(_) {}
 });
@@ -147,7 +149,7 @@ router.get('/me', (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, cp, adresse, phone, instagram, pinterest, auto_reply, bio, styles, horaires, dispo_flash, photo_salon, photo_artiste, avatar_seed, en_tournee, is_pro, role, created_at FROM users WHERE id = ?').get(decoded.userId);
+    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, cp, adresse, phone, instagram, pinterest, auto_reply, bio, styles, horaires, dispo_flash, photo_salon, photo_artiste, avatar_seed, en_tournee, is_pro, role, paypal_me_url, stripe_me_link, created_at FROM users WHERE id = ?').get(decoded.userId);
     if (!user) return res.status(401).json({ error: 'Utilisateur introuvable' });
     res.json({ user });
   } catch {
@@ -162,7 +164,8 @@ router.put('/profile', (req, res) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const { name, prenom, nom_artiste, studio_name, city, cp, adresse, phone, instagram, pinterest,
-            auto_reply, bio, styles, en_tournee, horaires, dispo_flash } = req.body;
+            auto_reply, bio, styles, en_tournee, horaires, dispo_flash,
+            paypal_me_url, stripe_me_link } = req.body;
 
     // Mise à jour partielle : uniquement en_tournee (toggle tournée)
     if (en_tournee !== undefined && !name) {
@@ -180,11 +183,14 @@ router.put('/profile', (req, res) => {
 
     db.prepare(`
       UPDATE users SET name=?, prenom=?, nom_artiste=?, studio_name=?, city=?, cp=?, adresse=?,
-        phone=?, instagram=?, pinterest=?, auto_reply=?, bio=?, styles=?, horaires=?, dispo_flash=?
+        phone=?, instagram=?, pinterest=?, auto_reply=?, bio=?, styles=?, horaires=?, dispo_flash=?,
+        paypal_me_url=?, stripe_me_link=?
       WHERE id=?
     `).run(name, prenom||'', nom_artiste||'', studio_name||'', city||'', cp||'', adresse||'', phone||'',
            instagram||'', pinterest||'', auto_reply||'', bio||'', stylesJson,
-           horairesJson, dispo_flash ? 1 : 0, decoded.userId);
+           horairesJson, dispo_flash ? 1 : 0,
+           paypal_me_url||null, stripe_me_link||null,
+           decoded.userId);
 
     // ── Sync vers la fiche tatoueur publique (UPSERT par user_id) ────────────
     // Chaque artiste inkr Pro a une entrée dans tatoueurs (répertoire public).
