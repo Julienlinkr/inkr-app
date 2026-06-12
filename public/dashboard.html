@@ -599,6 +599,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
     <div class="sec-lbl">Clients & Marketing</div>
     <div class="dni" id="nav-messages" onclick="dashGo('dp-messages',this);loadInkrConversations()"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Messages <span class="msg-badge" id="msg-unread-badge" style="display:none;background:#ef4444;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span></div>
     <div class="dni" id="nav-clients" onclick="dashGo('dp-clients',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> CRM Clients</div>
+    <div class="dni" id="nav-devis" onclick="dashGo('dp-devis',this);loadQuotes()"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span> Devis <span class="msg-badge" id="devis-badge" style="display:none;background:#f97316;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span></div>
     <div class="dni" id="nav-campaigns" onclick="dashGo('dp-campaigns',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></span> Campagnes</div>
     <div class="dni" id="nav-fidelite" onclick="dashGo('dp-fidelite',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> Fidélité</div>
     <div class="dni" id="nav-automations" onclick="dashGo('dp-automations',this)"><span class="dni-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Automations</div>
@@ -998,6 +999,111 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
         <div style="font-size:12px;">Sélectionnez un client ou ajoutez-en un</div>
       </div>
       <div id="client-info" style="display:none;max-width:580px;"></div>
+    </div>
+  </div>
+
+  <!-- DEVIS -->
+  <div class="dash-panel" id="dp-devis">
+    <div class="dp-inner" style="max-width:900px;">
+
+      <!-- Header -->
+      <div class="dp-hdr">
+        <div>
+          <div class="dp-title">📋 Devis</div>
+          <div class="dp-sub">Créez et envoyez des devis professionnels à vos clients</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openQuoteForm()">+ Nouveau devis</button>
+      </div>
+
+      <!-- Formulaire nouveau devis (masqué par défaut) -->
+      <div id="quote-form-box" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px;">
+        <div style="font-size:14px;font-weight:800;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;">
+          <span id="quote-form-title-label">Nouveau devis</span>
+          <button onclick="closeQuoteForm()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;">×</button>
+        </div>
+        <input type="hidden" id="qf-id" value="">
+
+        <div class="grid-2" style="margin-bottom:12px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Titre du devis</label>
+            <input class="form-control" id="qf-title" placeholder="Ex: Tatouage dragon avant-bras" value="Devis tatouage">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Valable jusqu'au</label>
+            <input class="form-control" id="qf-valid-until" type="date">
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:12px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Nom du client</label>
+            <input class="form-control" id="qf-client-name" placeholder="Prénom Nom" oninput="filterQuoteClients(this.value)">
+            <div id="qf-client-suggestions" style="display:none;position:absolute;z-index:50;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-top:2px;max-height:140px;overflow-y:auto;width:260px;box-shadow:0 8px 24px rgba(0,0,0,.4);"></div>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Email du client *</label>
+            <input class="form-control" id="qf-client-email" placeholder="client@email.com" type="email">
+          </div>
+        </div>
+        <input type="hidden" id="qf-client-id" value="">
+
+        <!-- Lignes de prestations -->
+        <div style="margin-bottom:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <label style="margin:0;font-size:12px;font-weight:700;">Prestations</label>
+            <button onclick="addQuoteLine()" class="btn btn-ghost btn-sm" style="font-size:11px;padding:4px 10px;">+ Ligne</button>
+          </div>
+          <!-- En-tête colonnes -->
+          <div style="display:grid;grid-template-columns:1fr 70px 100px 32px;gap:6px;margin-bottom:4px;padding:0 2px;">
+            <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.8px;">Description</div>
+            <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.8px;text-align:center;">Qté</div>
+            <div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.8px;text-align:right;">Prix (€)</div>
+            <div></div>
+          </div>
+          <div id="qf-lines"></div>
+          <!-- Total -->
+          <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+            <span style="font-size:12px;color:var(--muted);">TOTAL</span>
+            <span id="qf-total" style="font-size:20px;font-weight:900;color:var(--fg);">0,00 €</span>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group" style="margin-bottom:16px;">
+          <label>Notes & conditions (optionnel)</label>
+          <textarea class="form-control" id="qf-notes" style="min-height:70px;font-size:12px;line-height:1.6;" placeholder="Paiement à la séance, acompte de 30% demandé à la réservation..."></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="saveQuote('draft')">💾 Enregistrer brouillon</button>
+          <button class="btn btn-primary btn-sm" onclick="saveQuote('send')">📧 Enregistrer & Envoyer</button>
+          <button class="btn btn-ghost btn-sm" onclick="closeQuoteForm()" style="margin-left:auto;color:var(--muted);">Annuler</button>
+        </div>
+        <div id="qf-msg" style="margin-top:10px;font-size:12px;display:none;"></div>
+      </div>
+
+      <!-- Stats rapides -->
+      <div class="grid-3" style="margin-bottom:20px;" id="quote-stats">
+        <div class="stat-card" style="position:relative;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px;">Total devis</div>
+          <div id="qs-total" style="font-size:28px;font-weight:900;letter-spacing:-1px;">0</div>
+        </div>
+        <div class="stat-card" style="position:relative;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px;">Acceptés</div>
+          <div id="qs-accepted" style="font-size:28px;font-weight:900;letter-spacing:-1px;color:#22c55e;">0</div>
+        </div>
+        <div class="stat-card" style="position:relative;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px;">En attente</div>
+          <div id="qs-pending" style="font-size:28px;font-weight:900;letter-spacing:-1px;color:#f97316;">0</div>
+        </div>
+      </div>
+
+      <!-- Liste des devis -->
+      <div id="quotes-list">
+        <div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">Chargement…</div>
+      </div>
+
     </div>
   </div>
 
@@ -2264,7 +2370,7 @@ function populateUser(){
   loadMyPhotos();
   // PRO lock icons — montrer 🔒 sur les items bloqués pour non-PRO
   if(!isProUser()){
-    const lockedNavIds=['nav-agenda','nav-tournee','nav-messages','nav-clients','nav-campaigns','nav-fidelite','nav-automations','nav-documents','nav-connexion','nav-facturation'];
+    const lockedNavIds=['nav-agenda','nav-tournee','nav-messages','nav-clients','nav-devis','nav-campaigns','nav-fidelite','nav-automations','nav-documents','nav-connexion','nav-facturation'];
     lockedNavIds.forEach(id=>{
       const el=document.getElementById(id);if(!el)return;
       // Ajouter 🔒 si pas déjà là
@@ -2751,6 +2857,273 @@ async function sendAcompte(){
   const data=await res.json();
   if(res.ok){el.style.color='var(--green)';el.textContent=`✅ Demande envoyée ! Lien : ${data.url}`;showNotif('✅ Demande d\'acompte envoyée !','success');setTimeout(()=>{closeAcompteModal();loadAppointments();},2500);}
   else{el.style.color='var(--red)';el.textContent='❌ '+data.error;}
+}
+
+// ======== DEVIS ========
+let allQuotes = [];
+let editingQuoteId = null;
+const QUOTE_STATUS_LABELS = {
+  draft:    { label:'Brouillon', color:'#666',   bg:'rgba(100,100,100,.12)' },
+  sent:     { label:'Envoyé',    color:'#f97316', bg:'rgba(249,115,22,.12)' },
+  accepted: { label:'Accepté',   color:'#22c55e', bg:'rgba(34,197,94,.12)'  },
+  refused:  { label:'Refusé',    color:'#ef4444', bg:'rgba(239,68,68,.12)'  },
+  expired:  { label:'Expiré',    color:'#888',    bg:'rgba(136,136,136,.12)'},
+};
+
+async function loadQuotes(){
+  try {
+    const res = await fetch('/api/quotes', { credentials:'include' });
+    if(!res.ok) return;
+    const data = await res.json();
+    allQuotes = data.quotes || [];
+    renderQuotesList();
+    updateQuoteStats();
+    // Badge sidebar
+    const pending = allQuotes.filter(q=>q.status==='accepted'&&!q.acompte_requested).length;
+    const badge = document.getElementById('devis-badge');
+    if(badge){ badge.style.display = pending>0?'':'none'; badge.textContent=pending; }
+  } catch(e){ console.warn('[loadQuotes]', e.message); }
+}
+
+function updateQuoteStats(){
+  const total = allQuotes.length;
+  const accepted = allQuotes.filter(q=>q.status==='accepted').length;
+  const pending  = allQuotes.filter(q=>q.status==='sent').length;
+  const el = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  el('qs-total', total); el('qs-accepted', accepted); el('qs-pending', pending);
+}
+
+function renderQuotesList(){
+  const container = document.getElementById('quotes-list');
+  if(!container) return;
+  if(!allQuotes.length){
+    container.innerHTML = `<div style="text-align:center;padding:52px 20px;">
+      <div style="font-size:36px;margin-bottom:14px;">📋</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:6px;">Aucun devis pour l'instant</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:20px;">Créez votre premier devis depuis la messagerie ou en cliquant sur "Nouveau devis"</div>
+      <button class="btn btn-primary btn-sm" onclick="openQuoteForm()">+ Créer un devis</button>
+    </div>`;
+    return;
+  }
+  container.innerHTML = allQuotes.map(q => {
+    const s = QUOTE_STATUS_LABELS[q.status] || QUOTE_STATUS_LABELS.draft;
+    const items = (() => { try { return JSON.parse(q.items||'[]'); } catch{ return []; } })();
+    const dateStr = q.created_at ? new Date(q.created_at).toLocaleDateString('fr-FR') : '';
+    const validStr = q.valid_until ? `Valable jusqu'au ${new Date(q.valid_until).toLocaleDateString('fr-FR')}` : '';
+    const acompteHtml = q.acompte_requested
+      ? `<span style="font-size:10px;background:rgba(99,91,255,.15);color:#a89fff;padding:2px 7px;border-radius:4px;font-weight:700;">💳 Acompte ${q.acompte_status==='paid'?'payé ✅':'demandé ⏳'}</span>`
+      : '';
+    const canSend = q.status === 'draft';
+    const canAcompte = q.status === 'accepted' && !q.acompte_requested;
+    const canEdit = q.status === 'draft';
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:10px;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;">
+            <div style="font-size:14px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${q.title}</div>
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:${s.bg};color:${s.color};white-space:nowrap;">${s.label}</span>
+            ${acompteHtml}
+          </div>
+          <div style="font-size:12px;color:var(--muted);">👤 ${q.client_name||'—'} · ✉️ ${q.client_email||'—'}</div>
+          ${validStr?`<div style="font-size:11px;color:var(--muted);margin-top:2px;">⏱ ${validStr}</div>`:''}
+          ${items.length?`<div style="font-size:11px;color:var(--muted);margin-top:4px;">${items.map(it=>`${it.desc||'—'}`).join(' · ')}</div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:20px;font-weight:900;letter-spacing:-1px;">${parseFloat(q.total||0).toFixed(2)} €</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px;">${dateStr}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">
+        ${canEdit?`<button class="btn btn-ghost btn-sm" onclick="editQuote(${q.id})" style="font-size:11px;">✏️ Modifier</button>`:''}
+        ${canSend?`<button class="btn btn-primary btn-sm" onclick="sendQuote(${q.id})" style="font-size:11px;">📧 Envoyer</button>`:''}
+        ${q.status==='sent'?`<button class="btn btn-ghost btn-sm" onclick="sendQuote(${q.id})" style="font-size:11px;color:var(--muted);">🔄 Renvoyer</button>`:''}
+        ${canAcompte?`<button class="btn btn-gold btn-sm" onclick="openQuoteAcompte(${q.id})" style="font-size:11px;">💳 Demander acompte</button>`:''}
+        ${q.acompte_url&&q.acompte_requested?`<a href="${q.acompte_url}" target="_blank" class="btn btn-ghost btn-sm" style="font-size:11px;color:#009CDE;">🔗 Lien paiement</a>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="deleteQuote(${q.id})" style="font-size:11px;color:var(--muted);margin-left:auto;">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openQuoteForm(){
+  editingQuoteId = null;
+  document.getElementById('qf-id').value = '';
+  document.getElementById('qf-title').value = 'Devis tatouage';
+  document.getElementById('qf-client-name').value = '';
+  document.getElementById('qf-client-email').value = '';
+  document.getElementById('qf-client-id').value = '';
+  document.getElementById('qf-notes').value = '';
+  document.getElementById('qf-valid-until').value = '';
+  document.getElementById('qf-msg').style.display='none';
+  document.getElementById('quote-form-title-label').textContent = 'Nouveau devis';
+  document.getElementById('qf-lines').innerHTML = '';
+  addQuoteLine(); addQuoteLine(); // 2 lignes par défaut
+  calcQuoteTotal();
+  document.getElementById('quote-form-box').style.display='block';
+  document.getElementById('quote-form-box').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function closeQuoteForm(){
+  document.getElementById('quote-form-box').style.display='none';
+  editingQuoteId = null;
+}
+
+function editQuote(id){
+  const q = allQuotes.find(x=>x.id===id);
+  if(!q) return;
+  editingQuoteId = id;
+  document.getElementById('qf-id').value = id;
+  document.getElementById('qf-title').value = q.title||'';
+  document.getElementById('qf-client-name').value = q.client_name||'';
+  document.getElementById('qf-client-email').value = q.client_email||'';
+  document.getElementById('qf-client-id').value = q.client_id||'';
+  document.getElementById('qf-notes').value = q.notes||'';
+  document.getElementById('qf-valid-until').value = q.valid_until||'';
+  document.getElementById('quote-form-title-label').textContent = 'Modifier le devis';
+  document.getElementById('qf-msg').style.display='none';
+  // Remplir les lignes
+  const items = (() => { try { return JSON.parse(q.items||'[]'); } catch{ return []; } })();
+  document.getElementById('qf-lines').innerHTML = '';
+  items.forEach(it => addQuoteLine(it.desc, it.qty, it.price));
+  if(!items.length){ addQuoteLine(); addQuoteLine(); }
+  calcQuoteTotal();
+  document.getElementById('quote-form-box').style.display='block';
+  document.getElementById('quote-form-box').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function addQuoteLine(desc='', qty=1, price=''){
+  const row = document.createElement('div');
+  row.style.cssText = 'display:grid;grid-template-columns:1fr 70px 100px 32px;gap:6px;margin-bottom:6px;';
+  row.innerHTML = `
+    <input class="form-control ql-desc" placeholder="Ex: Tatouage dragon" value="${(desc||'').replace(/"/g,'&quot;')}" oninput="calcQuoteTotal()" style="font-size:12px;padding:7px 10px;">
+    <input class="form-control ql-qty" type="number" value="${qty||1}" min="1" oninput="calcQuoteTotal()" style="font-size:12px;padding:7px 8px;text-align:center;">
+    <input class="form-control ql-price" type="number" placeholder="0" value="${price||''}" min="0" step="0.01" oninput="calcQuoteTotal()" style="font-size:12px;padding:7px 10px;text-align:right;">
+    <button onclick="this.parentElement.remove();calcQuoteTotal()" style="background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">×</button>
+  `;
+  document.getElementById('qf-lines').appendChild(row);
+}
+
+function calcQuoteTotal(){
+  let total = 0;
+  document.querySelectorAll('#qf-lines > div').forEach(row => {
+    const qty   = parseFloat(row.querySelector('.ql-qty')?.value)   || 1;
+    const price = parseFloat(row.querySelector('.ql-price')?.value) || 0;
+    total += qty * price;
+  });
+  const el = document.getElementById('qf-total');
+  if(el) el.textContent = total.toFixed(2).replace('.',',') + ' €';
+  return total;
+}
+
+function getQuoteItems(){
+  const items = [];
+  document.querySelectorAll('#qf-lines > div').forEach(row => {
+    const desc  = row.querySelector('.ql-desc')?.value?.trim()  || '';
+    const qty   = parseFloat(row.querySelector('.ql-qty')?.value)   || 1;
+    const price = parseFloat(row.querySelector('.ql-price')?.value) || 0;
+    if(desc || price) items.push({ desc, qty, price });
+  });
+  return items;
+}
+
+function filterQuoteClients(val){
+  const box = document.getElementById('qf-client-suggestions');
+  if(!val || val.length < 2){ box.style.display='none'; return; }
+  const matches = clients.filter(c=>(c.name||'').toLowerCase().includes(val.toLowerCase())).slice(0,6);
+  if(!matches.length){ box.style.display='none'; return; }
+  box.style.display='block';
+  box.innerHTML = matches.map(c=>`<div onclick="selectQuoteClient(${c.id},'${(c.name||'').replace(/'/g,"\\'")}','${(c.email||'').replace(/'/g,"\\'")}');this.parentElement.style.display='none';" style="padding:8px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--card)'" onmouseout="this.style.background=''">${c.name||'—'} <span style="color:var(--muted);font-size:11px;">${c.email||''}</span></div>`).join('');
+}
+function selectQuoteClient(id, name, email){
+  document.getElementById('qf-client-id').value = id;
+  document.getElementById('qf-client-name').value = name;
+  document.getElementById('qf-client-email').value = email;
+}
+
+async function saveQuote(action='draft'){
+  const items = getQuoteItems();
+  const email = document.getElementById('qf-client-email').value.trim();
+  if(!email){ showNotif('Email client requis','error'); return; }
+  const body = {
+    title:       document.getElementById('qf-title').value.trim()||'Devis tatouage',
+    client_name: document.getElementById('qf-client-name').value.trim(),
+    client_email: email,
+    client_id:   document.getElementById('qf-client-id').value||null,
+    items,
+    notes:       document.getElementById('qf-notes').value.trim(),
+    valid_until: document.getElementById('qf-valid-until').value||null,
+  };
+  const msgEl = document.getElementById('qf-msg');
+  msgEl.style.display='block'; msgEl.style.color='var(--muted)'; msgEl.textContent='Enregistrement…';
+  try {
+    let quoteId = editingQuoteId;
+    if(quoteId){
+      const r = await fetch(`/api/quotes/${quoteId}`,{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const d = await r.json(); if(!r.ok) throw new Error(d.error);
+    } else {
+      const r = await fetch('/api/quotes',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const d = await r.json(); if(!r.ok) throw new Error(d.error);
+      quoteId = d.quote?.id;
+      editingQuoteId = quoteId;
+    }
+    if(action==='send'){
+      msgEl.textContent='Envoi en cours…';
+      const r2 = await fetch(`/api/quotes/${quoteId}/send`,{method:'POST',credentials:'include'});
+      const d2 = await r2.json(); if(!r2.ok) throw new Error(d2.error);
+      const label = d2.simulated ? '✅ Devis enregistré (email simulé — configurez RESEND_API_KEY)' : `✅ Devis envoyé à ${email} !`;
+      msgEl.style.color='var(--green)'; msgEl.textContent=label;
+      showNotif(d2.simulated?'📋 Devis créé (email simulé)':'📧 Devis envoyé !','success');
+    } else {
+      msgEl.style.color='var(--green)'; msgEl.textContent='✅ Brouillon enregistré.';
+      showNotif('💾 Devis enregistré','success');
+    }
+    await loadQuotes();
+    setTimeout(closeQuoteForm, 1800);
+  } catch(e){
+    msgEl.style.color='var(--red)'; msgEl.textContent='❌ '+e.message;
+  }
+}
+
+async function sendQuote(id){
+  if(!confirm('Envoyer ce devis par email au client ?')) return;
+  try {
+    const r = await fetch(`/api/quotes/${id}/send`,{method:'POST',credentials:'include'});
+    const d = await r.json(); if(!r.ok) throw new Error(d.error);
+    showNotif(d.simulated?'📋 Devis créé (email simulé)':'📧 Devis envoyé !','success');
+    loadQuotes();
+  } catch(e){ showNotif('❌ '+e.message,'error'); }
+}
+
+async function deleteQuote(id){
+  if(!confirm('Supprimer ce devis ?')) return;
+  try {
+    const r = await fetch(`/api/quotes/${id}`,{method:'DELETE',credentials:'include'});
+    if(!r.ok){ const d=await r.json(); throw new Error(d.error); }
+    showNotif('🗑 Devis supprimé','');
+    loadQuotes();
+  } catch(e){ showNotif('❌ '+e.message,'error'); }
+}
+
+// Modal acompte sur devis accepté
+function openQuoteAcompte(id){
+  const q = allQuotes.find(x=>x.id===id);
+  if(!q) return;
+  const suggested = (q.total*0.3).toFixed(2);
+  const amount = prompt(`Acompte pour "${q.title}" (${q.total.toFixed(2)}€ total)\nMontant de l'acompte (€) :`, suggested);
+  if(!amount || isNaN(parseFloat(amount))) return;
+  const hasPaypal = !!(currentUser?.paypal_me_url);
+  const method = hasPaypal ? (confirm('Utiliser PayPal ?\nOK = PayPal · Annuler = Stripe') ? 'paypal' : 'stripe') : 'stripe';
+  fetch(`/api/quotes/${id}/acompte`,{
+    method:'POST', credentials:'include',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ amount:parseFloat(amount), method })
+  }).then(r=>r.json()).then(d=>{
+    if(d.ok){
+      if(d.url){ window.open(d.url,'_blank'); }
+      showNotif(d.simulated?'💳 Acompte créé (simulé)':'💳 Lien acompte prêt !','success');
+      loadQuotes();
+    } else { showNotif('❌ '+(d.error||'Erreur'),'error'); }
+  });
 }
 
 // ======== TOURNEE ========
@@ -3657,7 +4030,7 @@ function mobNav(panelId,navId){
   document.querySelectorAll('.mob-nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById(navId).classList.add('active');
   // Simuler le clic sur le nav desktop correspondant
-  const navMap={'dp-overview':'nav-overview','dp-agenda':'nav-agenda','dp-messages':'nav-messages','dp-clients':'nav-clients','dp-campaigns':'nav-campaigns'};
+  const navMap={'dp-overview':'nav-overview','dp-agenda':'nav-agenda','dp-messages':'nav-messages','dp-clients':'nav-clients','dp-devis':'nav-devis','dp-campaigns':'nav-campaigns'};
   const desktopNav=document.getElementById(navMap[panelId]);
   if(desktopNav) dashGo(panelId,desktopNav);
 }
@@ -4061,8 +4434,14 @@ function renderOverview(from,to){
   }
   const todayDateEl=document.getElementById('ov-today-date');
   if(todayDateEl)todayDateEl.textContent=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
-  const viewsEl=document.getElementById('ov-views');
-  if(viewsEl&&viewsEl.textContent==='—')viewsEl.textContent=Math.floor(Math.random()*80+12);
+  // Vues profil — données réelles depuis /api/auth/stats/views
+  fetch('/api/auth/stats/views',{credentials:'include'})
+    .then(r=>r.ok?r.json():null)
+    .then(d=>{
+      const viewsEl=document.getElementById('ov-views');
+      if(viewsEl&&d!=null) viewsEl.textContent=d.thisMonth;
+    })
+    .catch(()=>{});
   // Messages preview (static for now — real data needs Meta API)
   const msgEl=document.getElementById('ov-messages-preview');
   if(msgEl){
@@ -4132,10 +4511,23 @@ function updateComposeBar(ch,phone,email){
   if(!btns.length){
     btns.push(`<button class="compose-btn" onclick="openComposeEmail()">✉️ Email</button>`);
   }
+  // Bouton Devis toujours présent dans la barre de composition
+  const clientName = currentChatClientName||'';
+  const clientEmail = email||currentChatClientEmail||'';
+  btns.push(`<button class="compose-btn" style="border-color:#f97316;color:#f97316;" onclick="openQuoteFromChat('${clientName.replace(/'/g,"\\'")}','${clientEmail}')">📋 Devis</button>`);
   bar.innerHTML=btns.join('');
 }
 function sendOnInstagram(){showNotif('Connectez Meta pour envoyer sur Instagram','');}
 function sendOnWhatsApp(phone){window.open('https://wa.me/'+phone.replace(/[\s\-\+]/g,''),'_blank');}
+function openQuoteFromChat(name, email){
+  dashGo('dp-devis', document.getElementById('nav-devis'));
+  loadQuotes();
+  setTimeout(()=>{
+    openQuoteForm();
+    if(name) document.getElementById('qf-client-name').value = name;
+    if(email) document.getElementById('qf-client-email').value = email;
+  }, 150);
+}
 function sendOnPinterest(){showNotif('Connectez Pinterest dans Paramètres','');}
 
 // ======== FIDELITE ========

@@ -157,6 +157,50 @@ router.get('/me', (req, res) => {
   }
 });
 
+// ============ STATS VUES DE PROFIL ============
+// GET /api/auth/stats/views — vues du mois en cours + 6 derniers mois
+router.get('/stats/views', (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = req.cookies?.inkr_token ||
+    (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
+  if (!token) return res.status(401).json({ error: 'Non connecté' });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = decoded.userId;
+
+    // Vues ce mois-ci
+    const thisMonth = db.prepare(`
+      SELECT COUNT(*) as cnt FROM profile_views
+      WHERE user_id = ?
+        AND strftime('%Y-%m', visited_at) = strftime('%Y-%m', 'now')
+    `).get(userId)?.cnt || 0;
+
+    // Vues les 30 derniers jours
+    const last30 = db.prepare(`
+      SELECT COUNT(*) as cnt FROM profile_views
+      WHERE user_id = ?
+        AND visited_at >= datetime('now', '-30 days')
+    `).get(userId)?.cnt || 0;
+
+    // Courbe sur 6 mois (1 point par mois)
+    const monthly = db.prepare(`
+      SELECT strftime('%Y-%m', visited_at) as month, COUNT(*) as cnt
+      FROM profile_views
+      WHERE user_id = ?
+        AND visited_at >= datetime('now', '-6 months')
+      GROUP BY month
+      ORDER BY month ASC
+    `).all(userId);
+
+    // Total toutes périodes
+    const total = db.prepare('SELECT COUNT(*) as cnt FROM profile_views WHERE user_id = ?').get(userId)?.cnt || 0;
+
+    res.json({ thisMonth, last30, monthly, total });
+  } catch {
+    res.status(401).json({ error: 'Session expirée' });
+  }
+});
+
 // ============ METTRE À JOUR LE PROFIL ============
 router.put('/profile', (req, res) => {
   const token = req.cookies?.inkr_token;

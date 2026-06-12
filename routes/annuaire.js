@@ -11,6 +11,16 @@ const { db }  = require('../db/database');
   try { db.exec(`ALTER TABLE tatoueurs ADD COLUMN ${col}`); } catch(_) {}
 });
 
+// ── Table de tracking des vues de profil ─────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS profile_views (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL,
+    viewer_ip   TEXT DEFAULT NULL,
+    visited_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
 // Normalise un texte pour la comparaison (accents → ASCII, lowercase)
 function norm(s){ return (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').trim(); }
 
@@ -134,6 +144,18 @@ router.get('/:id', (req, res) => {
   try {
     const t = db.prepare("SELECT * FROM tatoueurs WHERE id=? AND statut='active'").get(parseInt(req.params.id));
     if (!t) return res.status(404).json({ error: 'Tatoueur introuvable' });
+
+    // ── Tracking vue de profil ─────────────────────────────────────────────
+    // Si la fiche est liée à un compte artiste inkr, on enregistre la visite.
+    // IP anonymisée (3 octets seulement) pour la vie privée.
+    if (t.user_id) {
+      try {
+        const rawIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || '';
+        const anonIp = rawIp.split('.').slice(0, 3).join('.') + '.x'; // ex: 92.184.97.x
+        db.prepare('INSERT INTO profile_views (user_id, viewer_ip) VALUES (?, ?)').run(t.user_id, anonIp);
+      } catch(_) {} // non bloquant
+    }
+
     res.json(toFront(t));
   } catch(e) {
     res.status(500).json({ error: e.message });

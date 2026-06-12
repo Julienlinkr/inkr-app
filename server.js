@@ -39,6 +39,7 @@ app.use('/api/artist-photos', require('./routes/artist_photos'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/loyalty', require('./routes/loyalty'));
 app.use('/api/meta',    require('./routes/meta_oauth')); // OAuth Meta + lecture/envoi messages
+app.use('/api/quotes',  require('./routes/quotes'));     // Devis artiste → client
 
 // ============ PAGES (no-cache pour forcer le rechargement) ============
 app.get('/', (req, res) => {
