@@ -60,6 +60,17 @@ db.exec(`
   )
 `);
 
+// ── Migration table quote_products (modèles de prestations réutilisables) ─────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS quote_products (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL,
+    name       TEXT NOT NULL DEFAULT '',
+    price      REAL  DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
 // ── Middleware auth artiste ───────────────────────────────────────────────────
 function requireAuth(req, res, next) {
   const token = req.cookies?.inkr_token ||
@@ -203,12 +214,59 @@ function buildQuoteEmail(quote, artist, items) {
 // ROUTES
 // ══════════════════════════════════════════════════════════════════════════════
 
+// ── GET /api/quotes/products ──────────────────────────────────────────────────
+router.get('/products', requireAuth, (req, res) => {
+  try {
+    const products = db.prepare(
+      'SELECT * FROM quote_products WHERE user_id = ? ORDER BY name ASC'
+    ).all(req.user.userId);
+    res.json({ products });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── POST /api/quotes/products ─────────────────────────────────────────────────
+// Body: { name, price }
+router.post('/products', requireAuth, (req, res) => {
+  try {
+    const { name, price } = req.body;
+    if (!name?.trim()) return res.status(400).json({ error: 'Nom requis' });
+    const result = db.prepare(
+      'INSERT INTO quote_products (user_id, name, price) VALUES (?, ?, ?)'
+    ).run(req.user.userId, name.trim().slice(0, 100), parseFloat(price) || 0);
+    const product = db.prepare('SELECT * FROM quote_products WHERE id = ?').get(result.lastInsertRowid);
+    res.status(201).json({ product });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ── DELETE /api/quotes/products/:pid ─────────────────────────────────────────
+router.delete('/products/:pid', requireAuth, (req, res) => {
+  try {
+    const p = db.prepare('SELECT id FROM quote_products WHERE id = ? AND user_id = ?')
+      .get(req.params.pid, req.user.userId);
+    if (!p) return res.status(404).json({ error: 'Produit introuvable' });
+    db.prepare('DELETE FROM quote_products WHERE id = ?').run(p.id);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ── GET /api/quotes ───────────────────────────────────────────────────────────
+// Params: ?client_id=X pour filtrer par client
 router.get('/', requireAuth, (req, res) => {
   try {
-    const quotes = db.prepare(
-      'SELECT * FROM quotes WHERE user_id = ? ORDER BY created_at DESC'
-    ).all(req.user.userId);
+    let sql = 'SELECT * FROM quotes WHERE user_id = ?';
+    const params = [req.user.userId];
+    if (req.query.client_id) {
+      sql += ' AND client_id = ?';
+      params.push(parseInt(req.query.client_id));
+    }
+    sql += ' ORDER BY created_at DESC';
+    const quotes = db.prepare(sql).all(...params);
     res.json({ quotes });
   } catch (e) {
     res.status(500).json({ error: e.message });

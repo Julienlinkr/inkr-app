@@ -1051,7 +1051,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
         <div style="margin-bottom:12px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
             <label style="margin:0;font-size:12px;font-weight:700;">Prestations</label>
-            <button onclick="addQuoteLine()" class="btn btn-ghost btn-sm" style="font-size:11px;padding:4px 10px;">+ Ligne</button>
+            <div style="display:flex;gap:5px;">
+              <button onclick="toggleProductsPicker()" class="btn btn-ghost btn-sm" style="font-size:11px;padding:4px 10px;" id="qf-prod-btn">📦 Mes produits</button>
+              <button onclick="addQuoteLine()" class="btn btn-ghost btn-sm" style="font-size:11px;padding:4px 10px;">+ Ligne</button>
+            </div>
+          </div>
+          <!-- Sélecteur produits enregistrés -->
+          <div id="qf-products-bar" style="display:none;background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.2);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
+            <div style="font-size:10px;color:var(--muted);margin-bottom:6px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;">Cliquez pour ajouter au devis</div>
+            <div id="qf-products-chips" style="display:flex;gap:6px;flex-wrap:wrap;min-height:22px;"></div>
+            <div id="qf-prod-empty" style="display:none;font-size:11px;color:var(--muted);">Aucun produit enregistré — créez-en dans la section "📦 Mes produits" ci-dessous.</div>
           </div>
           <!-- En-tête colonnes -->
           <div style="display:grid;grid-template-columns:1fr 70px 100px 32px;gap:6px;margin-bottom:4px;padding:0 2px;">
@@ -1102,6 +1111,35 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
       <!-- Liste des devis -->
       <div id="quotes-list">
         <div style="text-align:center;padding:40px;color:var(--muted);font-size:13px;">Chargement…</div>
+      </div>
+
+      <!-- Section produits enregistrés -->
+      <div style="margin-top:32px;border-top:1px solid var(--border);padding-top:22px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+          <div>
+            <div style="font-size:14px;font-weight:800;">📦 Mes produits enregistrés</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px;">Prestations récurrentes que vous pouvez insérer en 1 clic dans un devis</div>
+          </div>
+          <button onclick="toggleAddProductForm()" class="btn btn-ghost btn-sm" style="font-size:12px;" id="qp-add-btn">+ Ajouter</button>
+        </div>
+        <!-- Formulaire ajout produit -->
+        <div id="qp-add-form" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px;">
+          <div style="display:grid;grid-template-columns:1fr 120px auto;gap:8px;align-items:end;">
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:11px;">Nom de la prestation</label>
+              <input class="form-control" id="qp-new-name" placeholder="Ex: Flash couleur, Séance 1/2 journée…" style="font-size:12px;">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label style="font-size:11px;">Prix (€)</label>
+              <input class="form-control" id="qp-new-price" type="number" placeholder="0" min="0" step="0.01" style="font-size:12px;">
+            </div>
+            <button onclick="saveQuoteProduct()" class="btn btn-primary btn-sm" style="font-size:12px;">Enregistrer</button>
+          </div>
+        </div>
+        <!-- Liste produits -->
+        <div id="products-list">
+          <div style="text-align:center;padding:20px;color:var(--muted);font-size:12px;">Chargement…</div>
+        </div>
       </div>
 
     </div>
@@ -2861,6 +2899,7 @@ async function sendAcompte(){
 
 // ======== DEVIS ========
 let allQuotes = [];
+let quoteProducts = [];
 let editingQuoteId = null;
 const QUOTE_STATUS_LABELS = {
   draft:    { label:'Brouillon', color:'#666',   bg:'rgba(100,100,100,.12)' },
@@ -2872,12 +2911,15 @@ const QUOTE_STATUS_LABELS = {
 
 async function loadQuotes(){
   try {
-    const res = await fetch('/api/quotes', { credentials:'include' });
-    if(!res.ok) return;
-    const data = await res.json();
-    allQuotes = data.quotes || [];
+    const [resQ, resP] = await Promise.all([
+      fetch('/api/quotes', { credentials:'include' }),
+      fetch('/api/quotes/products', { credentials:'include' }),
+    ]);
+    if(resQ.ok){ const d = await resQ.json(); allQuotes = d.quotes || []; }
+    if(resP.ok){ const d = await resP.json(); quoteProducts = d.products || []; }
     renderQuotesList();
     updateQuoteStats();
+    renderProductsList();
     // Badge sidebar
     const pending = allQuotes.filter(q=>q.status==='accepted'&&!q.acompte_requested).length;
     const badge = document.getElementById('devis-badge');
@@ -2945,20 +2987,22 @@ function renderQuotesList(){
   }).join('');
 }
 
-function openQuoteForm(){
+function openQuoteForm(prefill){
   editingQuoteId = null;
   document.getElementById('qf-id').value = '';
   document.getElementById('qf-title').value = 'Devis tatouage';
-  document.getElementById('qf-client-name').value = '';
-  document.getElementById('qf-client-email').value = '';
-  document.getElementById('qf-client-id').value = '';
+  document.getElementById('qf-client-name').value = prefill?.name || '';
+  document.getElementById('qf-client-email').value = prefill?.email || '';
+  document.getElementById('qf-client-id').value = prefill?.id || '';
   document.getElementById('qf-notes').value = '';
   document.getElementById('qf-valid-until').value = '';
   document.getElementById('qf-msg').style.display='none';
+  document.getElementById('qf-products-bar').style.display='none';
   document.getElementById('quote-form-title-label').textContent = 'Nouveau devis';
   document.getElementById('qf-lines').innerHTML = '';
   addQuoteLine(); addQuoteLine(); // 2 lignes par défaut
   calcQuoteTotal();
+  renderProductsChips();
   document.getElementById('quote-form-box').style.display='block';
   document.getElementById('quote-form-box').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
@@ -2981,12 +3025,14 @@ function editQuote(id){
   document.getElementById('qf-valid-until').value = q.valid_until||'';
   document.getElementById('quote-form-title-label').textContent = 'Modifier le devis';
   document.getElementById('qf-msg').style.display='none';
+  document.getElementById('qf-products-bar').style.display='none';
   // Remplir les lignes
   const items = (() => { try { return JSON.parse(q.items||'[]'); } catch{ return []; } })();
   document.getElementById('qf-lines').innerHTML = '';
   items.forEach(it => addQuoteLine(it.desc, it.qty, it.price));
   if(!items.length){ addQuoteLine(); addQuoteLine(); }
   calcQuoteTotal();
+  renderProductsChips();
   document.getElementById('quote-form-box').style.display='block';
   document.getElementById('quote-form-box').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
@@ -3042,13 +3088,34 @@ function selectQuoteClient(id, name, email){
 
 async function saveQuote(action='draft'){
   const items = getQuoteItems();
-  const email = document.getElementById('qf-client-email').value.trim();
+  const email     = document.getElementById('qf-client-email').value.trim();
+  const clientName= document.getElementById('qf-client-name').value.trim();
   if(!email){ showNotif('Email client requis','error'); return; }
+
+  // Auto-créer la fiche client si pas encore dans le CRM
+  let clientId = document.getElementById('qf-client-id').value || null;
+  if(!clientId && email){
+    const existing = clients.find(c=>(c.email||'').toLowerCase()===email.toLowerCase());
+    if(existing){
+      clientId = existing.id;
+    } else if(clientName){
+      try {
+        const rc = await fetch('/api/clients',{
+          method:'POST', credentials:'include',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ name: clientName, email, phone:'', city:'', notes:'', tags:[], instagram:'', whatsapp:'', age:0, date_naissance:'' })
+        });
+        const dc = await rc.json();
+        if(rc.ok && dc.client){ clientId = dc.client.id; clients.push(dc.client); }
+      } catch(_){}
+    }
+  }
+
   const body = {
     title:       document.getElementById('qf-title').value.trim()||'Devis tatouage',
-    client_name: document.getElementById('qf-client-name').value.trim(),
+    client_name: clientName,
     client_email: email,
-    client_id:   document.getElementById('qf-client-id').value||null,
+    client_id:   clientId,
     items,
     notes:       document.getElementById('qf-notes').value.trim(),
     valid_until: document.getElementById('qf-valid-until').value||null,
@@ -3124,6 +3191,146 @@ function openQuoteAcompte(id){
       loadQuotes();
     } else { showNotif('❌ '+(d.error||'Erreur'),'error'); }
   });
+}
+
+// ─── PRODUITS ENREGISTRÉS ─────────────────────────────────────────────────────
+
+function toggleProductsPicker(){
+  const bar = document.getElementById('qf-products-bar');
+  if(!bar) return;
+  const visible = bar.style.display !== 'none';
+  bar.style.display = visible ? 'none' : 'block';
+  if(!visible) renderProductsChips();
+}
+
+function renderProductsChips(){
+  const chips = document.getElementById('qf-products-chips');
+  const empty = document.getElementById('qf-prod-empty');
+  if(!chips) return;
+  if(!quoteProducts.length){
+    chips.innerHTML = '';
+    if(empty) empty.style.display = 'block';
+    return;
+  }
+  if(empty) empty.style.display = 'none';
+  chips.innerHTML = quoteProducts.map(p => `
+    <button onclick="addProductToQuote('${(p.name||'').replace(/'/g,"\\'")}',${p.price})"
+      style="background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.3);color:#f97316;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:.15s;"
+      onmouseover="this.style.background='rgba(249,115,22,.22)'" onmouseout="this.style.background='rgba(249,115,22,.1)'">
+      ${p.name} — ${parseFloat(p.price||0).toFixed(2)} €
+    </button>
+  `).join('');
+}
+
+function addProductToQuote(name, price){
+  addQuoteLine(name, 1, price);
+  calcQuoteTotal();
+  // Feedback visuel
+  showNotif(`➕ ${name} ajouté`,'');
+}
+
+function renderProductsList(){
+  const el = document.getElementById('products-list');
+  if(!el) return;
+  if(!quoteProducts.length){
+    el.innerHTML = `<div style="text-align:center;padding:24px;color:var(--muted);font-size:12px;">
+      <div style="font-size:28px;margin-bottom:8px;">📦</div>
+      Aucun produit enregistré.<br>Cliquez "+ Ajouter" pour créer votre premier modèle de prestation.
+    </div>`;
+    return;
+  }
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:6px;">` +
+    quoteProducts.map(p => `
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;">
+        <div>
+          <span style="font-size:13px;font-weight:700;">${p.name}</span>
+          <span style="font-size:12px;color:var(--muted);margin-left:10px;">${parseFloat(p.price||0).toFixed(2)} €</span>
+        </div>
+        <button onclick="deleteQuoteProduct(${p.id})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;" title="Supprimer">×</button>
+      </div>
+    `).join('') +
+  `</div>`;
+}
+
+function toggleAddProductForm(){
+  const f = document.getElementById('qp-add-form');
+  if(!f) return;
+  const visible = f.style.display !== 'none';
+  f.style.display = visible ? 'none' : 'block';
+  if(!visible) document.getElementById('qp-new-name')?.focus();
+}
+
+async function saveQuoteProduct(){
+  const name  = document.getElementById('qp-new-name')?.value.trim();
+  const price = document.getElementById('qp-new-price')?.value;
+  if(!name){ showNotif('Nom requis','error'); return; }
+  try {
+    const r = await fetch('/api/quotes/products',{
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ name, price: parseFloat(price)||0 })
+    });
+    const d = await r.json();
+    if(!r.ok) throw new Error(d.error);
+    quoteProducts.push(d.product);
+    quoteProducts.sort((a,b)=>a.name.localeCompare(b.name));
+    document.getElementById('qp-new-name').value = '';
+    document.getElementById('qp-new-price').value = '';
+    document.getElementById('qp-add-form').style.display = 'none';
+    renderProductsList();
+    renderProductsChips();
+    showNotif(`📦 "${name}" enregistré`,'success');
+  } catch(e){ showNotif('❌ '+e.message,'error'); }
+}
+
+async function deleteQuoteProduct(id){
+  if(!confirm('Supprimer ce produit ?')) return;
+  try {
+    const r = await fetch(`/api/quotes/products/${id}`,{method:'DELETE',credentials:'include'});
+    if(!r.ok){ const d=await r.json(); throw new Error(d.error); }
+    quoteProducts = quoteProducts.filter(p=>p.id!==id);
+    renderProductsList();
+    renderProductsChips();
+    showNotif('🗑 Produit supprimé','');
+  } catch(e){ showNotif('❌ '+e.message,'error'); }
+}
+
+// Ouvre le panel Devis pré-rempli depuis la fiche client
+function createQuoteForClient(clientId){
+  const c = clients.find(x=>String(x.id)===String(clientId));
+  if(!c) return;
+  dashGo('dp-devis', document.getElementById('nav-devis'));
+  loadQuotes();
+  setTimeout(()=>{
+    openQuoteForm({ id: c.id, name: c.name, email: c.email || '' });
+    document.getElementById('quote-form-box').scrollIntoView({behavior:'smooth',block:'start'});
+  }, 200);
+}
+
+// Charge et affiche les devis d'un client dans sa fiche
+async function loadClientQuotes(clientId){
+  const el = document.getElementById(`client-quotes-list-${clientId}`);
+  if(!el) return;
+  try {
+    const r = await fetch(`/api/quotes?client_id=${clientId}`, { credentials:'include' });
+    const d = await r.json();
+    const qs = d.quotes || [];
+    if(!qs.length){
+      el.innerHTML = `<div style="font-size:12px;color:#555;padding:8px 0;">Aucun devis pour l'instant.</div>`;
+      return;
+    }
+    el.innerHTML = qs.map(q => {
+      const s = QUOTE_STATUS_LABELS[q.status] || QUOTE_STATUS_LABELS.draft;
+      const date = q.created_at ? new Date(q.created_at).toLocaleDateString('fr-FR') : '';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1a1a1a;cursor:pointer;" onclick="dashGo('dp-devis',document.getElementById('nav-devis'));loadQuotes();">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:#d0d0d0;">${q.title}</div>
+          <div style="font-size:10px;color:#666;">${date} · <span style="color:${s.color};font-weight:700;">${s.label}</span></div>
+        </div>
+        <div style="font-size:14px;font-weight:900;color:#d0d0d0;">${parseFloat(q.total||0).toFixed(2)} €</div>
+      </div>`;
+    }).join('');
+  } catch(e){ el.innerHTML = `<div style="font-size:11px;color:#555;">Erreur chargement</div>`; }
 }
 
 // ======== TOURNEE ========
@@ -3459,6 +3666,15 @@ function renderClientCard(id, editMode=false){
           <button onclick="downloadSignedDoc(${d.id},${id})" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#ccc;border-radius:4px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;" title="Télécharger le document signé">⬇ Télécharger</button>
         </div>`).join('')}
       </div>`:''}
+      <!-- Section Devis liés à ce client -->
+      <div style="padding:18px 36px;border-top:1px solid #2a2a2a;" id="client-quotes-${id}">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#666;">Devis</div>
+          <button onclick="createQuoteForClient(${id})" style="background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.25);color:#f97316;border-radius:6px;padding:4px 10px;font-size:10px;font-weight:800;cursor:pointer;letter-spacing:.3px;">+ Nouveau devis</button>
+        </div>
+        <div id="client-quotes-list-${id}"><div style="font-size:11px;color:#555;">Chargement…</div></div>
+      </div>
+
       <div class="crm-actions-row">
         ${c.email?`<button class="crm-act" onclick="openClientEmail(${id})">Email</button><div class="crm-act-sep"></div>`:''}
         <button class="crm-act" onclick="dashGo('dp-documents',document.getElementById('nav-documents'));setTimeout(()=>{prefillDocFromClient(${c.id});},200);">Document</button>
@@ -3480,6 +3696,8 @@ async function openClient(id){
   const col=document.getElementById('client-detail');
   if(col)col.scrollTop=0;
   renderClientCard(id,false);
+  // Charger les devis liés à ce client
+  loadClientQuotes(id);
 }
 async function updateClient(id){
   const c=clients.find(x=>String(x.id)===String(id));if(!c)return;
@@ -4522,11 +4740,7 @@ function sendOnWhatsApp(phone){window.open('https://wa.me/'+phone.replace(/[\s\-
 function openQuoteFromChat(name, email){
   dashGo('dp-devis', document.getElementById('nav-devis'));
   loadQuotes();
-  setTimeout(()=>{
-    openQuoteForm();
-    if(name) document.getElementById('qf-client-name').value = name;
-    if(email) document.getElementById('qf-client-email').value = email;
-  }, 150);
+  setTimeout(()=>{ openQuoteForm({ name, email }); }, 200);
 }
 function sendOnPinterest(){showNotif('Connectez Pinterest dans Paramètres','');}
 
