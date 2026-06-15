@@ -22,13 +22,38 @@
 /* ─── Thème Clair ───────────────────────────────────────────── */
 html.light{
   color-scheme:light;
-  --bg:#F5F5F7;--surface:#FFFFFF;--card:#EBEBEF;--border:#D5D5DB;
-  --accent:#0A0A0A;--acl:rgba(0,0,0,.04);
-  --txt:#1A1A1E;--muted:#7A7A82;--dim:#B0B0B8;
+  --bg:#F5F5F7;--surface:#FFFFFF;--card:#EBEBEF;--border:#D0D0D8;
+  --accent:#0A0A0A;--acl:rgba(0,0,0,.05);
+  /* FIX contraste WCAG AA : --dim et --muted étaient trop clairs sur fond blanc */
+  --txt:#1A1A1E;--muted:#505059;--dim:#6A6A75;
   --msg-me-text:#F5F5F7;
   --nav-bg:rgba(255,255,255,.97); --nav-border:#E3E3E8;
   --sidebar-bg:#EEEEF3; --sidebar-border:#D5D5DB;
+  --theme-icon:🌙;
 }
+/* ─── Thème Clair — surcharges composants ───────────────────────── */
+/* btn-primary : fond blanc sur fond blanc = invisible. On le passe en noir. */
+html.light .btn-primary{background:#0A0A0A;color:#FFFFFF;border-color:transparent;}
+html.light .btn-primary:hover{background:#2A2A2A;}
+/* btn-ghost : hover sombre hardcodé (#3a3a3a) illisible en mode clair */
+html.light .btn-ghost:hover{background:#E0E0E6;border-color:#9090A0;}
+/* info-box : rgba(blanc, 4%) = quasi-transparent sur fond clair */
+html.light .info-box{background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.12);color:var(--muted);}
+/* Blocs de code monospace (fond #0a0a0a hardcodé en inline style) */
+html.light [style*="background:#0a0a0a"]{background:#F0F0F5 !important;border-color:#C8C8D2 !important;}
+html.light [style*="background:#0a0a0a"] *:not(button):not(.btn){color:#2A2A3C !important;}
+html.light [style*="background:#0a0a0a"] span[style*="color:#a855f7"]{color:#7c3aed !important;}
+/* Placeholders sombres (QR code placeholder, etc.) */
+html.light [style*="background:#1a1a1a"]{background:#E5E5EB !important;border-color:#C8C8D2 !important;}
+html.light [style*="background:#1a1a1a"] *{color:#3A3A4A !important;}
+/* Bordures dark hardcodées */
+html.light [style*="border:1px solid #2a2a2a"]{border-color:#C8C8D2 !important;}
+html.light [style*="border:1px solid #2e2e2e"]{border-color:#D0D0DA !important;}
+html.light [style*="border:1px solid #1c1c1c"]{border-color:#D5D5DB !important;}
+/* Textes sombres hardcodés (couleurs dark-only) */
+html.light [style*="color:#9b9b9b"]{color:#50505A !important;}
+/* Date picker en mode clair */
+html.light input[type="date"]::-webkit-calendar-picker-indicator{filter:none;opacity:.6;}
 /* Variables nav/sidebar utilisées dans les règles ci-dessous */
 html,body{height:100%;color-scheme:dark;}
 html.light,html.light body{color-scheme:light;}
