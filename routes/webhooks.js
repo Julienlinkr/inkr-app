@@ -188,7 +188,10 @@ async function handleWhatsAppChange(value) {
         // Délai de 2 secondes avant d'envoyer pour paraître plus naturel
         setTimeout(async () => {
           try {
-            await sendWhatsAppMessage(from, replyText);
+            // Utiliser les tokens propres à l'artiste si disponibles (Embedded Signup)
+            // Sinon fallback sur les variables env globales
+            const artistWa = db.prepare('SELECT meta_wa_phone_id, meta_wa_access_token FROM users WHERE id = ?').get(artist.id);
+            await sendWhatsAppMessage(from, replyText, artistWa?.meta_wa_phone_id, artistWa?.meta_wa_access_token);
             // Sauvegarder le message sortant en base
             db.prepare(
               'INSERT INTO messages (user_id, client_id, client_name, channel, direction, content, phone) VALUES (?, ?, ?, ?, ?, ?, ?)'
@@ -253,9 +256,11 @@ async function handleInstagramDM(pageId, event) {
 
 // ─── Envoi d'un message WhatsApp via l'API Meta ───────────────────────────
 // `to` est en format E.164 sans le + (ex: "33612345678")
-async function sendWhatsAppMessage(to, text) {
-  const phoneId = process.env.WHATSAPP_PHONE_ID;
-  const token = process.env.WHATSAPP_TOKEN;
+// phoneIdOverride / tokenOverride : tokens propres à l'artiste (Embedded Signup)
+// Fallback : variables env WHATSAPP_PHONE_ID / WHATSAPP_TOKEN si non fournis
+async function sendWhatsAppMessage(to, text, phoneIdOverride, tokenOverride) {
+  const phoneId = phoneIdOverride || process.env.WHATSAPP_PHONE_ID;
+  const token   = tokenOverride   || process.env.WHATSAPP_TOKEN;
 
   if (!phoneId || !token) {
     console.log(`[WhatsApp SIMULÉ] → +${to}: ${text}`);

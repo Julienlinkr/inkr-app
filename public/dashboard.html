@@ -1405,7 +1405,70 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
           </div>
         </div>
 
-        <div class="form-group"><label>Email</label><input class="form-control" id="p-email" type="email" disabled></div>
+        <!-- MESSAGERIE UNIFIÉE — Instagram · WhatsApp Business · Email @inkr.club -->
+        <div style="margin:18px 0 8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);">📨 Messagerie unifiée — Channel Manager</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px;">
+
+          <!-- 1. Instagram & Facebook -->
+          <div class="form-group" style="margin:0;">
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:6px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="#E1306C" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#E1306C" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="#E1306C"/></svg>
+              Instagram
+            </label>
+            <div id="meta-connect-profile-status">
+              <a href="/api/meta/oauth" class="btn btn-sm" style="background:linear-gradient(135deg,#405DE6,#E1306C);color:#fff;width:100%;justify-content:center;font-size:11px;">Connecter →</a>
+            </div>
+          </div>
+
+          <!-- 2. WhatsApp Business (Embedded Signup) -->
+          <div class="form-group" style="margin:0;">
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:6px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M17.5 14.5c-.3-.1-1.7-.8-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.2-.5 0-.2-.7-1.7-1-2.3-.2-.6-.5-.5-.7-.5-.2 0-.4 0-.6 0-.2 0-.5.1-.8.4C7.2 8.1 6.5 8.8 6.5 10s.8 2.4.9 2.6c.1.2 1.6 2.5 4 3.5.6.2 1 .4 1.3.5.5.2 1 .2 1.4.1.4-.1 1.3-.5 1.5-1 .2-.5.2-1 .1-1.1-.2-.1-.4-.2-.6-.1z" fill="#25D366"/><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.2-1.3C8.5 21.5 10.2 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18c-1.7 0-3.3-.5-4.7-1.3l-.3-.2-3.1.8.8-3-.2-.3C3.5 14.7 3 13.4 3 12c0-5 4-9 9-9s9 4 9 9-4 9-9 9z" fill="#25D366"/></svg>
+              WhatsApp Business
+            </label>
+            <div id="wa-connect-profile-status">
+              <button onclick="launchWASignup()" id="wa-connect-btn" style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:linear-gradient(135deg,#128C7E,#25D366);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:600;cursor:pointer;width:100%;justify-content:center;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.2-1.3C8.5 21.5 10.2 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+                Connecter →
+              </button>
+            </div>
+          </div>
+
+          <!-- 3. Email @inkr.club -->
+          <div class="form-group" style="margin:0;">
+            <label style="display:flex;align-items:center;gap:5px;margin-bottom:6px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#a855f7" stroke-width="2"/><polyline points="22,6 12,13 2,6" stroke="#a855f7" stroke-width="2"/></svg>
+              Email @inkr.club
+            </label>
+            <div id="inkr-email-status">
+              <button onclick="generateInkrEmail()" style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:600;cursor:pointer;width:100%;justify-content:center;">
+                Activer →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Email perso Gmail/Outlook (pour envoyer depuis inkr) -->
+        <div class="form-group" style="margin:0 0 4px;">
+          <label style="display:flex;align-items:center;gap:6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#60A5FA" stroke-width="2"/><polyline points="22,6 12,13 2,6" stroke="#60A5FA" stroke-width="2"/></svg>
+            Boîte perso (Gmail / Outlook) — sync lecture
+          </label>
+          <div id="email-connect-status">
+            <div id="email-oauth-btns" style="display:flex;gap:6px;flex-wrap:wrap;">
+              <a href="/api/email/auth/google" style="display:flex;align-items:center;gap:7px;padding:7px 11px;background:#fff;border:1px solid #ddd;border-radius:7px;text-decoration:none;color:#222;font-size:11px;font-weight:600;">
+                <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Gmail
+              </a>
+              <a href="/api/email/auth/microsoft" style="display:flex;align-items:center;gap:7px;padding:7px 11px;background:#0078d4;border-radius:7px;text-decoration:none;color:#fff;font-size:11px;font-weight:600;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="1" y="1" width="10" height="10" fill="#F25022"/><rect x="13" y="1" width="10" height="10" fill="#7FBA00"/><rect x="1" y="13" width="10" height="10" fill="#00A4EF"/><rect x="13" y="13" width="10" height="10" fill="#FFB900"/></svg>
+                Outlook
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group"><label>Email (compte inkr)</label><input class="form-control" id="p-email" type="email" disabled></div>
         <div class="grid-2">
           <div class="form-group"><label>Photo du salon (URL)</label><input class="form-control" id="p-photo-salon" placeholder="https://..."></div>
           <div class="form-group"><label>Photo artiste (URL)</label><input class="form-control" id="p-photo-artiste" placeholder="https://..."></div>
@@ -2178,16 +2241,432 @@ async function loadMetaStatus() {
 /** Met à jour visuellement le bouton "Connecter Meta" selon l'état stocké. */
 function renderMetaConnectBtn() {
   const btn = document.getElementById('meta-connect-btn');
-  if (!btn) return;
+  const profileBox = document.getElementById('meta-connect-profile-status');
+
+  const html_connected = (who) => `<div style="display:flex;align-items:center;gap:8px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:7px;padding:7px 10px;">
+    <span style="color:#22C55E;font-size:13px;">✅</span>
+    <div><div style="font-size:12px;font-weight:700;color:#22C55E;">Connecté</div><div style="font-size:10px;color:var(--muted);">${escHtml(who)}</div></div>
+    <button onclick="disconnectMeta()" style="margin-left:auto;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#ef4444;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;">Déconnecter</button>
+  </div>`;
+  const html_disconnected = `<a href="/api/meta/oauth" class="btn btn-sm" style="background:linear-gradient(135deg,#405DE6,#E1306C);color:#fff;width:100%;justify-content:center;font-size:12px;">Connecter Instagram →</a>`;
+
   if (_metaStatus?.connected) {
     const who = _metaStatus.ig_username ? '@' + _metaStatus.ig_username : _metaStatus.page_name || 'connecté';
-    btn.innerHTML = `✅ Meta <span style="font-size:10px;opacity:.8;">${who}</span>`;
-    btn.style.cssText = 'background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#22C55E;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;cursor:default;';
-    btn.removeAttribute('href');
+    // Bouton dans le header messages
+    if (btn) {
+      btn.innerHTML = `✅ Meta <span style="font-size:10px;opacity:.8;">${escHtml(who)}</span>`;
+      btn.style.cssText = 'background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#22C55E;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;cursor:default;';
+      btn.removeAttribute('href');
+    }
+    // Bloc dans le profil
+    if (profileBox) profileBox.innerHTML = html_connected(who);
   } else {
-    btn.innerHTML = 'Connecter Meta →';
-    btn.style.cssText = 'background:linear-gradient(135deg,#405DE6,#E1306C);color:#fff;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;';
-    btn.setAttribute('href', '/api/meta/oauth');
+    if (btn) {
+      btn.innerHTML = 'Connecter Meta →';
+      btn.style.cssText = 'background:linear-gradient(135deg,#405DE6,#E1306C);color:#fff;border-radius:6px;padding:5px 12px;font-size:11px;font-weight:600;';
+      btn.setAttribute('href', '/api/meta/oauth');
+    }
+    if (profileBox) profileBox.innerHTML = html_disconnected;
+  }
+}
+
+async function disconnectMeta() {
+  if (!confirm('Déconnecter Instagram & Facebook ?')) return;
+  await fetch('/api/meta/disconnect', { method: 'DELETE', credentials: 'include' });
+  _metaStatus = { connected: false };
+  renderMetaConnectBtn();
+  showNotif('Meta déconnecté', 'info');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// EMAIL OAUTH — connexion Gmail/Outlook en 1 clic + threads dans messagerie
+// ══════════════════════════════════════════════════════════════════════════════
+
+let _emailStatus = { connected: false, email: null, provider: null };
+
+/** Charge le statut email de l'artiste et met à jour l'UI. */
+async function loadEmailStatus() {
+  try {
+    const r = await fetch('/api/email/status', { credentials: 'include' });
+    if (!r.ok) return;
+    _emailStatus = await r.json();
+    renderEmailConnectStatus();
+    if (_emailStatus.connected) loadEmailThreads();
+    // Gérer le retour OAuth (?email_connected=1 ou ?email_error=...)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('email_connected') === '1') {
+      showNotif('✅ Boîte mail connectée ! Sync en cours…', 'success');
+      history.replaceState({}, '', window.location.pathname);
+      setTimeout(loadEmailThreads, 4000);
+    }
+    const emailErr = params.get('email_error');
+    if (emailErr) {
+      showNotif('❌ Email : ' + decodeURIComponent(emailErr), 'error');
+      history.replaceState({}, '', window.location.pathname);
+    }
+  } catch (_) {}
+}
+
+/** Met à jour le bloc "Boîte mail" dans le profil. */
+function renderEmailConnectStatus() {
+  const box = document.getElementById('email-connect-status');
+  if (!box) return;
+
+  if (_emailStatus?.connected) {
+    const provIcon = _emailStatus.provider === 'google' ? '🔴' : '🔵';
+    const provName = _emailStatus.provider === 'google' ? 'Gmail' : 'Outlook';
+    box.innerHTML = `<div style="display:flex;align-items:center;gap:8px;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.25);border-radius:7px;padding:8px 10px;">
+      <span style="font-size:15px;">${provIcon}</span>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:#60A5FA;">✅ ${provName} connecté</div>
+        <div style="font-size:10px;color:var(--muted);">${escHtml(_emailStatus.email||'')}</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:4px;">
+        <button onclick="syncEmailNow()" style="background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);color:#60A5FA;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;">↻</button>
+        <button onclick="disconnectEmail()" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#ef4444;border-radius:5px;padding:3px 8px;font-size:10px;cursor:pointer;">✕</button>
+      </div>
+    </div>`;
+  } else {
+    box.innerHTML = `<div id="email-oauth-btns" style="display:flex;flex-direction:column;gap:6px;">
+      <a href="/api/email/auth/google" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#fff;border:1px solid #ddd;border-radius:7px;text-decoration:none;color:#222;font-size:12px;font-weight:600;">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Connecter Gmail
+      </a>
+      <a href="/api/email/auth/microsoft" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#0078d4;border-radius:7px;text-decoration:none;color:#fff;font-size:12px;font-weight:600;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="1" y="1" width="10" height="10" fill="#F25022"/><rect x="13" y="1" width="10" height="10" fill="#7FBA00"/><rect x="1" y="13" width="10" height="10" fill="#00A4EF"/><rect x="13" y="13" width="10" height="10" fill="#FFB900"/></svg>
+        Connecter Outlook / Hotmail
+      </a>
+    </div>`;
+  }
+}
+
+async function disconnectEmail() {
+  if (!confirm('Déconnecter votre boîte mail ?')) return;
+  await fetch('/api/email/disconnect', { method: 'DELETE', credentials: 'include' });
+  _emailStatus = { connected: false, email: null };
+  renderEmailConnectStatus();
+  showNotif('Boîte mail déconnectée', 'info');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// WHATSAPP BUSINESS — Meta Embedded Signup
+// ══════════════════════════════════════════════════════════════════════════════
+
+let _waStatus = null;
+let _waConfig  = null; // { metaAppId, waConfigId, configured }
+
+/** Charge la config Meta + le SDK Facebook, puis le statut WA de l'artiste. */
+async function loadWhatsAppStatus() {
+  try {
+    // 1. Récupérer la config depuis le backend
+    const cfgR = await fetch('/api/whatsapp/config');
+    if (cfgR.ok) {
+      _waConfig = await cfgR.json();
+      // Charger le SDK Facebook si Meta App ID est disponible
+      if (_waConfig?.metaAppId && !document.getElementById('facebook-jssdk')) {
+        window.fbAsyncInit = function() {
+          FB.init({ appId: _waConfig.metaAppId, version: 'v21.0', xfbml: false, cookie: false });
+        };
+        const s = document.createElement('script');
+        s.id  = 'facebook-jssdk';
+        s.src = 'https://connect.facebook.net/fr_FR/sdk.js';
+        s.async = true;
+        document.head.appendChild(s);
+      }
+    }
+
+    // 2. Charger le statut WhatsApp
+    const stR = await fetch('/api/whatsapp/status', { credentials: 'include' });
+    if (stR.ok) {
+      _waStatus = await stR.json();
+      renderWAConnectStatus();
+    }
+  } catch (_) {}
+}
+
+function renderWAConnectStatus() {
+  const box = document.getElementById('wa-connect-profile-status');
+  if (!box) return;
+
+  if (_waStatus?.connected) {
+    box.innerHTML = `<div style="display:flex;align-items:center;gap:7px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.25);border-radius:7px;padding:7px 9px;">
+      <span style="font-size:15px;">✅</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:11px;font-weight:700;color:#25D366;">WhatsApp connecté</div>
+        <div style="font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(_waStatus.phone || _waStatus.phoneId || '')}</div>
+      </div>
+      <button onclick="disconnectWhatsApp()" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#ef4444;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;white-space:nowrap;">✕</button>
+    </div>`;
+  } else {
+    if (!_waConfig?.configured) {
+      // Meta App ID ou Config ID manquant → afficher un guide
+      box.innerHTML = `<div style="background:rgba(255,165,0,.07);border:1px solid rgba(255,165,0,.2);border-radius:7px;padding:7px 9px;">
+        <div style="font-size:10px;color:#f59e0b;font-weight:600;margin-bottom:3px;">⚠️ Configuration requise</div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.5;">Ajoutez META_WA_CONFIG_ID dans Railway<br><a href="https://developers.facebook.com/docs/whatsapp/embedded-signup" target="_blank" style="color:#a855f7;">→ Guide Embedded Signup</a></div>
+      </div>`;
+    } else {
+      box.innerHTML = `<button onclick="launchWASignup()" id="wa-connect-btn" style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:linear-gradient(135deg,#128C7E,#25D366);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:600;cursor:pointer;width:100%;justify-content:center;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.2-1.3C8.5 21.5 10.2 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+        Connecter →
+      </button>`;
+    }
+  }
+}
+
+/** Lance le popup Meta Embedded Signup WhatsApp Business. */
+function launchWASignup() {
+  if (!_waConfig?.metaAppId) {
+    showNotif('META_APP_ID manquant dans Railway', 'error'); return;
+  }
+  if (!_waConfig?.waConfigId) {
+    showNotif('META_WA_CONFIG_ID manquant dans Railway', 'error'); return;
+  }
+  if (typeof FB === 'undefined') {
+    showNotif('SDK Facebook non chargé — réessayez dans 2 secondes', 'error'); return;
+  }
+
+  FB.login(async function(response) {
+    if (!response.authResponse?.code) {
+      if (response.status !== 'connected') showNotif('Connexion WhatsApp annulée', 'info');
+      return;
+    }
+
+    const btn = document.getElementById('wa-connect-btn');
+    if (btn) { btn.textContent = 'Connexion en cours…'; btn.disabled = true; }
+
+    try {
+      const r = await fetch('/api/whatsapp/setup', {
+        method : 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify({ code: response.authResponse.code }),
+      });
+      const d = await r.json();
+      if (d.ok) {
+        _waStatus = { connected: true, phone: d.phone, phoneId: d.phoneId, wabaId: d.wabaId };
+        renderWAConnectStatus();
+        showNotif(`✅ WhatsApp connecté : ${d.phone || d.phoneId}`, 'success');
+      } else {
+        showNotif('❌ WhatsApp : ' + (d.error || 'Erreur inconnue'), 'error');
+        renderWAConnectStatus();
+      }
+    } catch (err) {
+      showNotif('❌ Erreur réseau : ' + err.message, 'error');
+      renderWAConnectStatus();
+    }
+  }, {
+    config_id               : _waConfig.waConfigId,
+    response_type           : 'code',
+    override_default_response_type: true,
+    extras: { setup: {}, featureType: '', sessionInfoVersion: '3' },
+  });
+}
+
+async function disconnectWhatsApp() {
+  if (!confirm('Déconnecter WhatsApp Business ?')) return;
+  await fetch('/api/whatsapp/disconnect', { method: 'DELETE', credentials: 'include' });
+  _waStatus = { connected: false };
+  renderWAConnectStatus();
+  showNotif('WhatsApp déconnecté', 'info');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// EMAIL @inkr.club — Adresse dédiée par artiste
+// ══════════════════════════════════════════════════════════════════════════════
+
+let _inkrEmail = null; // { configured, email, slug }
+
+async function loadInkrEmail() {
+  try {
+    const r = await fetch('/api/email/inbound/address', { credentials: 'include' });
+    if (r.ok) {
+      _inkrEmail = await r.json();
+      renderInkrEmailStatus();
+    }
+  } catch (_) {}
+}
+
+function renderInkrEmailStatus() {
+  const box = document.getElementById('inkr-email-status');
+  if (!box) return;
+
+  if (_inkrEmail?.configured) {
+    box.innerHTML = `<div style="background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.25);border-radius:7px;padding:7px 9px;">
+      <div style="display:flex;align-items:center;gap:7px;">
+        <span style="font-size:13px;">✅</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:11px;font-weight:700;color:#a855f7;">Adresse active</div>
+          <div style="font-size:10px;color:var(--muted);word-break:break-all;">${escHtml(_inkrEmail.email)}</div>
+        </div>
+        <button onclick="copyInkrEmail()" style="background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.3);color:#a855f7;border-radius:5px;padding:2px 7px;font-size:10px;cursor:pointer;" title="Copier">📋</button>
+      </div>
+      <div style="margin-top:5px;font-size:9px;color:var(--muted);line-height:1.4;">
+        Donnez cette adresse à vos clients → leurs emails arrivent ici 📬
+      </div>
+    </div>`;
+  } else {
+    box.innerHTML = `<button onclick="generateInkrEmail()" style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:600;cursor:pointer;width:100%;justify-content:center;">
+      Activer →
+    </button>`;
+  }
+}
+
+async function generateInkrEmail() {
+  try {
+    const r = await fetch('/api/email/inbound/generate', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) });
+    const d = await r.json();
+    if (d.ok) {
+      _inkrEmail = { configured: true, email: d.email, slug: d.slug };
+      renderInkrEmailStatus();
+      showNotif(`✅ Adresse créée : ${d.email}`, 'success');
+    } else {
+      showNotif('❌ ' + (d.error || 'Erreur'), 'error');
+    }
+  } catch (err) {
+    showNotif('Erreur réseau', 'error');
+  }
+}
+
+function copyInkrEmail() {
+  if (!_inkrEmail?.email) return;
+  navigator.clipboard.writeText(_inkrEmail.email).then(() => showNotif(`📋 ${_inkrEmail.email} copié !`, 'success'));
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+async function syncEmailNow() {
+  showNotif('Synchronisation en cours…', 'info');
+  try {
+    const r = await fetch('/api/email/sync', { method: 'POST', credentials: 'include' });
+    const d = await r.json();
+    if (d.ok) {
+      showNotif(`✅ ${d.new_messages} nouveaux emails synchronisés`, 'success');
+      loadEmailThreads();
+    }
+  } catch (_) {}
+}
+
+/** Charge les emails et les injecte dans la sidebar Messages. */
+async function loadEmailThreads() {
+  try {
+    const r = await fetch('/api/email/messages?limit=50', { credentials: 'include' });
+    if (!r.ok) return;
+    const data = await r.json();
+    const msgs = data.messages || [];
+    if (!msgs.length) return;
+
+    // Grouper par sender_id (adresse email expéditeur) pour créer des threads
+    const threads = {};
+    msgs.forEach(m => {
+      if (m.direction !== 'in') return;
+      const key = m.sender_id || m.client_name || 'inconnu';
+      if (!threads[key]) {
+        threads[key] = {
+          sender_id: m.sender_id || null,
+          client_name: m.client_name || key,
+          last_subject: m.subject || '(sans objet)',
+          last_msg: m.content || '',
+          last_time: m.created_at,
+          unread: 0,
+        };
+      }
+      if (!m.is_read) threads[key].unread++;
+    });
+
+    const html = Object.entries(threads).map(([addr, t]) => {
+      const name = t.client_name;
+      const initials = name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase() || '✉';
+      const ts = t.last_time ? formatMsgTime(t.last_time) : '';
+      const unreadBadge = t.unread > 0 ? `<span style="background:#60A5FA;color:#000;font-size:9px;font-weight:800;padding:1px 5px;border-radius:10px;margin-left:4px;">${t.unread}</span>` : '';
+      return `
+        <div class="msg-thread" data-channel="email" data-name="${escHtml(name.toLowerCase())}"
+             onclick="openEmailThread(this,'${escHtml(name)}','${escHtml(addr)}','${escHtml(t.last_subject)}')">
+          <div class="mt-av" style="background:rgba(96,165,250,.15);color:#60A5FA;">${escHtml(initials)}</div>
+          <div class="mt-body">
+            <div class="mt-name">${escHtml(name)} ${unreadBadge} <span class="mt-time">${ts}</span></div>
+            <div class="mt-prev" style="font-style:italic;font-size:10px;color:var(--muted);">${escHtml(t.last_subject.slice(0,45))}</div>
+            <div class="ch-tag" style="background:rgba(96,165,250,.12);color:#60A5FA;">✉️ Email</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    // Injecter dans meta-threads-list (section partagée avec Meta)
+    const container = document.getElementById('meta-threads-list');
+    if (container) {
+      // Supprimer les anciens threads email et ajouter les nouveaux
+      container.querySelectorAll('[data-channel="email"]').forEach(el => el.remove());
+      container.insertAdjacentHTML('beforeend', html);
+    }
+
+    // Mettre à jour le badge d'unread emails dans la nav
+    const totalUnread = data.unread || 0;
+    if (totalUnread > 0) {
+      const badge = document.getElementById('msg-unread-badge');
+      if (badge) {
+        const cur = parseInt(badge.textContent) || 0;
+        badge.textContent = cur + totalUnread;
+        badge.style.display = 'inline-block';
+      }
+    }
+  } catch (e) {
+    console.warn('[Email threads]', e.message);
+  }
+}
+
+/** Ouvre un thread email dans la zone de chat. */
+async function openEmailThread(el, name, senderAddr, subject) {
+  document.querySelectorAll('.msg-thread').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+
+  document.getElementById('chat-name').textContent = name;
+  document.getElementById('chat-ch').textContent = `✉️ Email · ${senderAddr}`;
+  const av = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() || '✉';
+  document.getElementById('chat-av').textContent = av;
+
+  currentChatClientName  = name;
+  currentChatClientEmail = senderAddr;
+  currentChatClientPhone = null;
+  currentChatChannel     = 'Email';
+
+  window._emailActiveSender  = senderAddr;
+  window._emailActiveSubject = subject;
+
+  // Mettre à jour la barre de composition pour l'email
+  updateComposeBar('Email', null, senderAddr);
+
+  const msgsEl = document.getElementById('chat-msgs');
+  msgsEl.innerHTML = '<div style="text-align:center;padding:20px;color:#666;font-size:12px;">Chargement…</div>';
+
+  try {
+    const r = await fetch('/api/email/messages?limit=100', { credentials: 'include' });
+    if (!r.ok) throw new Error('API error');
+    const data = await r.json();
+    const all = data.messages || [];
+
+    // Filtrer la conversation avec cet expéditeur
+    const conv = all.filter(m =>
+      m.sender_id === senderAddr ||
+      m.email_to  === senderAddr ||
+      m.client_name === name
+    ).reverse();
+
+    if (!conv.length) {
+      msgsEl.innerHTML = '<div style="text-align:center;padding:30px;color:#555;font-size:12px;">Aucun email dans cette conversation.</div>';
+      return;
+    }
+
+    msgsEl.innerHTML = conv.map(m => {
+      const isMine = m.direction === 'out';
+      const cls    = isMine ? 'me' : 'them';
+      const ts     = m.created_at ? new Date(m.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+      const subj   = m.subject ? `<div style="font-size:10px;font-weight:700;opacity:.7;margin-bottom:3px;">📧 ${escHtml(m.subject)}</div>` : '';
+      return `<div class="msg ${cls}">${subj}${escHtml((m.content||'').slice(0,500))}${ts ? `<div class="msg-meta">${isMine ? 'Vous' : escHtml(name)} · ${ts}</div>` : ''}</div>`;
+    }).join('');
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+
+    // Marquer comme lu
+    await fetch('/api/meta/read/' + conv[conv.length - 1]?.id, { method: 'POST', credentials: 'include' });
+  } catch (e) {
+    msgsEl.innerHTML = `<div style="text-align:center;padding:28px;color:#ef4444;font-size:12px;">Erreur : ${escHtml(e.message)}</div>`;
   }
 }
 
@@ -2358,6 +2837,11 @@ function showApp(){
   // Vérifier la connexion Meta + paramètres URL OAuth callback
   handleMetaUrlParams();
   loadMetaStatus();
+  // Charger le statut email Gmail/Outlook
+  loadEmailStatus();
+  // Charger WhatsApp Business + Email @inkr.club (channel manager)
+  loadWhatsAppStatus();
+  loadInkrEmail();
   // PRO WALL — afficher pour les nouveaux artistes sans abonnement
   if(!isProUser()&&!_proWallDismissed){
     setTimeout(openProWall, 800);

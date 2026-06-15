@@ -38,8 +38,11 @@ app.use('/api/client',        require('./routes/client_auth'));
 app.use('/api/artist-photos', require('./routes/artist_photos'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/loyalty', require('./routes/loyalty'));
-app.use('/api/meta',    require('./routes/meta_oauth')); // OAuth Meta + lecture/envoi messages
-app.use('/api/quotes',  require('./routes/quotes'));     // Devis artiste → client
+app.use('/api/meta',       require('./routes/meta_oauth'));       // OAuth Meta (Instagram + Facebook)
+app.use('/api/whatsapp',  require('./routes/whatsapp_connect')); // WhatsApp Business Embedded Signup
+app.use('/api/email',     require('./routes/email_oauth'));      // Gmail/Outlook OAuth2 artiste
+app.use('/api/email',     require('./routes/email_inbound'));    // Adresses @inkr.club + inbound webhook
+app.use('/api/quotes',    require('./routes/quotes'));           // Devis artiste → client
 
 // ============ PAGES (no-cache pour forcer le rechargement) ============
 app.get('/', (req, res) => {
@@ -205,6 +208,9 @@ app.get('/api/status', (req, res) => {
 // ============ BACKUP AUTOMATIQUE ============
 const { startAutoBackup } = require('./services/backup');
 
+// ============ EMAIL POLLING (IMAP) ============
+const { startEmailPolling } = require('./routes/email_oauth');
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log('\n🎨 ========================================');
   console.log(`   inkr — Serveur démarré sur le port ${PORT}`);
@@ -227,4 +233,6 @@ app.listen(PORT, '0.0.0.0', () => {
 
   // Démarrage du backup automatique (après initialisation complète)
   startAutoBackup();
+  // Démarrage du polling IMAP (sync emails artistes toutes les 5 min)
+  startEmailPolling();
 });
