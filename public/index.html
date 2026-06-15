@@ -5325,9 +5325,11 @@ async function handleRdvParam(){
       const d=await r.json();
       const all=d.artists||[];
       ARTISTS=[...all];
+      const rdvClean=rdv.replace(/^@/,'');
       const artist=all.find(a=>
-        (a.instagram||'').replace('@','').toLowerCase()===rdv.toLowerCase()
-      ) || all.find(a=>String(a.id)===String(rdv));
+        (a.instagram||'').replace('@','').toLowerCase()===rdvClean.toLowerCase()
+      ) || all.find(a=>String(a.id)===String(rdv))
+        || all.find(a=>String(a.user_id)===String(rdv));
       if(artist){
         // La fiche est dans la vue home (annuaire split)
         showView('home');

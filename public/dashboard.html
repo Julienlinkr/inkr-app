@@ -1584,60 +1584,68 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
   <div class="dash-panel" id="dp-connexion">
     <div class="dp-inner">
       <div class="dp-hdr">
-        <div><div class="dp-title">🔗 Connexion Site / Application</div><div class="dp-sub">Synchronisation des données entre inkr et votre site ou app</div></div>
+        <div><div class="dp-title">🔗 Mon lien de réservation</div><div class="dp-sub">Partagez votre profil inkr — vos clients réservent en un clic</div></div>
       </div>
-      <div class="info-banner info-blue">💡 Toutes vos données (RDV, clients, messages) sont synchronisées en temps réel entre le dashboard inkr et votre espace client public.</div>
 
-      <!-- État de la sync -->
+      <div class="info-banner info-blue">💡 <strong>À quoi ça sert ?</strong> inkr crée une page publique avec votre profil, vos photos et un formulaire de réservation. Partagez simplement le lien ci-dessous — en bio Instagram, par message, ou en affichant le QR code dans votre studio.</div>
+
+      <!-- Lien de réservation -->
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:16px;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:14px;">État de la synchronisation</div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-          <div style="text-align:center;padding:14px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:var(--r);">
-            <div style="font-size:24px;font-weight:900;color:var(--green);">●</div>
-            <div style="font-size:11px;color:var(--green);font-weight:700;margin-top:4px;">RDV</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;">Synchronisé</div>
-          </div>
-          <div style="text-align:center;padding:14px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:var(--r);">
-            <div style="font-size:24px;font-weight:900;color:var(--green);">●</div>
-            <div style="font-size:11px;color:var(--green);font-weight:700;margin-top:4px;">Profil</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;">Synchronisé</div>
-          </div>
-          <div style="text-align:center;padding:14px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:var(--r);">
-            <div style="font-size:24px;font-weight:900;color:var(--green);">●</div>
-            <div style="font-size:11px;color:var(--green);font-weight:700;margin-top:4px;">Messages</div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px;">Synchronisé</div>
-          </div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">🔗 Votre lien de réservation</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Copiez ce lien et mettez-le dans votre bio Instagram, dans vos stories, ou envoyez-le directement à vos clients.</div>
+        <div style="display:flex;align-items:center;gap:8px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:var(--r);padding:10px 14px;margin-bottom:10px;">
+          <span style="font-size:12px;color:#a855f7;font-weight:600;flex:1;word-break:break-all;" id="booking-link-connexion">—</span>
         </div>
-      </div>
-
-      <!-- Intégration widget externe -->
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:16px;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">📦 Widget de réservation</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Intégrez le formulaire de réservation inkr sur votre site existant avec ce snippet.</div>
-        <div style="background:#0a0a0a;border:1px solid #2a2a2a;border-radius:var(--r);padding:12px 14px;font-family:monospace;font-size:11px;color:#9b9b9b;margin-bottom:10px;line-height:1.7;" id="widget-snippet">&lt;script src="https://inkr.club/widget.js"&gt;&lt;/script&gt;<br>&lt;div id="inkr-booking" data-artist="<span id="widget-artist-id" style="color:#a855f7;">VOTRE_ID</span>"&gt;&lt;/div&gt;</div>
-        <button class="btn btn-ghost btn-sm" onclick="copyWidgetSnippet()">📋 Copier le code</button>
-      </div>
-
-      <!-- API Webhook -->
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:16px;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">🔔 Webhook (notifications)</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Recevez une notification HTTP à chaque nouveau RDV, message ou acompte.</div>
-        <div class="form-group">
-          <label>URL de votre endpoint</label>
-          <div style="display:flex;gap:8px;">
-            <input class="form-control" id="webhook-url" placeholder="https://votre-app.com/webhook/inkr" style="flex:1;">
-            <button class="btn btn-primary btn-sm" onclick="saveWebhook()">Sauvegarder</button>
-          </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="copyConnexionLink()">📋 Copier le lien</button>
+          <button class="btn btn-ghost btn-sm" onclick="openConnexionProfile()">👁 Voir mon profil public</button>
         </div>
-        <div style="font-size:11px;color:var(--muted);">inkr envoie un POST JSON à cette URL avec les événements : <code>rdv.created</code>, <code>rdv.confirmed</code>, <code>message.new</code>, <code>acompte.paid</code>.</div>
       </div>
 
       <!-- QR Code lien direct -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">📲 QR Code à imprimer</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Imprimez ce QR code et affichez-le dans votre studio. Vos clients le scannent avec leur téléphone et arrivent directement sur votre fiche inkr.</div>
+        <div id="qr-placeholder" style="width:150px;height:150px;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:12px;">⏳</div>
+        <a id="qr-download-btn" class="btn btn-ghost btn-sm" style="display:none;" download="qrcode-inkr.png">⬇️ Télécharger le QR code</a>
+      </div>
+
+      <!-- Widget site web (avancé, masqué par défaut) -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:12px;" onclick="toggleSection('widget-section','widget-section-arrow')">
+          <div>
+            <div style="font-size:13px;font-weight:700;">📦 Intégrer sur votre site web</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">Si vous avez votre propre site internet, ajoutez un bouton de réservation inkr.</div>
+          </div>
+          <span id="widget-section-arrow" style="font-size:12px;color:var(--muted);flex-shrink:0;">▼</span>
+        </div>
+        <div id="widget-section" style="display:none;margin-top:14px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Copiez ce code et collez-le dans votre site. Un bouton "Réserver" apparaîtra et ouvrira votre profil inkr.</div>
+          <div style="background:#0a0a0a;border:1px solid #2a2a2a;border-radius:var(--r);padding:12px 14px;font-family:monospace;font-size:11px;color:#9b9b9b;margin-bottom:10px;line-height:1.7;" id="widget-snippet">&lt;a href="<span id="widget-booking-link" style="color:#a855f7;">https://www.inkr.club/?rdv=VOTRE_ID</span>" target="_blank" style="display:inline-block;padding:12px 24px;background:#0d0d1a;color:#fff;border-radius:12px;font-family:sans-serif;font-weight:700;text-decoration:none;"&gt;📅 Réserver un tatouage&lt;/a&gt;</div>
+          <button class="btn btn-ghost btn-sm" onclick="copyWidgetSnippet()">📋 Copier le code</button>
+        </div>
+      </div>
+
+      <!-- Notifications automatiques (pour développeurs, masqué par défaut) -->
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:20px;">
-        <div style="font-size:13px;font-weight:700;margin-bottom:4px;">📲 QR Code — lien de réservation</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Imprimez ce QR Code et placez-le en studio. Vos clients scannent et arrivent directement sur votre fiche inkr.</div>
-        <div id="qr-placeholder" style="width:130px;height:130px;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:40px;margin-bottom:10px;">📱</div>
-        <button class="btn btn-ghost btn-sm" onclick="generateQR()">Générer le QR Code</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:12px;" onclick="toggleSection('webhook-section','webhook-section-arrow')">
+          <div>
+            <div style="font-size:13px;font-weight:700;">⚙️ Notifications automatiques <span style="font-size:10px;background:rgba(168,85,247,.15);color:#a855f7;padding:2px 6px;border-radius:4px;font-weight:600;margin-left:6px;">Dev</span></div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">Connectez inkr à une autre application pour recevoir des alertes automatiques.</div>
+          </div>
+          <span id="webhook-section-arrow" style="font-size:12px;color:var(--muted);flex-shrink:0;">▼</span>
+        </div>
+        <div id="webhook-section" style="display:none;margin-top:14px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Si vous utilisez un outil externe (Zapier, Make, votre propre app…), renseignez son adresse ci-dessous. inkr lui enverra automatiquement un message à chaque nouveau RDV, message reçu ou acompte payé.</div>
+          <div class="form-group">
+            <label>Adresse de notification (URL)</label>
+            <div style="display:flex;gap:8px;">
+              <input class="form-control" id="webhook-url" placeholder="https://mon-app.com/inkr-notifications" style="flex:1;">
+              <button class="btn btn-primary btn-sm" onclick="saveWebhook()">Enregistrer</button>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);">inkr envoie un message JSON automatique pour les événements : <code>rdv.created</code>, <code>rdv.confirmed</code>, <code>message.new</code>, <code>acompte.paid</code>.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -2983,29 +2991,73 @@ function initFacturation(){
 }
 
 // ======== CONNEXION APP ========
+function getBookingHandle(){
+  // Utiliser le handle Instagram sans @ si disponible, sinon l'ID utilisateur
+  const ig=(currentUser?.instagram||'').replace(/^@/,'').trim();
+  return ig || String(currentUser?.id||'demo');
+}
+function getBookingUrl(){
+  return `https://www.inkr.club/?rdv=${getBookingHandle()}`;
+}
+function copyConnexionLink(){
+  const url=getBookingUrl();
+  navigator.clipboard.writeText(url).then(()=>showNotif('📋 Lien copié !','success')).catch(()=>{
+    // Fallback si clipboard API non disponible
+    const el=document.createElement('input');el.value=url;document.body.appendChild(el);el.select();document.execCommand('copy');document.body.removeChild(el);
+    showNotif('📋 Lien copié !','success');
+  });
+}
+function openConnexionProfile(){
+  window.open(getBookingUrl(),'_blank');
+}
 function copyWidgetSnippet(){
-  const txt=document.getElementById('widget-snippet')?.textContent||'';
-  navigator.clipboard.writeText(txt.replace(/\n/g,'').trim()).then(()=>showNotif('📋 Code copié !','success')).catch(()=>{});
+  const snippet=document.getElementById('widget-snippet');
+  if(!snippet)return;
+  // Reconstituer le snippet en texte propre
+  const bookingUrl=getBookingUrl();
+  const txt=`<a href="${bookingUrl}" target="_blank" style="display:inline-block;padding:12px 24px;background:#0d0d1a;color:#fff;border-radius:12px;font-family:sans-serif;font-weight:700;text-decoration:none;">📅 Réserver un tatouage</a>`;
+  navigator.clipboard.writeText(txt).then(()=>showNotif('📋 Code copié !','success')).catch(()=>{});
 }
 function saveWebhook(){
   const url=document.getElementById('webhook-url')?.value.trim();
-  if(!url){showNotif('Entrez une URL de webhook','error');return;}
+  if(!url){showNotif('Entrez une URL de notification','error');return;}
   localStorage.setItem('inkr_webhook',url);
-  showNotif('✅ Webhook enregistré','success');
+  showNotif('✅ Adresse de notification enregistrée','success');
+}
+function toggleSection(sectionId, arrowId){
+  const sec=document.getElementById(sectionId);
+  const arrow=document.getElementById(arrowId);
+  if(!sec)return;
+  const visible=sec.style.display!=='none';
+  sec.style.display=visible?'none':'block';
+  if(arrow)arrow.textContent=visible?'▼':'▲';
 }
 function generateQR(){
   const qrDiv=document.getElementById('qr-placeholder');if(!qrDiv)return;
-  const slug=currentUser?.slug||currentUser?.id||'demo';
-  const bookingUrl=`https://inkr.club/artiste/${slug}`;
-  // Use free QR API
-  qrDiv.innerHTML=`<img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(bookingUrl)}&bgcolor=111111&color=ffffff&qzone=1" style="width:130px;height:130px;border-radius:var(--r);" alt="QR Code">`;
+  const bookingUrl=getBookingUrl();
+  const size=150;
+  const imgSrc=`https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(bookingUrl)}&bgcolor=111111&color=ffffff&qzone=1`;
+  qrDiv.innerHTML=`<img src="${imgSrc}" style="width:${size}px;height:${size}px;border-radius:var(--r);" alt="QR Code réservation inkr" onerror="this.parentElement.innerHTML='❌ Impossible de générer'">`;
+  // Activer le bouton de téléchargement
+  const dlBtn=document.getElementById('qr-download-btn');
+  if(dlBtn){dlBtn.href=imgSrc;dlBtn.style.display='inline-flex';}
 }
 function initConnexion(){
-  const artistId=currentUser?.id||'?';
-  const widgetEl=document.getElementById('widget-artist-id');
-  if(widgetEl)widgetEl.textContent=artistId;
+  // Afficher le lien de réservation
+  const linkEl=document.getElementById('booking-link-connexion');
+  const bookingUrl=getBookingUrl();
+  if(linkEl)linkEl.textContent=bookingUrl;
+
+  // Mettre à jour le widget snippet
+  const widgetLinkEl=document.getElementById('widget-booking-link');
+  if(widgetLinkEl)widgetLinkEl.textContent=bookingUrl;
+
+  // Restaurer le webhook si sauvegardé
   const wh=localStorage.getItem('inkr_webhook');
   if(wh){const inp=document.getElementById('webhook-url');if(inp)inp.value=wh;}
+
+  // Générer le QR code automatiquement
+  generateQR();
 }
 
 // ======== NAVIGATION ========
