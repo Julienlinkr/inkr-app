@@ -31,28 +31,62 @@ html.light{
   --sidebar-bg:#EEEEF3; --sidebar-border:#D5D5DB;
   --theme-icon:🌙;
 }
-/* ─── Thème Clair — surcharges composants ───────────────────────── */
-/* btn-primary : fond blanc sur fond blanc = invisible. On le passe en noir. */
+/* ═══ Thème Clair — surcharges complètes ═══════════════════════════════════ */
+
+/* ── Sidebar navigation (couleurs hardcodées rgba blanc) ─────────────────── */
+html.light .dai-studio{color:var(--muted);}
+html.light .dai-sep{background:var(--border);}
+html.light .sec-lbl{color:var(--dim);}
+html.light .dni{color:var(--muted);}
+html.light .dni:hover{background:rgba(0,0,0,.05);color:var(--txt);}
+html.light .dni.active{background:rgba(0,0,0,.07);color:var(--txt);font-weight:700;}
+html.light .dni.active::before{background:var(--accent);}
+html.light .notif-dot{background:var(--accent);}
+html.light .dni-sep{background:var(--border);}
+html.light .dni-icon svg{opacity:.6;}
+html.light .dni:hover .dni-icon svg,html.light .dni.active .dni-icon svg{opacity:1;}
+
+/* ── Titres panels (dp-title hardcodé #fff) ──────────────────────────────── */
+html.light .dp-title{color:var(--txt);}
+html.light .dp-sub{color:var(--muted);}
+
+/* ── Hero vue d'ensemble (ov-hero-title hardcodé #fff) ───────────────────── */
+html.light .ov-hero-title{color:var(--txt);}
+html.light .ov-hero-sub{color:var(--muted);}
+
+/* ── Valeurs stats (stat-val hardcodé #fff) ──────────────────────────────── */
+html.light .stat-val{color:var(--txt);}
+html.light .stat-card:hover{border-color:var(--muted);background:var(--card);transform:translateY(-2px);}
+html.light .ov-card:hover{border-color:var(--muted);}
+
+/* ── Boutons (btn-primary blanc sur blanc = invisible) ───────────────────── */
 html.light .btn-primary{background:#0A0A0A;color:#FFFFFF;border-color:transparent;}
 html.light .btn-primary:hover{background:#2A2A2A;}
-/* btn-ghost : hover sombre hardcodé (#3a3a3a) illisible en mode clair */
 html.light .btn-ghost:hover{background:#E0E0E6;border-color:#9090A0;}
-/* info-box : rgba(blanc, 4%) = quasi-transparent sur fond clair */
+
+/* ── Info banner box (rgba blanc quasi-transparent) ──────────────────────── */
 html.light .info-box{background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.12);color:var(--muted);}
-/* Blocs de code monospace (fond #0a0a0a hardcodé en inline style) */
+
+/* ── Blocs de code / aperçu monospace (fond #0a0a0a inline) ─────────────── */
 html.light [style*="background:#0a0a0a"]{background:#F0F0F5 !important;border-color:#C8C8D2 !important;}
-html.light [style*="background:#0a0a0a"] *:not(button):not(.btn){color:#2A2A3C !important;}
-html.light [style*="background:#0a0a0a"] span[style*="color:#a855f7"]{color:#7c3aed !important;}
-/* Placeholders sombres (QR code placeholder, etc.) */
+html.light [style*="background:#0a0a0a"] *:not(button):not(.btn):not(a){color:#2A2A3C !important;}
+html.light [style*="background:#0a0a0a"] span[style*="color:#a855f7"]{color:#6d28d9 !important;}
+
+/* ── Placeholders sombres (QR code #1a1a1a) ─────────────────────────────── */
 html.light [style*="background:#1a1a1a"]{background:#E5E5EB !important;border-color:#C8C8D2 !important;}
-html.light [style*="background:#1a1a1a"] *{color:#3A3A4A !important;}
-/* Bordures dark hardcodées */
+html.light [style*="background:#1a1a1a"] *:not(img){color:#3A3A4A !important;}
+
+/* ── Bordures hardcodées dark-only ───────────────────────────────────────── */
 html.light [style*="border:1px solid #2a2a2a"]{border-color:#C8C8D2 !important;}
 html.light [style*="border:1px solid #2e2e2e"]{border-color:#D0D0DA !important;}
 html.light [style*="border:1px solid #1c1c1c"]{border-color:#D5D5DB !important;}
-/* Textes sombres hardcodés (couleurs dark-only) */
+html.light [style*="border-color:#3a3a3a"]{border-color:#C0C0CA !important;}
+
+/* ── Textes gray hardcodés dark-only ─────────────────────────────────────── */
 html.light [style*="color:#9b9b9b"]{color:#50505A !important;}
-/* Date picker en mode clair */
+html.light [style*="color:#555"]:not(button){color:#4A4A55 !important;}
+
+/* ── Date picker ─────────────────────────────────────────────────────────── */
 html.light input[type="date"]::-webkit-calendar-picker-indicator{filter:none;opacity:.6;}
 /* Variables nav/sidebar utilisées dans les règles ci-dessous */
 html,body{height:100%;color-scheme:dark;}
