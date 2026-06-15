@@ -39,7 +39,8 @@ app.use('/api/artist-photos', require('./routes/artist_photos'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api/loyalty', require('./routes/loyalty'));
 app.use('/api/meta',       require('./routes/meta_oauth'));       // OAuth Meta (Instagram + Facebook)
-app.use('/api/whatsapp',  require('./routes/whatsapp_connect')); // WhatsApp Business Embedded Signup
+app.use('/api/whatsapp',          require('./routes/whatsapp_connect'));  // WhatsApp Business (officiel)
+app.use('/api/whatsapp-personal', require('./routes/whatsapp_personal')); // WhatsApp perso QR code
 app.use('/api/email',     require('./routes/email_oauth'));      // Gmail/Outlook OAuth2 artiste
 app.use('/api/email',     require('./routes/email_inbound'));    // Adresses @inkr.club + inbound webhook
 app.use('/api/quotes',    require('./routes/quotes'));           // Devis artiste → client
@@ -208,8 +209,11 @@ app.get('/api/status', (req, res) => {
 // ============ BACKUP AUTOMATIQUE ============
 const { startAutoBackup } = require('./services/backup');
 
-// ============ EMAIL POLLING (IMAP) ============
+// ============ EMAIL POLLING ============
 const { startEmailPolling } = require('./routes/email_oauth');
+
+// ============ WHATSAPP PERSO — Restauration des sessions ============
+const { restoreActiveSessions } = require('./routes/whatsapp_personal');
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log('\n🎨 ========================================');
@@ -233,6 +237,8 @@ app.listen(PORT, '0.0.0.0', () => {
 
   // Démarrage du backup automatique (après initialisation complète)
   startAutoBackup();
-  // Démarrage du polling IMAP (sync emails artistes toutes les 5 min)
+  // Démarrage du polling email (sync Gmail/Outlook toutes les 5 min)
   startEmailPolling();
+  // Restauration des sessions WhatsApp perso (artistes déjà connectés)
+  setTimeout(() => restoreActiveSessions(), 5000); // délai pour laisser le serveur s'initialiser
 });

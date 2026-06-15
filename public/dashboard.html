@@ -1420,16 +1420,22 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
             </div>
           </div>
 
-          <!-- 2. WhatsApp Business (Embedded Signup) -->
+          <!-- 2. WhatsApp — 2 options (perso QR + Business officiel) -->
           <div class="form-group" style="margin:0;">
             <label style="display:flex;align-items:center;gap:5px;margin-bottom:6px;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M17.5 14.5c-.3-.1-1.7-.8-2-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.2-.2.2-.3.2-.6.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.2-.5 0-.2-.7-1.7-1-2.3-.2-.6-.5-.5-.7-.5-.2 0-.4 0-.6 0-.2 0-.5.1-.8.4C7.2 8.1 6.5 8.8 6.5 10s.8 2.4.9 2.6c.1.2 1.6 2.5 4 3.5.6.2 1 .4 1.3.5.5.2 1 .2 1.4.1.4-.1 1.3-.5 1.5-1 .2-.5.2-1 .1-1.1-.2-.1-.4-.2-.6-.1z" fill="#25D366"/><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.2-1.3C8.5 21.5 10.2 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18c-1.7 0-3.3-.5-4.7-1.3l-.3-.2-3.1.8.8-3-.2-.3C3.5 14.7 3 13.4 3 12c0-5 4-9 9-9s9 4 9 9-4 9-9 9z" fill="#25D366"/></svg>
-              WhatsApp Business
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.2-1.3C8.5 21.5 10.2 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18c-1.7 0-3.3-.5-4.7-1.3l-.3-.2-3.1.8.8-3-.2-.3C3.5 14.7 3 13.4 3 12c0-5 4-9 9-9s9 4 9 9-4 9-9 9z" fill="#25D366"/></svg>
+              WhatsApp
             </label>
+            <!-- Statut WhatsApp perso -->
+            <div id="wa-personal-status">
+              <button onclick="openWAPersonalModal()" style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:linear-gradient(135deg,#128C7E,#25D366);border:none;border-radius:6px;color:#fff;font-size:11px;font-weight:600;cursor:pointer;width:100%;justify-content:center;margin-bottom:5px;">
+                📱 QR code (perso) →
+              </button>
+            </div>
+            <!-- Statut WhatsApp Business -->
             <div id="wa-connect-profile-status">
-              <button onclick="launchWASignup()" id="wa-connect-btn" style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:linear-gradient(135deg,#128C7E,#25D366);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:600;cursor:pointer;width:100%;justify-content:center;">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.2-1.3C8.5 21.5 10.2 22 12 22c5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
-                Connecter →
+              <button onclick="launchWASignup()" style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.25);border-radius:6px;color:#25D366;font-size:10px;font-weight:600;cursor:pointer;width:100%;justify-content:center;">
+                💼 Business (officiel) →
               </button>
             </div>
           </div>
@@ -2839,8 +2845,9 @@ function showApp(){
   loadMetaStatus();
   // Charger le statut email Gmail/Outlook
   loadEmailStatus();
-  // Charger WhatsApp Business + Email @inkr.club (channel manager)
+  // Charger WhatsApp Business + WhatsApp Perso + Email @inkr.club (channel manager)
   loadWhatsAppStatus();
+  loadWAPersonalStatus();
   loadInkrEmail();
   // PRO WALL — afficher pour les nouveaux artistes sans abonnement
   if(!isProUser()&&!_proWallDismissed){
@@ -5915,6 +5922,184 @@ if(params.get('action')==='register'){
   },400);
 }
 checkAuth();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     MODALE WhatsApp QR Code
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div id="wa-qr-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
+  <div style="background:#111827;border:1px solid #2a2a3e;border-radius:16px;padding:32px 28px;width:340px;max-width:95vw;text-align:center;position:relative;">
+    <!-- Croix fermeture -->
+    <button onclick="closeWAQRModal()" style="position:absolute;top:12px;right:14px;background:none;border:none;color:#666;font-size:20px;cursor:pointer;line-height:1;">✕</button>
+
+    <!-- Header -->
+    <div style="font-size:28px;margin-bottom:4px;">💬</div>
+    <h3 style="color:#fff;font-size:16px;font-weight:700;margin:0 0 4px;">Connecter WhatsApp</h3>
+    <p style="color:#888;font-size:12px;margin:0 0 16px;line-height:1.5;">Scannez ce QR code avec votre téléphone<br>WhatsApp → <strong style="color:#ccc;">Appareils liés</strong> → <strong style="color:#ccc;">Lier un appareil</strong></p>
+
+    <!-- Avertissement ToS -->
+    <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:9px 11px;margin-bottom:16px;text-align:left;">
+      <div style="font-size:10px;color:#f59e0b;font-weight:700;margin-bottom:3px;">⚠️ Note importante</div>
+      <div style="font-size:10px;color:#aaa;line-height:1.5;">Méthode non-officielle. Idéale pour des conversations individuelles avec vos clients. Évitez les envois en masse. Vous pouvez déconnecter à tout moment.</div>
+    </div>
+
+    <!-- Zone QR code -->
+    <div id="wa-qr-zone" style="min-height:200px;display:flex;align-items:center;justify-content:center;">
+      <div id="wa-qr-loader" style="text-align:center;">
+        <div style="font-size:32px;animation:spin 1s linear infinite;display:inline-block;">⏳</div>
+        <div style="color:#666;font-size:12px;margin-top:8px;">Génération du QR code…</div>
+      </div>
+      <img id="wa-qr-img" src="" alt="QR code WhatsApp" style="display:none;width:220px;height:220px;border-radius:10px;border:3px solid #25D366;">
+    </div>
+
+    <!-- Status connecté -->
+    <div id="wa-qr-connected" style="display:none;margin-top:16px;">
+      <div style="font-size:40px;">✅</div>
+      <div style="color:#25D366;font-size:16px;font-weight:700;margin:8px 0 4px;">WhatsApp connecté !</div>
+      <div id="wa-qr-phone-display" style="color:#888;font-size:12px;margin-bottom:12px;"></div>
+      <div style="color:#666;font-size:11px;">Les messages arrivent maintenant dans votre messagerie inkr.</div>
+    </div>
+
+    <!-- Footer -->
+    <p id="wa-qr-hint" style="color:#555;font-size:10px;margin:12px 0 0;line-height:1.5;">Le QR expire après 60 secondes — un nouveau sera généré automatiquement</p>
+  </div>
+</div>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+// WHATSAPP PERSO — QR Code (Baileys)
+// ══════════════════════════════════════════════════════════════════════════════
+
+let _waPersonalStatus   = null;
+let _waQRPollInterval   = null;
+let _waQRLastRefreshed  = 0;
+
+async function loadWAPersonalStatus() {
+  try {
+    const r = await fetch('/api/whatsapp-personal/status', { credentials: 'include' });
+    if (!r.ok) return;
+    _waPersonalStatus = await r.json();
+    renderWAPersonalStatus();
+  } catch (_) {}
+}
+
+function renderWAPersonalStatus() {
+  const box = document.getElementById('wa-personal-status');
+  if (!box) return;
+
+  if (_waPersonalStatus?.connected) {
+    const phone = _waPersonalStatus.phone || '';
+    const name  = _waPersonalStatus.name  || '';
+    box.innerHTML = `<div style="display:flex;align-items:center;gap:7px;background:rgba(37,211,102,.08);border:1px solid rgba(37,211,102,.25);border-radius:6px;padding:6px 8px;margin-bottom:5px;">
+      <span style="font-size:13px;">✅</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:10px;font-weight:700;color:#25D366;">WA perso connecté</div>
+        <div style="font-size:9px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(name || phone)}</div>
+      </div>
+      <button onclick="disconnectWAPersonal()" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#ef4444;border-radius:4px;padding:2px 6px;font-size:9px;cursor:pointer;">✕</button>
+    </div>`;
+  } else {
+    box.innerHTML = `<button onclick="openWAPersonalModal()" style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:linear-gradient(135deg,#128C7E,#25D366);border:none;border-radius:6px;color:#fff;font-size:11px;font-weight:600;cursor:pointer;width:100%;justify-content:center;margin-bottom:5px;">
+      📱 QR code (perso) →
+    </button>`;
+  }
+}
+
+async function openWAPersonalModal() {
+  const modal = document.getElementById('wa-qr-modal');
+  modal.style.display = 'flex';
+  document.getElementById('wa-qr-loader').style.display = 'block';
+  document.getElementById('wa-qr-img').style.display    = 'none';
+  document.getElementById('wa-qr-connected').style.display = 'none';
+  document.getElementById('wa-qr-hint').style.display   = 'block';
+
+  // Démarrer la session sur le serveur
+  try {
+    await fetch('/api/whatsapp-personal/connect', { method: 'POST', credentials: 'include' });
+  } catch (_) {}
+
+  // Polling du QR code toutes les 2 secondes
+  startQRPolling();
+}
+
+function closeWAQRModal() {
+  document.getElementById('wa-qr-modal').style.display = 'none';
+  stopQRPolling();
+}
+
+function startQRPolling() {
+  stopQRPolling();
+  _waQRPollInterval = setInterval(pollQRCode, 2000);
+  pollQRCode(); // immédiatement
+}
+
+function stopQRPolling() {
+  if (_waQRPollInterval) { clearInterval(_waQRPollInterval); _waQRPollInterval = null; }
+}
+
+async function pollQRCode() {
+  try {
+    const r = await fetch('/api/whatsapp-personal/qr', { credentials: 'include' });
+    if (!r.ok) return;
+    const d = await r.json();
+
+    if (d.status === 'connected') {
+      // Connecté ! Afficher le succès
+      stopQRPolling();
+      document.getElementById('wa-qr-loader').style.display = 'none';
+      document.getElementById('wa-qr-img').style.display    = 'none';
+      document.getElementById('wa-qr-hint').style.display   = 'none';
+      document.getElementById('wa-qr-connected').style.display = 'block';
+
+      // Récupérer le numéro pour l'afficher
+      const stR = await fetch('/api/whatsapp-personal/status', { credentials: 'include' });
+      if (stR.ok) {
+        const st = await stR.json();
+        const phoneEl = document.getElementById('wa-qr-phone-display');
+        if (phoneEl) phoneEl.textContent = st.phone ? `+${st.phone}` : '';
+        _waPersonalStatus = st;
+        renderWAPersonalStatus();
+      }
+
+      showNotif('✅ WhatsApp connecté ! Les messages arrivent dans inkr.', 'success');
+      // Fermer la modale après 3s
+      setTimeout(closeWAQRModal, 3000);
+      return;
+    }
+
+    if (d.status === 'waiting_qr' && d.qr) {
+      // Afficher le QR code (ne rafraîchir que s'il a changé)
+      if (d.refreshed !== _waQRLastRefreshed) {
+        _waQRLastRefreshed = d.refreshed;
+        const img = document.getElementById('wa-qr-img');
+        img.src = d.qr;
+        img.style.display = 'block';
+        document.getElementById('wa-qr-loader').style.display = 'none';
+      }
+    }
+
+    if (d.status === 'reconnecting' || d.status === 'initializing') {
+      document.getElementById('wa-qr-loader').style.display = 'block';
+      document.getElementById('wa-qr-img').style.display    = 'none';
+    }
+
+  } catch (_) {}
+}
+
+async function disconnectWAPersonal() {
+  if (!confirm('Déconnecter WhatsApp perso ?')) return;
+  await fetch('/api/whatsapp-personal/logout', { method: 'DELETE', credentials: 'include' });
+  _waPersonalStatus = { connected: false };
+  renderWAPersonalStatus();
+  showNotif('WhatsApp déconnecté', 'info');
+}
+
+// Charger au démarrage
+document.addEventListener('DOMContentLoaded', loadWAPersonalStatus);
 </script>
 </body>
 </html>
