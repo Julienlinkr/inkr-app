@@ -35,12 +35,15 @@ const router  = express.Router();
 const jwt     = require('jsonwebtoken');
 const { db }  = require('../db/database');
 
-const {
-  META_APP_ID     = '',
-  META_APP_SECRET = '',
-  BASE_URL        = 'https://inkr.club',
-  JWT_SECRET      = 'inkr_secret_dev',
-} = process.env;
+// ⚠️  Lire depuis process.env à chaque appel (pas de capture au démarrage)
+// pour que les changements Railway soient pris en compte sans redémarrage.
+function getBaseUrl() {
+  // APP_URL ou BASE_URL, avec fallback sur www.inkr.club
+  return (process.env.APP_URL || process.env.BASE_URL || 'https://www.inkr.club').replace(/\/$/, '');
+}
+function getMetaAppId()     { return process.env.META_APP_ID     || ''; }
+function getMetaAppSecret() { return process.env.META_APP_SECRET || ''; }
+function getJwtSecret()     { return process.env.JWT_SECRET      || 'inkr_secret_dev'; }
 
 // ── Migrations colonnes meta sur users ────────────────────────────────────────
 [
@@ -63,7 +66,7 @@ function requireArtistAuth(req, res, next) {
   try {
     const token = req.cookies?.inkr_token || (req.headers.authorization || '').replace('Bearer ', '');
     if (!token) return res.status(401).json({ error: 'Non connecté' });
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, getJwtSecret());
     req.userId = decoded.userId;
     next();
   } catch {
@@ -74,30 +77,35 @@ function requireArtistAuth(req, res, next) {
 // ─── GET /api/meta/oauth ─────────────────────────────────────────────────────
 // Redirige l'artiste vers Facebook Login pour autoriser l'accès.
 router.get('/oauth', requireArtistAuth, (req, res) => {
-  if (!META_APP_ID) {
+  const appId      = getMetaAppId();
+  const baseUrl    = getBaseUrl();
+  const redirectUri = `${baseUrl}/api/meta/callback`;
+
+  if (!appId) {
     return res.status(503).send(
       '<p style="font-family:sans-serif;padding:40px;">⚠️ META_APP_ID non configuré dans Railway.<br>' +
-      'Ajoutez les variables META_APP_ID et META_APP_SECRET dans vos variables d\'environnement.</p>'
+      'Ajoutez META_APP_ID et META_APP_SECRET dans vos variables d\'environnement.</p>'
     );
   }
+
+  console.log(`[Meta OAuth] Redirect URI → ${redirectUri}`);
 
   // Encode l'userId dans le state pour le retrouver au callback
   const state = Buffer.from(JSON.stringify({ userId: req.userId, ts: Date.now() })).toString('base64url');
 
+  // Scopes nécessaires pour Instagram DMs + Pages Facebook
   const scopes = [
+    'instagram_basic',
+    'instagram_manage_messages',
+    'pages_show_list',
     'pages_manage_metadata',
     'pages_messaging',
-    'instagram_manage_messages',
-    'instagram_basic',
     'pages_read_engagement',
-    'business_management',
   ].join(',');
-
-  const redirectUri = `${BASE_URL}/api/meta/callback`;
 
   const url =
     `https://www.facebook.com/v21.0/dialog/oauth` +
-    `?client_id=${META_APP_ID}` +
+    `?client_id=${appId}` +
     `&redirect_uri=${encodeURIComponent(redirectUri)}` +
     `&scope=${scopes}` +
     `&state=${state}` +
@@ -128,13 +136,17 @@ router.get('/callback', async (req, res) => {
   }
 
   try {
-    const redirectUri = `${BASE_URL}/api/meta/callback`;
+    const appId       = getMetaAppId();
+    const appSecret   = getMetaAppSecret();
+    const redirectUri = `${getBaseUrl()}/api/meta/callback`;
+
+    console.log(`[Meta callback] userId=${userId}, redirectUri=${redirectUri}`);
 
     // ── 1. Échange du code contre un token court ──────────────────────────
     const tokenRes = await fetch(
       `https://graph.facebook.com/v21.0/oauth/access_token` +
-      `?client_id=${META_APP_ID}` +
-      `&client_secret=${META_APP_SECRET}` +
+      `?client_id=${appId}` +
+      `&client_secret=${appSecret}` +
       `&code=${code}` +
       `&redirect_uri=${encodeURIComponent(redirectUri)}`
     );
@@ -147,8 +159,8 @@ router.get('/callback', async (req, res) => {
     const llRes = await fetch(
       `https://graph.facebook.com/v21.0/oauth/access_token` +
       `?grant_type=fb_exchange_token` +
-      `&client_id=${META_APP_ID}` +
-      `&client_secret=${META_APP_SECRET}` +
+      `&client_id=${appId}` +
+      `&client_secret=${appSecret}` +
       `&fb_exchange_token=${tokenData.access_token}`
     );
     const llData = await llRes.json();
