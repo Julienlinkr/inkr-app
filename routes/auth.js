@@ -32,6 +32,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'inkr_secret_dev';
   'role TEXT DEFAULT \'artist\'',
   'paypal_me_url TEXT DEFAULT NULL',
   'stripe_me_link TEXT DEFAULT NULL',
+  'stripe_connect_id TEXT DEFAULT NULL',
 ].forEach(col => {
   try { db.exec(`ALTER TABLE users ADD COLUMN ${col}`); } catch(_) {}
 });
@@ -149,9 +150,53 @@ router.get('/me', (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, cp, adresse, phone, instagram, pinterest, auto_reply, bio, styles, horaires, dispo_flash, photo_salon, photo_artiste, avatar_seed, en_tournee, is_pro, role, paypal_me_url, stripe_me_link, created_at FROM users WHERE id = ?').get(decoded.userId);
+    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, cp, adresse, phone, instagram, pinterest, auto_reply, bio, styles, horaires, dispo_flash, photo_salon, photo_artiste, avatar_seed, en_tournee, is_pro, role, paypal_me_url, stripe_me_link, stripe_connect_id, created_at FROM users WHERE id = ?').get(decoded.userId);
     if (!user) return res.status(401).json({ error: 'Utilisateur introuvable' });
     res.json({ user });
+  } catch {
+    res.status(401).json({ error: 'Session expirée' });
+  }
+});
+
+// ============ STATS VUES DE PROFIL ============
+// GET /api/auth/stats/views — vues du mois en cours + 6 derniers mois
+router.get('/stats/views', (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = req.cookies?.inkr_token ||
+    (authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null);
+  if (!token) return res.status(401).json({ error: 'Non connecté' });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const userId = decoded.userId;
+
+    // Vues ce mois-ci
+    const thisMonth = db.prepare(`
+      SELECT COUNT(*) as cnt FROM profile_views
+      WHERE user_id = ?
+        AND strftime('%Y-%m', visited_at) = strftime('%Y-%m', 'now')
+    `).get(userId)?.cnt || 0;
+
+    // Vues les 30 derniers jours
+    const last30 = db.prepare(`
+      SELECT COUNT(*) as cnt FROM profile_views
+      WHERE user_id = ?
+        AND visited_at >= datetime('now', '-30 days')
+    `).get(userId)?.cnt || 0;
+
+    // Courbe sur 6 mois (1 point par mois)
+    const monthly = db.prepare(`
+      SELECT strftime('%Y-%m', visited_at) as month, COUNT(*) as cnt
+      FROM profile_views
+      WHERE user_id = ?
+        AND visited_at >= datetime('now', '-6 months')
+      GROUP BY month
+      ORDER BY month ASC
+    `).all(userId);
+
+    // Total toutes périodes
+    const total = db.prepare('SELECT COUNT(*) as cnt FROM profile_views WHERE user_id = ?').get(userId)?.cnt || 0;
+
+    res.json({ thisMonth, last30, monthly, total });
   } catch {
     res.status(401).json({ error: 'Session expirée' });
   }

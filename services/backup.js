@@ -28,9 +28,9 @@
 const fs   = require('fs');
 const path = require('path');
 
-// Dossier de backup — dans le volume Railway persistant
+// Dossier de backup — Railway en prod, dossier local en dev
 const BACKUP_DIR = process.env.BACKUP_DIR
-  || path.join(path.dirname(process.env.DB_PATH || '/app/data/inkr.db'), 'backups');
+  || path.join(__dirname, '../db/backups');
 
 // Nombre de backups à conserver
 const MAX_BACKUPS = 14;

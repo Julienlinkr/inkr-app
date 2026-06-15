@@ -82,7 +82,12 @@ router.post('/create-checkout', requireAuth, async (req, res) => {
 
     // ── Mode Stripe réel ───────────────────────────────────────────────────
     const stripe = getStripe();
-    const session = await stripe.checkout.sessions.create({
+
+    // Vérifier si le tatoueur a un compte Stripe Connect
+    const artistUser = db.prepare('SELECT stripe_connect_id FROM users WHERE id = ?').get(req.user.userId);
+    const connectedAccountId = artistUser?.stripe_connect_id || null;
+
+    const sessionParams = {
       payment_method_types: ['card'],
       mode: 'payment',
       line_items: [{
@@ -92,19 +97,24 @@ router.post('/create-checkout', requireAuth, async (req, res) => {
             name: description || `Acompte tatouage — ${appt.client_name || 'Client'}`,
             description: `RDV le ${appt.date || 'date à confirmer'} — ${appt.style || 'tatouage'}`,
           },
-          unit_amount: Math.round(finalAmount * 100), // Stripe attend des centimes
+          unit_amount: Math.round(finalAmount * 100),
         },
         quantity: 1,
       }],
       customer_email: appt.client_email || undefined,
-      // session_id est injecté automatiquement par Stripe dans l'URL success
       success_url: `${appUrl}/api/payments/success?session_id={CHECKOUT_SESSION_ID}&appt=${appointment_id}`,
       cancel_url: `${appUrl}/api/payments/cancel?appt=${appointment_id}`,
-      metadata: {
-        appointment_id: String(appointment_id),
-        artist_id: String(req.user.userId),
-      },
-    });
+      metadata: { appointment_id: String(appointment_id), artist_id: String(req.user.userId) },
+    };
+
+    // Si le tatoueur a connecté son Stripe → l'argent va directement chez lui
+    if (connectedAccountId) {
+      sessionParams.payment_intent_data = {
+        transfer_data: { destination: connectedAccountId },
+      };
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     // Persister l'URL et le statut 'pending' en base
     db.prepare('UPDATE appointments SET acompte_amount=?, acompte_status=?, acompte_stripe_url=? WHERE id=?')
@@ -171,8 +181,85 @@ router.get('/config', (req, res) => {
   res.json({
     publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || null,
     configured: !!process.env.STRIPE_SECRET_KEY,
+    connectConfigured: !!process.env.STRIPE_SECRET_KEY, // Account Links — pas besoin de Client ID
     paypalLink: process.env.PAYPAL_SUBSCRIPTION_LINK || null,
   });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STRIPE CONNECT — chaque tatoueur connecte son propre compte Stripe
+// Les acomptes clients vont directement sur leur compte, sans passer par inkr.
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ─── GET /connect/start ───────────────────────────────────────────────────────
+// Crée un compte Stripe Express pour le tatoueur (ou réutilise l'existant)
+// et génère un lien d'onboarding Stripe — pas de Client ID nécessaire.
+router.get('/connect/start', requireAuth, async (req, res) => {
+  const appUrl = process.env.APP_URL || 'https://inkr.club';
+
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return res.redirect(`${appUrl}/dashboard?stripe_error=STRIPE_SECRET_KEY+manquant+dans+Railway`);
+  }
+
+  try {
+    const stripe  = getStripe();
+    const userId  = req.user.userId;
+
+    // Récupérer ou créer le compte Express de l'artiste
+    let user = db.prepare('SELECT stripe_connect_id, email FROM users WHERE id = ?').get(userId);
+    let accountId = user?.stripe_connect_id;
+
+    if (!accountId) {
+      // Créer un nouveau compte Stripe Express
+      const account = await stripe.accounts.create({
+        type: 'express',
+        country: 'FR',
+        email: user?.email || undefined,
+        capabilities: {
+          card_payments: { requested: true },
+          transfers:     { requested: true },
+        },
+        business_type: 'individual',
+        settings: { payouts: { schedule: { interval: 'weekly', weekly_anchor: 'monday' } } },
+      });
+      accountId = account.id;
+      db.prepare('UPDATE users SET stripe_connect_id = ? WHERE id = ?').run(accountId, userId);
+      console.log(`[Stripe Connect] ✅ Compte Express créé → user #${userId} → ${accountId}`);
+    }
+
+    // Générer le lien d'onboarding (valable 24h)
+    const accountLink = await stripe.accountLinks.create({
+      account:     accountId,
+      refresh_url: `${appUrl}/api/payments/connect/start`, // si le lien expire → recommencer
+      return_url:  `${appUrl}/dashboard?stripe_connected=1`,
+      type:        'account_onboarding',
+    });
+
+    res.redirect(accountLink.url);
+  } catch (e) {
+    console.error('[Stripe Connect] Start erreur:', e.message);
+    res.redirect(`${appUrl}/dashboard?stripe_error=${encodeURIComponent(e.message)}`);
+  }
+});
+
+// ─── GET /connect/status ──────────────────────────────────────────────────────
+router.get('/connect/status', requireAuth, (req, res) => {
+  try {
+    const user = db.prepare('SELECT stripe_connect_id FROM users WHERE id = ?').get(req.user.userId);
+    res.json({ connected: !!user?.stripe_connect_id, account_id: user?.stripe_connect_id || null });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─── DELETE /connect ──────────────────────────────────────────────────────────
+router.delete('/connect', requireAuth, (req, res) => {
+  try {
+    db.prepare('UPDATE users SET stripe_connect_id = NULL WHERE id = ?').run(req.user.userId);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // ─── POST /subscribe ─────────────────────────────────────────────────────────

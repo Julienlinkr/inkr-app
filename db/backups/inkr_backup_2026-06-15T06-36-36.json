@@ -1,0 +1,14 @@
+{
+  "exported_at": "2026-06-15T06:36:36.037Z",
+  "tables": {
+    "users": [],
+    "clients": [],
+    "appointments": [],
+    "campaigns": [],
+    "messages": [],
+    "automations": [],
+    "loyalty_points": [],
+    "tatoueurs": [],
+    "tournee_dates": []
+  }
+}
