@@ -44,6 +44,7 @@ app.use('/api/whatsapp-personal', require('./routes/whatsapp_personal')); // Wha
 app.use('/api/email',     require('./routes/email_oauth'));      // Gmail/Outlook OAuth2 artiste
 app.use('/api/email',     require('./routes/email_inbound'));    // Adresses @inkr.club + inbound webhook
 app.use('/api/quotes',    require('./routes/quotes'));           // Devis artiste → client
+app.use('/api/analytics', require('./routes/analytics'));        // Trafic site inkr.club (RGPD-safe)
 
 // ============ PAGES (no-cache pour forcer le rechargement) ============
 app.get('/', (req, res) => {

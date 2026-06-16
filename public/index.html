@@ -5341,6 +5341,21 @@ async function handleRdvParam(){
   } catch(_){}
 }
 
+// ── Analytics : enregistre une visite (silencieux, RGPD-safe) ─────────────────
+(function trackVisit(){
+  try {
+    fetch('/api/analytics/hit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        page: window.location.pathname + (window.location.search || ''),
+        referrer: document.referrer || ''
+      }),
+      keepalive: true  // continue même si l'utilisateur navigue pendant l'envoi
+    }).catch(()=>{}); // erreur silencieuse — ne jamais bloquer le chargement
+  } catch(_){}
+})();
+
 // ── Init au chargement de page ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', ()=>{
   // Auto-affiche la vue pricing si on arrive via /pricing
