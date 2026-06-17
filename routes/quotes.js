@@ -295,6 +295,61 @@ router.post('/', requireAuth, (req, res) => {
   }
 });
 
+// ── GET /api/quotes/respond/:token ────────────────────────────────────────────
+// ⚠️ DOIT être AVANT /:id — sinon Express capture 'respond' comme un id numérique
+// Route publique — client accepte ou refuse le devis depuis son email
+router.get('/respond/:token', async (req, res) => {
+  const { token } = req.params;
+  const { action } = req.query; // 'accept' ou 'refuse'
+
+  try {
+    const quote = db.prepare('SELECT * FROM quotes WHERE token = ?').get(token);
+    if (!quote) {
+      return res.send(pageResponse('❌ Lien invalide', 'Ce lien de devis est introuvable ou a expiré.', '#e53e3e'));
+    }
+    if (quote.status === 'accepted') {
+      return res.send(pageResponse('✅ Devis déjà accepté', 'Vous avez déjà accepté ce devis. Nous vous contacterons prochainement.', '#22c55e'));
+    }
+    if (quote.status === 'refused') {
+      return res.send(pageResponse('Devis refusé', 'Vous avez déjà refusé ce devis.', '#888'));
+    }
+
+    if (action === 'accept') {
+      db.prepare(`UPDATE quotes SET status='accepted', accepted_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE id=?`).run(quote.id);
+
+      // Notifier l'artiste par email
+      try {
+        const artist = db.prepare('SELECT * FROM users WHERE id = ?').get(quote.user_id);
+        if (artist?.email) {
+          const { sendEmail } = require('./campaigns');
+          await sendEmail(
+            artist.email,
+            `✅ Devis accepté — ${quote.client_name || quote.client_email}`,
+            `Bonne nouvelle !\n\n${quote.client_name || quote.client_email} vient d'accepter votre devis "${quote.title}" (${quote.total.toFixed(2)} €).\n\nConnectez-vous à inkr pour demander un acompte ou planifier le rendez-vous.`,
+            artist,
+            BASE_URL
+          );
+        }
+      } catch (notifErr) {
+        console.warn('[quotes/respond] Notif artiste échouée:', notifErr.message);
+      }
+
+      return res.send(pageResponse('✅ Devis accepté !', `Merci ! Vous avez accepté le devis "${quote.title}". Le tatoueur va vous contacter prochainement pour planifier votre rendez-vous.`, '#22c55e'));
+    }
+
+    if (action === 'refuse') {
+      db.prepare(`UPDATE quotes SET status='refused', refused_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE id=?`).run(quote.id);
+      return res.send(pageResponse('Devis refusé', `Vous avez refusé le devis "${quote.title}". N'hésitez pas à contacter l'artiste si vous souhaitez discuter d'une autre proposition.`, '#888'));
+    }
+
+    // Action non reconnue
+    return res.redirect(`${BASE_URL}/dashboard`);
+  } catch (e) {
+    console.error('[quotes/respond]', e.message);
+    res.status(500).send(pageResponse('Erreur', 'Une erreur est survenue. Veuillez réessayer.', '#e53e3e'));
+  }
+});
+
 // ── GET /api/quotes/:id ───────────────────────────────────────────────────────
 router.get('/:id', requireAuth, (req, res) => {
   try {
@@ -410,60 +465,6 @@ router.post('/:id/send', requireAuth, async (req, res) => {
   } catch (e) {
     console.error('[quotes/send]', e.message);
     res.status(500).json({ error: e.message });
-  }
-});
-
-// ── GET /api/quotes/respond/:token ────────────────────────────────────────────
-// Route publique — client accepte ou refuse le devis depuis son email
-router.get('/respond/:token', async (req, res) => {
-  const { token } = req.params;
-  const { action } = req.query; // 'accept' ou 'refuse'
-
-  try {
-    const quote = db.prepare('SELECT * FROM quotes WHERE token = ?').get(token);
-    if (!quote) {
-      return res.send(pageResponse('❌ Lien invalide', 'Ce lien de devis est introuvable ou a expiré.', '#e53e3e'));
-    }
-    if (quote.status === 'accepted') {
-      return res.send(pageResponse('✅ Devis déjà accepté', 'Vous avez déjà accepté ce devis. Nous vous contacterons prochainement.', '#22c55e'));
-    }
-    if (quote.status === 'refused') {
-      return res.send(pageResponse('Devis refusé', 'Vous avez déjà refusé ce devis.', '#888'));
-    }
-
-    if (action === 'accept') {
-      db.prepare(`UPDATE quotes SET status='accepted', accepted_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE id=?`).run(quote.id);
-
-      // Notifier l'artiste par email
-      try {
-        const artist = db.prepare('SELECT * FROM users WHERE id = ?').get(quote.user_id);
-        if (artist?.email) {
-          const { sendEmail } = require('./campaigns');
-          await sendEmail(
-            artist.email,
-            `✅ Devis accepté — ${quote.client_name || quote.client_email}`,
-            `Bonne nouvelle !\n\n${quote.client_name || quote.client_email} vient d'accepter votre devis "${quote.title}" (${quote.total.toFixed(2)} €).\n\nConnectez-vous à inkr pour demander un acompte ou planifier le rendez-vous.`,
-            artist,
-            BASE_URL
-          );
-        }
-      } catch (notifErr) {
-        console.warn('[quotes/respond] Notif artiste échouée:', notifErr.message);
-      }
-
-      return res.send(pageResponse('✅ Devis accepté !', `Merci ! Vous avez accepté le devis "${quote.title}". Le tatoueur va vous contacter prochainement pour planifier votre rendez-vous.`, '#22c55e'));
-    }
-
-    if (action === 'refuse') {
-      db.prepare(`UPDATE quotes SET status='refused', refused_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE id=?`).run(quote.id);
-      return res.send(pageResponse('Devis refusé', `Vous avez refusé le devis "${quote.title}". N'hésitez pas à contacter l'artiste si vous souhaitez discuter d'une autre proposition.`, '#888'));
-    }
-
-    // Action non reconnue
-    return res.redirect(`${BASE_URL}/dashboard`);
-  } catch (e) {
-    console.error('[quotes/respond]', e.message);
-    res.status(500).send(pageResponse('Erreur', 'Une erreur est survenue. Veuillez réessayer.', '#e53e3e'));
   }
 });
 

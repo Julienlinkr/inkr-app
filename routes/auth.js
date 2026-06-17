@@ -298,11 +298,16 @@ router.get('/meta', (req, res) => {
 });
 
 router.get('/meta/callback', async (req, res) => {
-  const { code, error } = req.query;
-  if (error) return res.redirect('/?meta_error=1');
-  if (!code) return res.redirect('/?meta_error=1');
+  const { code, error, state } = req.query;
+  if (error) return res.redirect('/dashboard?meta_error=1');
+  if (!code) return res.redirect('/dashboard?meta_error=1');
 
   try {
+    // Récupérer l'artiste connecté depuis le cookie de session
+    const token = req.cookies?.inkr_token;
+    if (!token) return res.redirect('/dashboard?meta_error=no_session');
+    const decoded = jwt.verify(token, JWT_SECRET);
+
     const tokenRes = await fetch(`https://graph.facebook.com/v19.0/oauth/access_token?` + new URLSearchParams({
       client_id: process.env.META_APP_ID,
       client_secret: process.env.META_APP_SECRET,
@@ -312,15 +317,42 @@ router.get('/meta/callback', async (req, res) => {
     const tokenData = await tokenRes.json();
 
     if (tokenData.access_token) {
-      // Stocker le token (simplifié - en prod : chiffrer + lier à l'user)
-      db.prepare("UPDATE users SET studio_name = studio_name WHERE id = 1").run();
-      console.log('✅ Meta connecté, token reçu');
+      // Échanger contre un long-lived token (60 jours)
+      let finalToken = tokenData.access_token;
+      try {
+        const llRes = await fetch(`https://graph.facebook.com/v19.0/oauth/access_token?` + new URLSearchParams({
+          grant_type: 'fb_exchange_token',
+          client_id: process.env.META_APP_ID,
+          client_secret: process.env.META_APP_SECRET,
+          fb_exchange_token: tokenData.access_token,
+        }));
+        const llData = await llRes.json();
+        if (llData.access_token) finalToken = llData.access_token;
+      } catch(_) {}
+
+      // Récupérer la Page ID (première page du compte)
+      let pageId = null;
+      try {
+        const pagesRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?access_token=${finalToken}`);
+        const pagesData = await pagesRes.json();
+        if (pagesData.data && pagesData.data.length > 0) {
+          pageId = pagesData.data[0].id;
+          finalToken = pagesData.data[0].access_token || finalToken; // page token
+        }
+      } catch(_) {}
+
+      // Sauvegarder sur l'artiste connecté (jamais sur id=1 hardcodé)
+      db.prepare("UPDATE users SET meta_page_token=?, meta_page_id=? WHERE id=?")
+        .run(finalToken, pageId, decoded.userId);
+
+      console.log(`[Meta OAuth] ✅ Artiste #${decoded.userId} connecté — page_id=${pageId}`);
       res.redirect('/dashboard?meta_connected=1');
     } else {
-      res.redirect('/dashboard?meta_error=1');
+      console.error('[Meta OAuth] Token refusé:', tokenData);
+      res.redirect('/dashboard?meta_error=token_refused');
     }
   } catch (err) {
-    console.error('Meta callback error:', err);
+    console.error('[Meta OAuth] Callback error:', err.message);
     res.redirect('/dashboard?meta_error=1');
   }
 });

@@ -402,7 +402,7 @@ router.post('/guest-booking', (req, res) => {
         (client_id, tatoueur_id, tatoueur_nom,
          booking_style, booking_zone, booking_taille, booking_date, booking_desc,
          guest_prenom, guest_nom, guest_email, guest_telephone)
-      VALUES (0,?,?, ?,?,?,?,?, ?,?,?,?)
+      VALUES (NULL,?,?, ?,?,?,?,?, ?,?,?,?)
     `).run(
       tatoueur_id   || null,
       tatoueur_nom,
