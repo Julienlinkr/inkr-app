@@ -214,16 +214,25 @@ db.exec(`
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
-  /* ── Conversations clients (booking sans compte) ─────────────────────────── */
+  /* ── Conversations clients (booking public inkr.club → artiste) ─────────── */
+  /* Schéma aligné avec routes/auth.js (artist-conversations) et               */
+  /* routes/client_auth.js (vue client). La FK tatoueur_id → tatoueurs.id      */
+  /* est la clé de jointure principale utilisée des deux côtés.                */
   CREATE TABLE IF NOT EXISTS client_conversations (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    artist_id       INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    client_user_id  INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    tatoueur_id     INTEGER REFERENCES tatoueurs(id) ON DELETE CASCADE,
+    client_id       INTEGER REFERENCES client_accounts(id) ON DELETE SET NULL,
     guest_prenom    TEXT    DEFAULT '',
     guest_nom       TEXT    DEFAULT '',
     guest_email     TEXT    DEFAULT '',
     guest_telephone TEXT    DEFAULT '',
-    status          TEXT    DEFAULT 'open',
+    tatoueur_nom    TEXT    DEFAULT '',
+    booking_style   TEXT    DEFAULT '',
+    booking_zone    TEXT    DEFAULT '',
+    booking_taille  TEXT    DEFAULT '',
+    booking_date    TEXT    DEFAULT '',
+    booking_desc    TEXT    DEFAULT '',
+    status          TEXT    DEFAULT 'pending',
     created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -239,19 +248,27 @@ db.exec(`
 
   /* ── Devis ───────────────────────────────────────────────────────────────── */
   CREATE TABLE IF NOT EXISTS quotes (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id         INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    client_id       INTEGER REFERENCES clients(id) ON DELETE SET NULL,
-    client_name     TEXT,
-    client_email    TEXT,
-    title           TEXT,
-    items           TEXT    DEFAULT '[]',       -- JSON array [{label, price}]
-    total           REAL    DEFAULT 0,
-    status          TEXT    DEFAULT 'draft',    -- 'draft'|'sent'|'accepted'|'declined'
-    notes           TEXT,
-    valid_until     TEXT,
-    sent_at         DATETIME,
-    created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id           INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    client_id         INTEGER REFERENCES clients(id) ON DELETE SET NULL,
+    client_name       TEXT    DEFAULT '',
+    client_email      TEXT    DEFAULT '',
+    title             TEXT    DEFAULT 'Devis tatouage',
+    items             TEXT    DEFAULT '[]',
+    total             REAL    DEFAULT 0,
+    status            TEXT    DEFAULT 'draft',
+    notes             TEXT    DEFAULT '',
+    valid_until       TEXT    DEFAULT NULL,
+    token             TEXT    DEFAULT NULL,
+    acompte_requested INTEGER DEFAULT 0,
+    acompte_amount    REAL    DEFAULT 0,
+    acompte_status    TEXT    DEFAULT 'none',
+    acompte_url       TEXT    DEFAULT NULL,
+    sent_at           DATETIME DEFAULT NULL,
+    accepted_at       DATETIME DEFAULT NULL,
+    refused_at        DATETIME DEFAULT NULL,
+    created_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at        DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
 `);
@@ -339,6 +356,37 @@ function runMigrations() {
     'ALTER TABLE users ADD COLUMN rgpd_consent_at DATETIME DEFAULT NULL',
     'ALTER TABLE clients ADD COLUMN rgpd_consent INTEGER DEFAULT 0',
     'ALTER TABLE clients ADD COLUMN rgpd_consent_at DATETIME DEFAULT NULL',
+
+    // ── v4 : fix client_conversations — alignement schéma auth.js / client_auth.js
+    // Les installs existantes avaient artist_id/client_user_id — on ajoute les bonnes colonnes.
+    'ALTER TABLE client_conversations ADD COLUMN tatoueur_id INTEGER DEFAULT NULL',
+    'ALTER TABLE client_conversations ADD COLUMN client_id INTEGER DEFAULT NULL',
+    'ALTER TABLE client_conversations ADD COLUMN tatoueur_nom TEXT DEFAULT ""',
+    'ALTER TABLE client_conversations ADD COLUMN booking_style TEXT DEFAULT ""',
+    'ALTER TABLE client_conversations ADD COLUMN booking_zone TEXT DEFAULT ""',
+    'ALTER TABLE client_conversations ADD COLUMN booking_taille TEXT DEFAULT ""',
+    'ALTER TABLE client_conversations ADD COLUMN booking_date TEXT DEFAULT ""',
+    'ALTER TABLE client_conversations ADD COLUMN booking_desc TEXT DEFAULT ""',
+
+    // ── v4 : fix quotes — colonnes manquantes dans le schéma initial
+    'ALTER TABLE quotes ADD COLUMN token TEXT DEFAULT NULL',
+    'ALTER TABLE quotes ADD COLUMN accepted_at DATETIME DEFAULT NULL',
+    'ALTER TABLE quotes ADD COLUMN refused_at DATETIME DEFAULT NULL',
+    'ALTER TABLE quotes ADD COLUMN updated_at DATETIME DEFAULT CURRENT_TIMESTAMP',
+    'ALTER TABLE quotes ADD COLUMN acompte_requested INTEGER DEFAULT 0',
+    'ALTER TABLE quotes ADD COLUMN acompte_amount REAL DEFAULT 0',
+    'ALTER TABLE quotes ADD COLUMN acompte_status TEXT DEFAULT "none"',
+    'ALTER TABLE quotes ADD COLUMN acompte_url TEXT DEFAULT NULL',
+
+    // ── v4 : persistance fidélité + facturation (plus de localStorage)
+    'ALTER TABLE users ADD COLUMN loyalty_config TEXT DEFAULT NULL',
+    'ALTER TABLE users ADD COLUMN billing_json TEXT DEFAULT NULL',
+
+    // ── v4 : méta-page token (connexion Facebook/Instagram)
+    'ALTER TABLE users ADD COLUMN meta_page_id TEXT DEFAULT NULL',
+    'ALTER TABLE users ADD COLUMN meta_page_token TEXT DEFAULT NULL',
+    // ── v4 : Stripe customer_id pour lier abonnements Pro
+    'ALTER TABLE users ADD COLUMN stripe_customer_id TEXT DEFAULT NULL',
   ];
 
   let applied = 0;

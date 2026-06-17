@@ -2976,6 +2976,8 @@ function showApp(){
     const navT=document.getElementById('nav-traffic');
     if(navT)navT.style.display='flex';
   }
+  // Charger les programmes fidélité depuis currentUser.loyalty_config (DB, pas localStorage)
+  loadLoyaltyFromUser();
 }
 function populateUser(){
   const u=currentUser;
@@ -3051,14 +3053,26 @@ function formatIban(inp){
   let v=inp.value.replace(/\s/g,'').toUpperCase();
   inp.value=v.match(/.{1,4}/g)?.join(' ')||v;
 }
+// ── Facturation : helper pour lire/écrire billing_json en DB (plus de localStorage) ──────
+function _getBillingData(){
+  try{return JSON.parse(currentUser&&currentUser.billing_json?currentUser.billing_json:'{}');}catch(e){return {};}
+}
+async function _saveBillingData(patch){
+  const billing=Object.assign(_getBillingData(),patch);
+  const json=JSON.stringify(billing);
+  try{
+    const r=await fetch('/api/auth/billing',{method:'PUT',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({billing_json:json})});
+    if(r.ok&&currentUser)currentUser.billing_json=json;
+  }catch(e){console.warn('[Facturation] Sauvegarde DB échouée:',e.message);}
+}
 function saveRIB(){
   const rib={name:document.getElementById('fact-rib-name').value.trim(),iban:document.getElementById('fact-iban').value.trim(),bic:document.getElementById('fact-bic').value.trim(),bank:document.getElementById('fact-bank').value.trim()};
-  localStorage.setItem('inkr_rib',JSON.stringify(rib));
+  _saveBillingData({rib});
   const s=document.getElementById('fact-rib-saved');if(s){s.style.display='block';setTimeout(()=>s.style.display='none',2500);}
   showNotif('✅ RIB enregistré','success');
 }
 function loadRIB(){
-  try{const rib=JSON.parse(localStorage.getItem('inkr_rib')||'{}');
+  try{const rib=_getBillingData().rib||{};
     if(rib.name)document.getElementById('fact-rib-name').value=rib.name;
     if(rib.iban)document.getElementById('fact-iban').value=rib.iban;
     if(rib.bic)document.getElementById('fact-bic').value=rib.bic;
@@ -3066,23 +3080,23 @@ function loadRIB(){
   }catch(e){}
 }
 function saveLegalInfo(){
-  const info={siret:document.getElementById('fact-siret').value.trim(),tva:document.getElementById('fact-tva').value.trim(),forme:document.getElementById('fact-forme').value,tva_margin:document.getElementById('fact-tva-margin').value.trim()};
-  localStorage.setItem('inkr_legal',JSON.stringify(info));
+  const legal={siret:document.getElementById('fact-siret').value.trim(),tva:document.getElementById('fact-tva').value.trim(),forme:document.getElementById('fact-forme').value,tva_margin:document.getElementById('fact-tva-margin').value.trim()};
+  _saveBillingData({legal});
   const s=document.getElementById('fact-legal-saved');if(s){s.style.display='block';setTimeout(()=>s.style.display='none',2500);}
   showNotif('✅ Informations légales enregistrées','success');
 }
 function loadLegalInfo(){
-  try{const info=JSON.parse(localStorage.getItem('inkr_legal')||'{}');
-    if(info.siret)document.getElementById('fact-siret').value=info.siret;
-    if(info.tva)document.getElementById('fact-tva').value=info.tva;
-    if(info.forme)document.getElementById('fact-forme').value=info.forme;
-    if(info.tva_margin)document.getElementById('fact-tva-margin').value=info.tva_margin;
+  try{const legal=_getBillingData().legal||{};
+    if(legal.siret)document.getElementById('fact-siret').value=legal.siret;
+    if(legal.tva)document.getElementById('fact-tva').value=legal.tva;
+    if(legal.forme)document.getElementById('fact-forme').value=legal.forme;
+    if(legal.tva_margin)document.getElementById('fact-tva-margin').value=legal.tva_margin;
   }catch(e){}
 }
 function saveMaltUrl(){
   const url=document.getElementById('malt-url').value.trim();
   if(!url){showNotif('Entrez votre URL MALT','error');return;}
-  localStorage.setItem('inkr_malt_url',url);
+  _saveBillingData({malt_url:url});
   const s=document.getElementById('malt-status');
   if(s){s.style.display='block';s.style.color='var(--green)';s.textContent='✅ Profil MALT connecté : '+url;}
   showNotif('✅ MALT connecté !','success');
@@ -3094,10 +3108,10 @@ function confirmCancelSub(){
   showNotif('Demande de résiliation envoyée — vous recevrez un email de confirmation.','success');
   document.getElementById('cancel-sub-form').style.display='none';
 }
-// Init facturation panel when opened
+// Init facturation panel when opened — charge depuis currentUser.billing_json (DB)
 function initFacturation(){
   loadRIB();loadLegalInfo();
-  const malt=localStorage.getItem('inkr_malt_url');
+  const malt=_getBillingData().malt_url||'';
   if(malt){const inp=document.getElementById('malt-url');if(inp)inp.value=malt;
     const s=document.getElementById('malt-status');if(s){s.style.display='block';s.style.color='var(--green)';s.textContent='✅ Profil MALT connecté : '+malt;}}
   // Simulate next payment date
@@ -5581,7 +5595,18 @@ function sendOnPinterest(){showNotif('Connectez Pinterest dans Paramètres','');
 
 // ======== FIDELITE ========
 let loyaltyPrograms=[];
-try{loyaltyPrograms=JSON.parse(localStorage.getItem('inkr_loyalty_programs')||'[]');}catch(e){}
+// Chargement depuis currentUser.loyalty_config (DB) — appelé dans showApp()
+function loadLoyaltyFromUser(){
+  try{
+    if(currentUser&&currentUser.loyalty_config){
+      loyaltyPrograms=JSON.parse(currentUser.loyalty_config);
+    } else {
+      // Fallback localStorage pour les anciens comptes (migration)
+      try{loyaltyPrograms=JSON.parse(localStorage.getItem('inkr_loyalty_programs')||'[]');}catch(e){}
+    }
+    renderLoyaltyPrograms();
+  }catch(e){}
+}
 function showNewLoyaltyForm(){
   const f=document.getElementById('new-loyalty-form');
   f.style.display='block';
@@ -5593,7 +5618,14 @@ function selectLoyaltyType(type,el){
   document.querySelectorAll('.loy-config').forEach(c=>c.style.display='none');
   document.getElementById('loy-config-'+type).style.display='block';
 }
-function _saveLoyaltyToLS(){localStorage.setItem('inkr_loyalty_programs',JSON.stringify(loyaltyPrograms));}
+// Sauvegarde fidélité en DB (plus de localStorage)
+async function _saveLoyaltyToLS(){
+  const data=JSON.stringify(loyaltyPrograms);
+  try{
+    const r=await fetch('/api/auth/loyalty-config',{method:'PUT',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({loyalty_config:data})});
+    if(r.ok&&currentUser)currentUser.loyalty_config=data;
+  }catch(e){console.warn('[Fidélité] Sauvegarde DB échouée:',e.message);}
+}
 function saveLoyaltyProgram(){
   const name=document.getElementById('loy-name').value.trim();
   if(!name){showNotif('Donnez un nom au programme','error');return;}

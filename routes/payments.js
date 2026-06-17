@@ -397,7 +397,43 @@ async function handleStripeEvent(event) {
       }
     }
   }
-  // D'autres événements peuvent être gérés ici (payment_intent.payment_failed, etc.)
+  // ── Abonnement inkr Pro activé / mis à jour ────────────────────────────────
+  if (event.type === 'customer.subscription.created' ||
+      event.type === 'customer.subscription.updated') {
+    const sub = event.data.object;
+    const customerId = sub.customer;
+    const isActive = ['active', 'trialing'].includes(sub.status);
+    if (customerId) {
+      db.prepare("UPDATE users SET is_pro=?, stripe_customer_id=? WHERE stripe_customer_id=?")
+        .run(isActive ? 1 : 0, customerId, customerId);
+      console.log(`[Stripe] Abonnement ${sub.status} → is_pro=${isActive ? 1 : 0} (customer ${customerId})`);
+    }
+  }
+
+  // ── Abonnement inkr Pro résilié ────────────────────────────────────────────
+  if (event.type === 'customer.subscription.deleted') {
+    const sub = event.data.object;
+    const customerId = sub.customer;
+    if (customerId) {
+      db.prepare("UPDATE users SET is_pro=0 WHERE stripe_customer_id=?").run(customerId);
+      console.log(`[Stripe] Abonnement résilié → is_pro=0 (customer ${customerId})`);
+    }
+  }
+
+  // ── Première souscription : lier le customer_id au compte artiste ──────────
+  // Au moment du paiement abonnement, on stocke le customer Stripe sur l'artiste.
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
+    if (session.mode === 'subscription' && session.customer && session.customer_email) {
+      // Lier le customer Stripe au compte artiste par email
+      const existing = db.prepare("SELECT id FROM users WHERE stripe_customer_id=?").get(session.customer);
+      if (!existing) {
+        db.prepare("UPDATE users SET stripe_customer_id=?, is_pro=1 WHERE email=?")
+          .run(session.customer, session.customer_email);
+        console.log(`[Stripe] Customer lié → ${session.customer_email} → ${session.customer}`);
+      }
+    }
+  }
 }
 
 module.exports = router;

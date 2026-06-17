@@ -242,4 +242,7 @@ app.listen(PORT, '0.0.0.0', () => {
   startEmailPolling();
   // Restauration des sessions WhatsApp perso (artistes déjà connectés)
   setTimeout(() => restoreActiveSessions(), 5000); // délai pour laisser le serveur s'initialiser
+  // Démarrage du scheduler d'automatisations (rappels, relances, anniversaires)
+  const { startAutomations } = require('./services/automations');
+  startAutomations();
 });

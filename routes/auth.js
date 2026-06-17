@@ -25,9 +25,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'inkr_secret_dev';
   'dispo_flash INTEGER DEFAULT 0',
   'en_tournee INTEGER DEFAULT 0',
   'reset_token TEXT DEFAULT NULL',
-  'reset_token_expiry TEXT DEFAULT NULL',
+  'reset_token_expires TEXT DEFAULT NULL',
   'otp_code TEXT DEFAULT NULL',
-  'otp_expiry TEXT DEFAULT NULL',
+  'otp_expires TEXT DEFAULT NULL',
   'is_pro INTEGER DEFAULT 0',
   'role TEXT DEFAULT \'artist\'',
   'paypal_me_url TEXT DEFAULT NULL',
@@ -78,6 +78,16 @@ router.post('/register', async (req, res) => {
     ).run(email, hash, name, studio_name || '', city || '', phone || '', seed);
 
     initDefaultAutomations(result.lastInsertRowid);
+
+    // Créer la fiche tatoueur publique dès l'inscription → visible dans l'annuaire immédiatement
+    try {
+      db.prepare(`
+        INSERT INTO tatoueurs (user_id, nom, nom_commercial, ville, source, statut)
+        VALUES (?, ?, ?, ?, 'inkr_pro', 'active')
+      `).run(result.lastInsertRowid, name, name, city || '');
+    } catch(ficheErr) {
+      console.warn('[Register] Fiche tatoueur non créée (non bloquant):', ficheErr.message);
+    }
 
     // Email de bienvenue — async, n'impacte pas la réponse
     try {
@@ -150,7 +160,7 @@ router.get('/me', (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, cp, adresse, phone, instagram, pinterest, auto_reply, bio, styles, horaires, dispo_flash, photo_salon, photo_artiste, avatar_seed, en_tournee, is_pro, role, paypal_me_url, stripe_me_link, stripe_connect_id, created_at FROM users WHERE id = ?').get(decoded.userId);
+    const user = db.prepare('SELECT id, email, name, prenom, nom_artiste, studio_name, city, cp, adresse, phone, instagram, pinterest, auto_reply, bio, styles, horaires, dispo_flash, photo_salon, photo_artiste, avatar_seed, en_tournee, is_pro, role, paypal_me_url, stripe_me_link, stripe_connect_id, loyalty_config, billing_json, created_at FROM users WHERE id = ?').get(decoded.userId);
     if (!user) return res.status(401).json({ error: 'Utilisateur introuvable' });
     res.json({ user });
   } catch {
@@ -328,7 +338,7 @@ router.post('/forgot-password', async (req, res) => {
     const token = crypto.randomBytes(32).toString('hex');
     const expiry = new Date(Date.now() + 3600000).toISOString(); // 1 heure
 
-    db.prepare('UPDATE users SET reset_token=?, reset_token_expiry=? WHERE id=?').run(token, expiry, user.id);
+    db.prepare('UPDATE users SET reset_token=?, reset_token_expires=? WHERE id=?').run(token, expiry, user.id);
 
     const appUrl = process.env.APP_URL || 'https://inkr-app-production.up.railway.app';
     try {
@@ -368,12 +378,12 @@ router.post('/reset-password', async (req, res) => {
     }
 
     // Vérifier l'expiration
-    if (!user.reset_token_expiry || new Date().toISOString() > user.reset_token_expiry) {
+    if (!user.reset_token_expires || new Date().toISOString() > user.reset_token_expires) {
       return res.status(400).json({ error: 'Lien expiré, demande un nouveau lien' });
     }
 
     const hash = await bcrypt.hash(new_password, 10);
-    db.prepare('UPDATE users SET password_hash=?, reset_token=NULL, reset_token_expiry=NULL WHERE id=?').run(hash, user.id);
+    db.prepare('UPDATE users SET password_hash=?, reset_token=NULL, reset_token_expires=NULL WHERE id=?').run(hash, user.id);
 
     const jwtToken = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('inkr_token', jwtToken, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
@@ -421,7 +431,7 @@ router.post('/send-otp', async (req, res) => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiry = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 minutes
 
-    db.prepare('UPDATE users SET otp_code=?, otp_expiry=? WHERE id=?').run(code, expiry, user.id);
+    db.prepare('UPDATE users SET otp_code=?, otp_expires=? WHERE id=?').run(code, expiry, user.id);
 
     const result = await sendSMSOTP(phone, code);
     const simulated = !!(result && result.simulated);
@@ -452,7 +462,7 @@ router.post('/verify-otp', async (req, res) => {
     }
 
     // Vérifier l'expiration d'abord
-    if (!user.otp_expiry || new Date().toISOString() > user.otp_expiry) {
+    if (!user.otp_expires || new Date().toISOString() > user.otp_expires) {
       return res.status(400).json({ error: 'Code expiré, demande un nouveau code' });
     }
 
@@ -462,7 +472,7 @@ router.post('/verify-otp', async (req, res) => {
     }
 
     // Effacer l'OTP
-    db.prepare('UPDATE users SET otp_code=NULL, otp_expiry=NULL WHERE id=?').run(user.id);
+    db.prepare('UPDATE users SET otp_code=NULL, otp_expires=NULL WHERE id=?').run(user.id);
 
     const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: '30d' });
     res.cookie('inkr_token', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 });
@@ -630,6 +640,36 @@ router.get('/artist-unread', requireArtistAuth, (req, res) => {
   } catch (e) {
     console.error('[artist-unread GET]', e.message);
     res.status(500).json({ error: e.message });
+  }
+});
+
+// ============ FIDÉLITÉ — sauvegarde config en DB ============
+// PUT /api/auth/loyalty-config  { loyalty_config: "JSON string" }
+router.put('/loyalty-config', (req, res) => {
+  const token = req.cookies?.inkr_token || (req.headers.authorization || '').replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Non connecté' });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const { loyalty_config } = req.body;
+    db.prepare('UPDATE users SET loyalty_config=? WHERE id=?').run(loyalty_config || null, decoded.userId);
+    res.json({ success: true });
+  } catch {
+    res.status(401).json({ error: 'Session expirée' });
+  }
+});
+
+// ============ FACTURATION — sauvegarde RIB/SIRET/etc en DB ============
+// PUT /api/auth/billing  { billing_json: "JSON string" }
+router.put('/billing', (req, res) => {
+  const token = req.cookies?.inkr_token || (req.headers.authorization || '').replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Non connecté' });
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    const { billing_json } = req.body;
+    db.prepare('UPDATE users SET billing_json=? WHERE id=?').run(billing_json || null, decoded.userId);
+    res.json({ success: true });
+  } catch {
+    res.status(401).json({ error: 'Session expirée' });
   }
 });
 
