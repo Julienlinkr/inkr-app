@@ -41,8 +41,8 @@ app.use('/api/loyalty', require('./routes/loyalty'));
 app.use('/api/meta',       require('./routes/meta_oauth'));       // OAuth Meta (Instagram + Facebook)
 app.use('/api/whatsapp',          require('./routes/whatsapp_connect'));  // WhatsApp Business (officiel)
 app.use('/api/whatsapp-personal', require('./routes/whatsapp_personal')); // WhatsApp perso QR code
-app.use('/api/email',     require('./routes/email_oauth'));      // Gmail/Outlook OAuth2 artiste
-app.use('/api/email',     require('./routes/email_inbound'));    // Adresses @inkr.club + inbound webhook
+app.use('/api/email',         require('./routes/email_oauth'));        // Gmail/Outlook OAuth2 artiste
+app.use('/api/email/inbound', require('./routes/email_inbound')); // Adresses @inkr.club + inbound webhook
 app.use('/api/quotes',    require('./routes/quotes'));           // Devis artiste → client
 app.use('/api/analytics', require('./routes/analytics'));        // Trafic site inkr.club (RGPD-safe)
 

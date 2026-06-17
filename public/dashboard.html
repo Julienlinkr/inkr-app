@@ -1419,7 +1419,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
     <div class="dp-inner">
       <div class="dp-hdr">
         <div><div class="dp-title">👤 Mon profil</div><div class="dp-sub">Informations affichées sur inkr</div></div>
-        <button class="btn btn-primary btn-sm" onclick="saveProfil()">Sauvegarder</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn btn-sm" id="btn-preview-profil" onclick="previewProfil()" style="background:var(--card);border:1px solid var(--border);color:var(--text);font-size:12px;">👁 Aperçu</button>
+          <button class="btn btn-primary btn-sm" id="btn-save-profil" onclick="saveProfil()">Sauvegarder</button>
+        </div>
       </div>
       <div style="max-width:560px;">
         <div style="display:flex;align-items:center;gap:13px;margin-bottom:22px;padding:15px;background:var(--card);border:1px solid var(--border);border-radius:var(--rl);">
@@ -1510,26 +1513,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
               <button onclick="generateInkrEmail()" style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;border-radius:7px;color:#fff;font-size:11px;font-weight:600;cursor:pointer;width:100%;justify-content:center;">
                 Activer →
               </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Email perso Gmail/Outlook (pour envoyer depuis inkr) -->
-        <div class="form-group" style="margin:0 0 4px;">
-          <label style="display:flex;align-items:center;gap:6px;">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="#60A5FA" stroke-width="2"/><polyline points="22,6 12,13 2,6" stroke="#60A5FA" stroke-width="2"/></svg>
-            Boîte perso (Gmail / Outlook) — sync lecture
-          </label>
-          <div id="email-connect-status">
-            <div id="email-oauth-btns" style="display:flex;gap:6px;flex-wrap:wrap;">
-              <a href="/api/email/auth/google" style="display:flex;align-items:center;gap:7px;padding:7px 11px;background:#fff;border:1px solid #ddd;border-radius:7px;text-decoration:none;color:#222;font-size:11px;font-weight:600;">
-                <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                Gmail
-              </a>
-              <a href="/api/email/auth/microsoft" style="display:flex;align-items:center;gap:7px;padding:7px 11px;background:#0078d4;border-radius:7px;text-decoration:none;color:#fff;font-size:11px;font-weight:600;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="1" y="1" width="10" height="10" fill="#F25022"/><rect x="13" y="1" width="10" height="10" fill="#7FBA00"/><rect x="1" y="13" width="10" height="10" fill="#00A4EF"/><rect x="13" y="13" width="10" height="10" fill="#FFB900"/></svg>
-                Outlook
-              </a>
             </div>
           </div>
         </div>
@@ -2978,6 +2961,24 @@ function showApp(){
   }
   // Charger les programmes fidélité depuis currentUser.loyalty_config (DB, pas localStorage)
   loadLoyaltyFromUser();
+  // Onboarding wizard — s'affiche pour les nouveaux artistes (pas de ville ni bio)
+  const isNewUser=!currentUser.city&&!currentUser.bio;
+  if(isNewUser&&!_proWallDismissed){
+    setTimeout(openOnboarding,600);
+  }
+  // Stripe return — si on revient de Stripe Connect
+  const _sp=new URLSearchParams(window.location.search);
+  if(_sp.get('stripe_connected')==='1'){
+    window.history.replaceState({},'','/dashboard');
+    setTimeout(()=>{
+      showNotif('✅ Stripe connecté ! Tes acomptes arrivent directement chez toi.','success');
+      fetch('/api/payments/connect/status',{credentials:'include'})
+        .then(r=>r.json()).then(d=>{
+          if(d.connected&&currentUser)currentUser.stripe_connect_id=d.account_id;
+          renderStripeConnectStatus(d.account_id||null);
+        }).catch(()=>{});
+    },500);
+  }
 }
 function populateUser(){
   const u=currentUser;
@@ -4858,36 +4859,62 @@ function copyBookingLink(){
   navigator.clipboard.writeText(inp.value).then(()=>showNotif('✅ Lien copié ! Colle-le dans ta bio IG','success'));
 }
 
+// Aperçu du profil public — ouvre la fiche dans un nouvel onglet
+function previewProfil(){
+  const fiche=window._ficheId||currentUser?._ficheId;
+  if(fiche){window.open('/t/'+fiche,'_blank');return;}
+  // Chercher via l'annuaire (par user_id)
+  fetch('/api/annuaire?user_id='+currentUser.id,{credentials:'include'})
+    .then(r=>r.json()).then(d=>{
+      const t=d.tatoueurs?.[0]||d;
+      if(t&&t.id){window.open('/t/'+t.id,'_blank');}
+      else{showNotif('Ta fiche est en cours de création — sauvegarde ton profil d\'abord','error');}
+    }).catch(()=>showNotif('Aperçu indisponible pour l\'instant','error'));
+}
+
 async function saveProfil(){
-  const body={
-    name:document.getElementById('p-name').value,
-    prenom:document.getElementById('p-prenom').value,
-    nom_artiste:document.getElementById('p-nom-artiste').value,
-    studio_name:document.getElementById('p-studio').value,
-    city:document.getElementById('p-city').value,
-    cp:document.getElementById('p-cp').value,
-    adresse:document.getElementById('p-adresse').value,
-    phone:document.getElementById('p-phone').value,
-    instagram:document.getElementById('p-instagram').value,
-    paypal_me_url:document.getElementById('p-paypal-me').value.trim()||null,
-    stripe_me_link:document.getElementById('p-stripe-me').value.trim()||null,
-    pinterest:document.getElementById('p-pinterest').value,
-    photo_salon:document.getElementById('p-photo-salon').value.trim(),
-    photo_artiste:document.getElementById('p-photo-artiste').value.trim(),
-    auto_reply:document.getElementById('p-auto-reply').value.trim(),
-    bio:document.getElementById('p-bio').value.trim(),
-    styles:[...document.querySelectorAll('#p-styles-grid input[type=checkbox]:checked')].map(cb=>cb.value),
-    horaires:readHoraires(),
-    dispo_flash:document.getElementById('p-dispo-flash')?.checked||false
-  };
-  const res=await fetch('/api/auth/profile',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(res.ok){
-    Object.assign(currentUser,body);
-    populateUser();
-    const msg=document.getElementById('profil-save-msg');
-    msg.style.display='block';
-    setTimeout(()=>msg.style.display='none',3000);
-    showNotif('✅ Profil mis à jour ! Ta fiche est visible dans l\'annuaire.','success');
+  const btn=document.getElementById('btn-save-profil');
+  if(btn){btn.disabled=true;btn.textContent='...';}
+  try{
+    const g=id=>document.getElementById(id)?.value||'';
+    const body={
+      name:g('p-name').trim(),
+      prenom:g('p-prenom').trim(),
+      nom_artiste:g('p-nom-artiste').trim(),
+      studio_name:g('p-studio').trim(),
+      city:g('p-city').trim(),
+      cp:g('p-cp').trim(),
+      adresse:g('p-adresse').trim(),
+      phone:g('p-phone').trim(),
+      instagram:g('p-instagram').trim(),
+      paypal_me_url:g('p-paypal-me').trim()||null,
+      stripe_me_link:g('p-stripe-me').trim()||null,
+      pinterest:g('p-pinterest').trim(),
+      photo_salon:g('p-photo-salon').trim(),
+      photo_artiste:g('p-photo-artiste').trim(),
+      auto_reply:g('p-auto-reply').trim(),
+      bio:g('p-bio').trim(),
+      styles:[...document.querySelectorAll('#p-styles-grid input[type=checkbox]:checked')].map(cb=>cb.value),
+      horaires:readHoraires(),
+      dispo_flash:document.getElementById('p-dispo-flash')?.checked||false
+    };
+    if(!body.name){showNotif('❌ Le nom est requis','error');return;}
+    const res=await fetch('/api/auth/profile',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(res.ok){
+      Object.assign(currentUser,body);
+      populateUser();
+      const msg=document.getElementById('profil-save-msg');
+      if(msg){msg.style.display='block';setTimeout(()=>msg.style.display='none',3000);}
+      showNotif('✅ Profil sauvegardé — visible dans l\'annuaire inkr !','success');
+    } else {
+      const err=await res.json().catch(()=>({}));
+      showNotif('❌ '+(err.error||'Erreur de sauvegarde'),'error');
+    }
+  }catch(e){
+    console.error('[saveProfil]',e);
+    showNotif('❌ Erreur réseau — vérifie ta connexion','error');
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Sauvegarder';}
   }
 }
 
@@ -6412,6 +6439,197 @@ async function disconnectWAPersonal() {
 
 // Charger au démarrage
 document.addEventListener('DOMContentLoaded', loadWAPersonalStatus);
+
+// ═══════════════════════════════════════════════════════════════════
+// STRIPE RETURN — détection du retour après connexion Stripe
+// ═══════════════════════════════════════════════════════════════════
+(function handleStripeReturn(){
+  const p=new URLSearchParams(window.location.search);
+  if(p.get('stripe_connected')==='1'){
+    // Nettoyer l'URL sans recharger la page
+    window.history.replaceState({},'','/dashboard');
+    // Attendre que le dashboard soit chargé
+    document.addEventListener('DOMContentLoaded',()=>{
+      setTimeout(()=>{
+        showNotif('✅ Stripe connecté ! Tes acomptes arrivent directement chez toi.','success');
+        // Naviguer vers le panel profil et rafraîchir le statut Stripe
+        const navP=document.querySelector('[onclick*="dp-profil"]');
+        if(navP) dashGo('dp-profil',navP);
+        fetch('/api/payments/connect/status',{credentials:'include'})
+          .then(r=>r.json()).then(d=>{
+            if(d.connected&&currentUser) currentUser.stripe_connect_id=d.account_id;
+            renderStripeConnectStatus(d.account_id||null);
+          }).catch(()=>{});
+      },800);
+    });
+  }
+})();
+
+// ═══════════════════════════════════════════════════════════════════
+// ONBOARDING WIZARD — Setup guidé style Airbnb pour nouveaux artistes
+// ═══════════════════════════════════════════════════════════════════
+let _obStep=1;
+const _obSteps=3;
+
+function openOnboarding(){
+  const el=document.getElementById('onboarding-wizard');
+  if(el){el.classList.add('open');_obStep=1;_renderObStep();}
+}
+function closeOnboarding(){
+  const el=document.getElementById('onboarding-wizard');
+  if(el) el.classList.remove('open');
+}
+
+function _renderObStep(){
+  const title=document.getElementById('ob-title');
+  const sub=document.getElementById('ob-sub');
+  const body=document.getElementById('ob-body');
+  const btnPrev=document.getElementById('ob-btn-prev');
+  const btnNext=document.getElementById('ob-btn-next');
+  const prog=document.getElementById('ob-progress');
+
+  // Barre de progression
+  if(prog) prog.style.width=((_obStep/_obSteps)*100)+'%';
+
+  if(_obStep===1){
+    if(title) title.textContent='Dis-nous qui tu es 👋';
+    if(sub) sub.textContent='Ces informations apparaissent sur ta fiche publique inkr';
+    if(body) body.innerHTML=`
+      <div class="grid-2" style="gap:10px;margin-bottom:10px;">
+        <div><label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">PRÉNOM</label>
+          <input class="form-control" id="ob-prenom" placeholder="Julien" value="${escHtml(currentUser?.prenom||'')}"></div>
+        <div><label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">NOM D'ARTISTE</label>
+          <input class="form-control" id="ob-nom-artiste" placeholder="@inkr_tattoo" value="${escHtml(currentUser?.nom_artiste||'')}"></div>
+      </div>
+      <div style="margin-bottom:10px;"><label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">VILLE</label>
+        <input class="form-control" id="ob-city" placeholder="Bordeaux, Paris, Lyon..." value="${escHtml(currentUser?.city||'')}"></div>
+      <div><label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">TÉLÉPHONE (pour les clients)</label>
+        <input class="form-control" id="ob-phone" placeholder="+33 6 00 00 00 00" type="tel" value="${escHtml(currentUser?.phone||'')}"></div>
+    `;
+    if(btnPrev) btnPrev.style.display='none';
+    if(btnNext){btnNext.textContent='Suivant →';btnNext.onclick=_obNext1;}
+  } else if(_obStep===2){
+    if(title) title.textContent='Ton univers artistique 🎨';
+    if(sub) sub.textContent='Aide les clients à te trouver avec les bons filtres';
+    const STYLES=['Réalisme','Traditionnel','Japonais','Géométrique','Blackwork','Aquarelle','Minimaliste','Old School','Lettering'];
+    let curStyles=[];
+    try{curStyles=JSON.parse(currentUser?.styles||'[]');}catch(e){}
+    const chkHtml=STYLES.map(s=>`
+      <label style="display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid ${curStyles.includes(s)?'var(--purple)':'var(--border)'};border-radius:8px;cursor:pointer;font-size:12px;background:${curStyles.includes(s)?'rgba(168,85,247,.1)':'transparent'};">
+        <input type="checkbox" value="${s}" ${curStyles.includes(s)?'checked':''} onchange="this.closest('label').style.borderColor=this.checked?'var(--purple)':'var(--border)';this.closest('label').style.background=this.checked?'rgba(168,85,247,.1)':'transparent';" style="accent-color:var(--purple);">
+        ${s}
+      </label>`).join('');
+    if(body) body.innerHTML=`
+      <div style="margin-bottom:12px;"><label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:8px;">TES STYLES (sélectionne tout ce que tu fais)</label>
+        <div id="ob-styles-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">${chkHtml}</div></div>
+      <div><label style="font-size:11px;color:var(--muted);font-weight:600;display:block;margin-bottom:5px;">TA BIO (décris ton univers)</label>
+        <textarea class="form-control" id="ob-bio" style="min-height:80px;font-size:13px;line-height:1.6;" placeholder="Artiste tatoueur depuis X ans, spécialisé en...">${escHtml(currentUser?.bio||'')}</textarea></div>
+    `;
+    if(btnPrev){btnPrev.style.display='block';btnPrev.onclick=()=>{_obStep=1;_renderObStep();};}
+    if(btnNext){btnNext.textContent='Suivant →';btnNext.onclick=_obNext2;}
+  } else if(_obStep===3){
+    if(title) title.textContent='Encaisse tes acomptes 💳';
+    if(sub) sub.textContent='Connecte Stripe pour recevoir les paiements directement. Tu peux aussi le faire plus tard.';
+    const hasStripe=!!(currentUser?.stripe_connect_id);
+    if(body) body.innerHTML=`
+      <div style="border:1px solid var(--border);border-radius:12px;padding:20px;background:var(--card);margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:#635BFF;display:flex;align-items:center;justify-content:center;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="20" height="14" rx="2" stroke="#fff" stroke-width="2"/><path d="M2 10h20" stroke="#fff" stroke-width="2"/></svg>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;">Stripe</div>
+            <div style="font-size:11px;color:var(--muted);">Tes clients paient → l'argent arrive directement chez toi</div>
+          </div>
+        </div>
+        ${hasStripe
+          ? `<div style="color:#22c55e;font-size:13px;font-weight:600;">✓ Stripe connecté</div>`
+          : `<a href="/api/payments/connect/start" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;background:#635BFF;border-radius:9px;color:#fff;font-size:13px;font-weight:700;text-decoration:none;">
+              Connecter mon compte Stripe →
+            </a>`
+        }
+      </div>
+      <div style="text-align:center;margin-top:4px;">
+        <button onclick="_obFinish()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;text-decoration:underline;">Plus tard — je le ferai depuis mon profil</button>
+      </div>
+    `;
+    if(btnPrev){btnPrev.style.display='block';btnPrev.onclick=()=>{_obStep=2;_renderObStep();};}
+    if(btnNext){btnNext.textContent='🎉 Terminer !';btnNext.onclick=_obFinish;}
+  }
+}
+
+async function _obNext1(){
+  const prenom=(document.getElementById('ob-prenom')?.value||'').trim();
+  const nom_artiste=(document.getElementById('ob-nom-artiste')?.value||'').trim();
+  const city=(document.getElementById('ob-city')?.value||'').trim();
+  const phone=(document.getElementById('ob-phone')?.value||'').trim();
+  if(!city){showNotif('Indique ta ville pour être visible dans l\'annuaire','error');return;}
+  // Sauvegarder l'étape 1
+  try{
+    const body={name:currentUser.name,prenom,nom_artiste,studio_name:currentUser.studio_name||'',city,phone};
+    const r=await fetch('/api/auth/profile',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(r.ok){Object.assign(currentUser,body);
+      // Mettre à jour aussi le formulaire profil
+      ['prenom','nom_artiste','city','phone'].forEach(k=>{const el=document.getElementById('p-'+k);if(el)el.value=currentUser[k]||'';});
+      const el=document.getElementById('p-city');if(el)el.value=city;
+    }
+  }catch(e){console.warn('[Onboarding]',e);}
+  _obStep=2;_renderObStep();
+}
+
+async function _obNext2(){
+  const styles=[...document.querySelectorAll('#ob-styles-grid input:checked')].map(c=>c.value);
+  const bio=(document.getElementById('ob-bio')?.value||'').trim();
+  // Sauvegarder l'étape 2
+  try{
+    const body={name:currentUser.name,styles,bio,city:currentUser.city||'',studio_name:currentUser.studio_name||''};
+    const r=await fetch('/api/auth/profile',{method:'PUT',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(r.ok){Object.assign(currentUser,body);
+      const bioEl=document.getElementById('p-bio');if(bioEl)bioEl.value=bio;
+      document.querySelectorAll('#p-styles-grid input').forEach(cb=>{cb.checked=styles.includes(cb.value);});
+    }
+  }catch(e){console.warn('[Onboarding]',e);}
+  _obStep=3;_renderObStep();
+}
+
+function _obFinish(){
+  closeOnboarding();
+  populateUser();
+  showNotif('✅ Profil configuré ! Tu es maintenant visible dans l\'annuaire inkr.','success');
+  // Naviguer vers l'aperçu
+  const navOv=document.querySelector('[onclick*="dp-overview"]')||document.querySelector('[onclick*="dashGo(\'dp-overview"]');
+  if(navOv) navOv.click();
+}
 </script>
+
+<!-- ONBOARDING WIZARD MODAL -->
+<div id="onboarding-wizard" style="position:fixed;inset:0;z-index:3000;background:rgba(0,0,0,.85);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:#111;border:1px solid #222;border-radius:20px;width:100%;max-width:480px;box-shadow:0 40px 120px rgba(0,0,0,.9);overflow:hidden;">
+    <!-- Header avec barre de progression -->
+    <div style="padding:24px 28px 0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div style="font-size:22px;font-weight:900;letter-spacing:-1px;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">inkr</div>
+        <button onclick="closeOnboarding()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;">×</button>
+      </div>
+      <!-- Progress bar -->
+      <div style="height:3px;background:#222;border-radius:3px;margin-bottom:24px;">
+        <div id="ob-progress" style="height:3px;background:linear-gradient(90deg,#667eea,#a855f7);border-radius:3px;transition:width .4s ease;width:33%;"></div>
+      </div>
+      <div id="ob-title" style="font-size:20px;font-weight:800;color:#fff;margin-bottom:6px;"></div>
+      <div id="ob-sub" style="font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.5;"></div>
+    </div>
+    <!-- Body de l'étape -->
+    <div id="ob-body" style="padding:0 28px 20px;max-height:55vh;overflow-y:auto;"></div>
+    <!-- Footer avec boutons -->
+    <div style="padding:16px 28px 24px;border-top:1px solid #1a1a1a;display:flex;gap:10px;align-items:center;">
+      <button id="ob-btn-prev" style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:10px 16px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;display:none;">← Retour</button>
+      <button id="ob-btn-next" style="flex:1;padding:12px;background:linear-gradient(135deg,#667eea,#a855f7);border:none;border-radius:9px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;"></button>
+    </div>
+  </div>
+</div>
+<style>
+#onboarding-wizard{display:none;}
+#onboarding-wizard.open{display:flex !important;}
+</style>
 </body>
 </html>
