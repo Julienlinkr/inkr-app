@@ -182,13 +182,97 @@ app.post('/api/admin/set-pro', (req, res) => {
   res.json({ success: true, user: updated });
 });
 
-// GET /api/admin/users?secret=XXX  → liste tous les artistes (debug)
+// GET /api/admin/users?secret=XXX  → liste tous les artistes (JSON)
 app.get('/api/admin/users', (req, res) => {
   const secret = process.env.ADMIN_SECRET;
   if (!secret || req.query.secret !== secret) return res.status(401).json({ error: 'Non autorisé' });
   const { db } = require('./db/database');
-  const users = db.prepare('SELECT id, email, name, is_pro, role, created_at FROM users ORDER BY id').all();
+  const users = db.prepare('SELECT id, email, name, city, is_pro, role, created_at FROM users ORDER BY id DESC').all();
   res.json({ users });
+});
+
+// GET /admin/comptes?secret=XXX  → page HTML avec la liste des artistes inscrits
+app.get('/admin/comptes', (req, res) => {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret || req.query.secret !== secret) {
+    return res.status(401).send(`
+      <html><head><meta charset="UTF-8"><title>inkr · Admin</title>
+      <style>body{background:#0d0d1a;color:#fff;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+      .box{background:#1a1a2e;border:1px solid #333;border-radius:16px;padding:40px;text-align:center}
+      form{margin-top:20px}input{padding:10px 14px;background:#111;border:1px solid #444;border-radius:8px;color:#fff;font-size:15px;margin-right:8px}
+      button{padding:10px 20px;background:#a855f7;border:none;border-radius:8px;color:#fff;font-size:15px;cursor:pointer}</style></head>
+      <body><div class="box"><div style="font-size:32px;font-weight:800;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent">inkr</div>
+      <p style="color:#888;margin:8px 0 20px">Accès admin requis</p>
+      <form method="GET"><input type="password" name="secret" placeholder="Mot de passe admin" autofocus>
+      <button type="submit">Accéder →</button></form></div></body></html>`);
+  }
+  const { db } = require('./db/database');
+  const users = db.prepare('SELECT id, email, name, city, is_pro, role, created_at FROM users ORDER BY id DESC').all();
+  const rows = users.map(u => `
+    <tr>
+      <td>${u.id}</td>
+      <td>${u.name || '—'}</td>
+      <td>${u.email}</td>
+      <td>${u.city || '—'}</td>
+      <td>${u.is_pro ? '<span style="color:#4ade80;font-weight:700">✅ PRO</span>' : '<span style="color:#888">Free</span>'}</td>
+      <td>${u.role || 'artist'}</td>
+      <td style="color:#888;font-size:13px">${u.created_at ? u.created_at.slice(0,16) : '—'}</td>
+      <td>
+        <button onclick="togglePro(${u.id},'${u.email}',${u.is_pro})" style="padding:4px 10px;background:${u.is_pro ? '#374151' : '#7c3aed'};border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:12px">
+          ${u.is_pro ? '⬇ Passer Free' : '⬆ Passer PRO'}
+        </button>
+      </td>
+    </tr>`).join('');
+
+  res.send(`<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>inkr · Comptes artistes</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0d0d1a;color:#e5e7eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:32px}
+  h1{font-size:28px;font-weight:800;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+  .sub{color:#666;font-size:14px;margin-bottom:28px}
+  .stats{display:flex;gap:16px;margin-bottom:28px}
+  .stat{background:#1a1a2e;border:1px solid #2a2a3e;border-radius:12px;padding:16px 24px}
+  .stat-n{font-size:32px;font-weight:800;color:#a855f7}
+  .stat-l{font-size:12px;color:#888;margin-top:2px}
+  table{width:100%;border-collapse:collapse;background:#1a1a2e;border-radius:12px;overflow:hidden}
+  th{background:#111827;padding:12px 16px;text-align:left;font-size:12px;color:#6b7280;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+  td{padding:12px 16px;border-top:1px solid #1f2937;font-size:14px}
+  tr:hover td{background:#1f2937}
+  .back{display:inline-block;margin-bottom:20px;color:#a855f7;text-decoration:none;font-size:14px}
+</style></head>
+<body>
+  <a href="/admin" class="back">← Back office</a>
+  <h1>inkr · Artistes inscrits</h1>
+  <div class="sub">${users.length} compte${users.length > 1 ? 's' : ''} au total</div>
+  <div class="stats">
+    <div class="stat"><div class="stat-n">${users.length}</div><div class="stat-l">Total inscrits</div></div>
+    <div class="stat"><div class="stat-n" style="color:#4ade80">${users.filter(u=>u.is_pro).length}</div><div class="stat-l">Abonnés PRO</div></div>
+    <div class="stat"><div class="stat-n" style="color:#f59e0b">${users.filter(u=>!u.is_pro).length}</div><div class="stat-l">Comptes Free</div></div>
+    <div class="stat"><div class="stat-n" style="color:#60a5fa">${users.filter(u=>{const d=new Date(u.created_at);const now=new Date();return (now-d)<7*24*3600*1000;}).length}</div><div class="stat-l">Inscrits cette semaine</div></div>
+  </div>
+  <table>
+    <thead><tr>
+      <th>#</th><th>Nom</th><th>Email</th><th>Ville</th><th>Statut</th><th>Rôle</th><th>Inscrit le</th><th>Action</th>
+    </tr></thead>
+    <tbody>${rows || '<tr><td colspan="8" style="text-align:center;padding:40px;color:#666">Aucun compte encore — sois patient 😄</td></tr>'}</tbody>
+  </table>
+<script>
+const SECRET = '${secret}';
+async function togglePro(id, email, isPro) {
+  const newPro = isPro ? 0 : 1;
+  const action = newPro ? 'PRO' : 'Free';
+  if (!confirm('Passer ' + email + ' en ' + action + ' ?')) return;
+  const r = await fetch('/api/admin/set-pro?secret=' + SECRET, {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ email, is_pro: newPro })
+  });
+  if (r.ok) location.reload();
+  else alert('Erreur');
+}
+</script>
+</body></html>`);
 });
 
 // ============ STATUS ============
