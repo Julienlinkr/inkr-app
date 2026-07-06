@@ -411,6 +411,207 @@ async function togglePro(id, email, isPro) {
 </body></html>`);
 });
 
+// ============ API OUTREACH — mise à jour statut CRM ============
+app.post('/api/admin/outreach', (req, res) => {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret || req.query.secret !== secret) return res.status(401).json({ error: 'Non autorisé' });
+  const { id, status, notes } = req.body;
+  if (!id) return res.status(400).json({ error: 'id requis' });
+  const { db } = require('./db/database');
+  const date = status !== 'non_contacte' ? new Date().toISOString().slice(0,10) : null;
+  db.prepare("UPDATE tatoueurs SET outreach_status=?, outreach_date=?, outreach_notes=? WHERE id=?")
+    .run(status, date, notes||null, id);
+  res.json({ success: true });
+});
+
+// ============ CRM OUTREACH — page de suivi des contacts ============
+app.get('/admin/outreach', (req, res) => {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret || req.query.secret !== secret) {
+    return res.redirect(`/admin?next=/admin/outreach`);
+  }
+  const { db } = require('./db/database');
+  const statusFilter = req.query.status || '';
+  const deptFilter   = req.query.dept   || '';
+  const search       = req.query.q      || '';
+
+  let sql = `SELECT id, nom, ville, cp, instagram_handle, telephone, outreach_status, outreach_date, outreach_notes
+             FROM tatoueurs WHERE statut='active' AND instagram_handle != '' AND instagram_handle IS NOT NULL`;
+  const params = [];
+  if (statusFilter) { sql += ' AND outreach_status=?'; params.push(statusFilter); }
+  if (deptFilter)   { sql += ' AND cp LIKE ?'; params.push(deptFilter+'%'); }
+  if (search)       { sql += ' AND (LOWER(nom) LIKE ? OR LOWER(ville) LIKE ? OR instagram_handle LIKE ?)'; params.push('%'+search.toLowerCase()+'%','%'+search.toLowerCase()+'%','%'+search+'%'); }
+  sql += ' ORDER BY CASE outreach_status WHEN "non_contacte" THEN 0 WHEN "contacte" THEN 1 WHEN "repondu" THEN 2 WHEN "inscrit" THEN 3 ELSE 4 END, ville ASC LIMIT 200';
+
+  const rows = db.prepare(sql).all(...params);
+
+  const stats = db.prepare(`SELECT outreach_status, COUNT(*) as n FROM tatoueurs WHERE instagram_handle!='' AND instagram_handle IS NOT NULL GROUP BY outreach_status`).all();
+  const statMap = {};
+  stats.forEach(s => statMap[s.outreach_status] = s.n);
+  const totalWithIg = Object.values(statMap).reduce((a,b)=>a+b,0);
+
+  const STATUS_LABELS = { non_contacte:'🔵 Non contacté', contacte:'📨 Contacté', repondu:'💬 A répondu', inscrit:'✅ Inscrit' };
+  const STATUS_COLORS = { non_contacte:'#374151', contacte:'#1d4ed8', repondu:'#d97706', inscrit:'#16a34a' };
+
+  const tableRows = rows.map(t => `
+    <tr id="row-${t.id}">
+      <td><strong>${t.nom}</strong></td>
+      <td style="color:#9ca3af">${t.ville||'—'}</td>
+      <td>
+        ${t.instagram_handle ? `<a href="https://instagram.com/${t.instagram_handle}" target="_blank" style="color:#a855f7;text-decoration:none;">@${t.instagram_handle}</a>` : '—'}
+      </td>
+      <td>
+        <a href="/t/${t.id}" target="_blank" style="color:#60a5fa;font-size:12px;text-decoration:none;">🔗 Fiche</a>
+      </td>
+      <td>
+        <select onchange="updateStatus(${t.id},this.value)"
+          style="background:${STATUS_COLORS[t.outreach_status]||'#374151'};border:none;border-radius:6px;color:#fff;padding:4px 8px;font-size:12px;cursor:pointer;">
+          <option value="non_contacte" ${t.outreach_status==='non_contacte'?'selected':''}>🔵 Non contacté</option>
+          <option value="contacte"     ${t.outreach_status==='contacte'?'selected':''}>📨 Contacté</option>
+          <option value="repondu"      ${t.outreach_status==='repondu'?'selected':''}>💬 A répondu</option>
+          <option value="inscrit"      ${t.outreach_status==='inscrit'?'selected':''}>✅ Inscrit</option>
+        </select>
+      </td>
+      <td style="color:#9ca3af;font-size:12px">${t.outreach_date||'—'}</td>
+      <td>
+        <input type="text" placeholder="Note..." value="${(t.outreach_notes||'').replace(/"/g,'&quot;')}"
+          onblur="saveNote(${t.id},this.value)"
+          style="background:#1f2937;border:1px solid #374151;border-radius:6px;color:#e5e7eb;padding:4px 8px;font-size:12px;width:160px;"/>
+      </td>
+      <td>
+        <a href="https://instagram.com/${t.instagram_handle}" target="_blank"
+          onclick="updateStatus(${t.id},'contacte')"
+          style="padding:4px 10px;background:#a855f7;border-radius:6px;color:#fff;font-size:12px;text-decoration:none;white-space:nowrap;">
+          ✉️ DM
+        </a>
+      </td>
+    </tr>`).join('');
+
+  res.send(`<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>inkr · CRM Outreach</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0d1a;color:#e5e7eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:24px}
+h1{font-size:24px;font-weight:800;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.sub{color:#6b7280;font-size:13px;margin-bottom:20px}
+.stats{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.stat{background:#1a1a2e;border:1px solid #2a2a3e;border-radius:10px;padding:12px 20px;cursor:pointer;transition:.15s}
+.stat:hover{border-color:#a855f7}
+.stat-n{font-size:28px;font-weight:800}
+.stat-l{font-size:11px;color:#6b7280;margin-top:2px}
+.filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.filters input,.filters select{background:#1a1a2e;border:1px solid #374151;border-radius:8px;color:#e5e7eb;padding:8px 12px;font-size:13px}
+.filters input{width:220px}
+table{width:100%;border-collapse:collapse;background:#111827;border-radius:12px;overflow:hidden;font-size:13px}
+th{background:#0d0d1a;padding:10px 12px;text-align:left;color:#6b7280;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+td{padding:10px 12px;border-top:1px solid #1f2937}
+tr:hover td{background:#1a1a2e}
+.back{display:inline-block;margin-bottom:16px;color:#a855f7;text-decoration:none;font-size:13px}
+.tip{background:#1a1a2e;border:1px solid #374151;border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#9ca3af;line-height:1.6}
+.tip strong{color:#e5e7eb}
+</style></head>
+<body>
+<a href="/admin?key=${secret}" class="back">← Back office</a>
+<h1>CRM Outreach Instagram</h1>
+<div class="sub">${totalWithIg.toLocaleString('fr-FR')} tatoueurs avec Instagram à contacter</div>
+
+<div class="tip">
+  <strong>🎯 Comment utiliser :</strong> clique sur <strong>✉️ DM</strong> → ça ouvre Instagram + marque automatiquement "Contacté". Change le statut au fur et à mesure. Ajoute des notes si besoin.
+</div>
+
+<div class="stats">
+  <div class="stat" onclick="filterStatus('')"><div class="stat-n">${totalWithIg.toLocaleString()}</div><div class="stat-l">Total avec Instagram</div></div>
+  <div class="stat" onclick="filterStatus('non_contacte')"><div class="stat-n" style="color:#60a5fa">${(statMap['non_contacte']||0).toLocaleString()}</div><div class="stat-l">🔵 Non contactés</div></div>
+  <div class="stat" onclick="filterStatus('contacte')"><div class="stat-n" style="color:#a855f7">${(statMap['contacte']||0).toLocaleString()}</div><div class="stat-l">📨 Contactés</div></div>
+  <div class="stat" onclick="filterStatus('repondu')"><div class="stat-n" style="color:#f59e0b">${(statMap['repondu']||0).toLocaleString()}</div><div class="stat-l">💬 Ont répondu</div></div>
+  <div class="stat" onclick="filterStatus('inscrit')"><div class="stat-n" style="color:#4ade80">${(statMap['inscrit']||0).toLocaleString()}</div><div class="stat-l">✅ Inscrits</div></div>
+</div>
+
+<div class="filters">
+  <input type="text" id="search" placeholder="🔍 Nom, ville, @handle..." value="${search}" oninput="debounceSearch(this.value)"/>
+  <select id="dept" onchange="applyFilters()" >
+    <option value="">📍 Département</option>
+    <option value="75" ${deptFilter==='75'?'selected':''}>75 — Paris</option>
+    <option value="13" ${deptFilter==='13'?'selected':''}>13 — Marseille</option>
+    <option value="69" ${deptFilter==='69'?'selected':''}>69 — Lyon</option>
+    <option value="31" ${deptFilter==='31'?'selected':''}>31 — Toulouse</option>
+    <option value="33" ${deptFilter==='33'?'selected':''}>33 — Bordeaux</option>
+    <option value="59" ${deptFilter==='59'?'selected':''}>59 — Lille</option>
+    <option value="06" ${deptFilter==='06'?'selected':''}>06 — Nice</option>
+    <option value="44" ${deptFilter==='44'?'selected':''}>44 — Nantes</option>
+    <option value="67" ${deptFilter==='67'?'selected':''}>67 — Strasbourg</option>
+    <option value="35" ${deptFilter==='35'?'selected':''}>35 — Rennes</option>
+  </select>
+  <select id="status-filter" onchange="applyFilters()">
+    <option value="" ${!statusFilter?'selected':''}>Tous les statuts</option>
+    <option value="non_contacte" ${statusFilter==='non_contacte'?'selected':''}>🔵 Non contactés</option>
+    <option value="contacte"     ${statusFilter==='contacte'?'selected':''}>📨 Contactés</option>
+    <option value="repondu"      ${statusFilter==='repondu'?'selected':''}>💬 Ont répondu</option>
+    <option value="inscrit"      ${statusFilter==='inscrit'?'selected':''}>✅ Inscrits</option>
+  </select>
+</div>
+
+<table>
+  <thead><tr><th>Nom</th><th>Ville</th><th>Instagram</th><th>Fiche</th><th>Statut</th><th>Date</th><th>Notes</th><th>Action</th></tr></thead>
+  <tbody>${tableRows||'<tr><td colspan="8" style="text-align:center;padding:40px;color:#666">Aucun résultat</td></tr>'}</tbody>
+</table>
+
+<script>
+const SECRET = '${secret}';
+let searchTimer;
+
+async function updateStatus(id, status) {
+  const notes = document.querySelector('#row-'+id+' input')?.value||'';
+  await fetch('/api/admin/outreach?secret='+SECRET, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({id, status, notes})
+  });
+  // Update select color
+  const sel = document.querySelector('#row-'+id+' select');
+  if(sel){
+    const colors={non_contacte:'#374151',contacte:'#1d4ed8',repondu:'#d97706',inscrit:'#16a34a'};
+    sel.style.background = colors[status]||'#374151';
+    sel.value = status;
+  }
+  // Update date
+  const dateCells = document.querySelectorAll('#row-'+id+' td');
+  if(dateCells[5] && status !== 'non_contacte') dateCells[5].textContent = new Date().toISOString().slice(0,10);
+}
+
+async function saveNote(id, notes) {
+  const sel = document.querySelector('#row-'+id+' select');
+  const status = sel?.value || 'contacte';
+  await fetch('/api/admin/outreach?secret='+SECRET, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({id, status, notes})
+  });
+}
+
+function filterStatus(s) {
+  const url = new URL(window.location);
+  url.searchParams.set('status', s);
+  url.searchParams.set('secret', SECRET);
+  window.location = url;
+}
+
+function applyFilters() {
+  const url = new URL(window.location);
+  url.searchParams.set('status', document.getElementById('status-filter').value);
+  url.searchParams.set('dept', document.getElementById('dept').value);
+  url.searchParams.set('q', document.getElementById('search').value);
+  url.searchParams.set('secret', SECRET);
+  window.location = url;
+}
+
+function debounceSearch(v) {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(applyFilters, 600);
+}
+</script>
+</body></html>`);
+});
+
 // ============ STATUS ============
 app.get('/api/status', (req, res) => {
   res.json({
