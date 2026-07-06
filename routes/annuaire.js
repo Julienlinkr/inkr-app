@@ -82,53 +82,100 @@ function toFront(t){
   };
 }
 
+// ─── Table avis ───────────────────────────────────────────────
+db.exec(`CREATE TABLE IF NOT EXISTS tatoueur_reviews (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  tatoueur_id  INTEGER NOT NULL,
+  author_name  TEXT NOT NULL DEFAULT 'Anonyme',
+  rating       INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),
+  comment      TEXT DEFAULT '',
+  created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+)`);
+
 // ─── GET /api/annuaire ─────────────────────────────────────────
-// Params: ?ville=Paris&style=fineline&q=sofia&limit=50&offset=0
-// Le paramètre style accepte le slug ("fineline") ou le nom d'affichage ("Fine Line").
+// Params: ?ville=Paris&style=fineline&q=sofia&dept=75&min_rating=4&has_ig=1&limit=50&offset=0
 router.get('/', (req, res) => {
   try {
-    const { ville, style, q, limit=50, offset=0 } = req.query;
-    let sql  = "SELECT * FROM tatoueurs WHERE statut='active'";
+    const { ville, style, q, dept, min_rating, has_ig, claimed, limit=50, offset=0 } = req.query;
+    let sql  = "SELECT t.*, COALESCE(r.avg_rating,0) as avg_rating, COALESCE(r.nb_reviews,0) as nb_reviews FROM tatoueurs t LEFT JOIN (SELECT tatoueur_id, ROUND(AVG(rating),1) as avg_rating, COUNT(*) as nb_reviews FROM tatoueur_reviews GROUP BY tatoueur_id) r ON r.tatoueur_id=t.id WHERE t.statut='active'";
+
+    // Exclure les enregistrements sans nom réel (noms numériques courts)
+    sql += " AND LENGTH(TRIM(t.nom)) > 1 AND TRIM(t.nom) != '0'";
+
     const params = [];
 
     if (ville) {
-      // Cherche dans ville ET cp. norm() normalise accents + casse.
-      // On cherche aussi sans LOWER() pour compatibilité maximale.
       const vn = `%${norm(ville)}%`;
-      sql += " AND (LOWER(ville) LIKE ? OR LOWER(cp) LIKE ? OR ville LIKE ? OR cp LIKE ?)";
+      sql += " AND (LOWER(t.ville) LIKE ? OR LOWER(t.cp) LIKE ? OR t.ville LIKE ? OR t.cp LIKE ?)";
       params.push(vn, vn, `%${ville}%`, `%${ville}%`);
     }
+    if (dept) {
+      sql += " AND (t.cp LIKE ? OR t.cp LIKE ?)";
+      params.push(`${dept}%`, `0${dept}%`);
+    }
     if (style) {
-      // Normalise le style : supprime espaces et tirets pour comparer "fine line" ↔ "fineline" ↔ "fine-line"
-      // Fonctionne que le front envoie le slug (fineline) ou le nom affiché (Fine Line).
       const styleNorm = norm(style).replace(/[\s\-]+/g, '');
-      sql += " AND REPLACE(REPLACE(LOWER(styles), ' ', ''), '-', '') LIKE ?";
+      sql += " AND REPLACE(REPLACE(LOWER(t.styles), ' ', ''), '-', '') LIKE ?";
       params.push(`%${styleNorm}%`);
     }
     if (q) {
       const lq = `%${norm(q)}%`;
-      sql += " AND (LOWER(nom) LIKE ? OR LOWER(nom_commercial) LIKE ? OR LOWER(ville) LIKE ? OR LOWER(instagram) LIKE ?)";
-      params.push(lq, lq, lq, lq);
+      sql += " AND (LOWER(t.nom) LIKE ? OR LOWER(t.nom_commercial) LIKE ? OR LOWER(t.ville) LIKE ? OR LOWER(t.instagram) LIKE ? OR LOWER(t.instagram_handle) LIKE ?)";
+      params.push(lq, lq, lq, lq, lq);
     }
+    if (has_ig === '1') {
+      sql += " AND t.instagram_handle != '' AND t.instagram_handle IS NOT NULL";
+    }
+    if (min_rating) {
+      sql += " AND COALESCE(r.avg_rating,0) >= ?";
+      params.push(parseFloat(min_rating));
+    }
+    if (claimed === '1') sql += " AND (t.claimed=1 OR t.user_id IS NOT NULL)";
+    if (claimed === '0') sql += " AND t.claimed=0 AND t.user_id IS NULL";
 
-    // Tri : ceux avec Instagram en premier, puis alphabétique ville
-    sql += " ORDER BY (CASE WHEN instagram!='' THEN 0 ELSE 1 END), ville ASC, nom ASC";
+    // Tri : vérifiés + avis + Instagram en premier
+    sql += " ORDER BY (CASE WHEN t.user_id IS NOT NULL THEN 0 ELSE 1 END), COALESCE(r.nb_reviews,0) DESC, (CASE WHEN t.instagram_handle!='' AND t.instagram_handle IS NOT NULL THEN 0 ELSE 1 END), t.ville ASC, t.nom ASC";
     sql += " LIMIT ? OFFSET ?";
     params.push(parseInt(limit), parseInt(offset));
 
-    const rows  = db.prepare(sql).all(...params);
+    const rows = db.prepare(sql).all(...params);
 
     // Count total
-    let cntSql = sql.replace(/SELECT \*/, 'SELECT COUNT(*) as cnt').replace(/ORDER BY.*$/s, '').replace(/LIMIT.*$/s, '');
+    let cntSql = sql.replace(/SELECT t\.\*.*?WHERE/, 'SELECT COUNT(*) as cnt FROM tatoueurs t LEFT JOIN (SELECT tatoueur_id, ROUND(AVG(rating),1) as avg_rating, COUNT(*) as nb_reviews FROM tatoueur_reviews GROUP BY tatoueur_id) r ON r.tatoueur_id=t.id WHERE').replace(/ORDER BY.*$/s, '').replace(/LIMIT.*$/s, '');
     const cntParams = params.slice(0, params.length - 2);
     let total = 0;
     try { total = db.prepare(cntSql).get(...cntParams)?.cnt || 0; } catch(e) { total = rows.length; }
 
-    res.json({ total, limit: parseInt(limit), offset: parseInt(offset), artists: rows.map(toFront) });
+    res.json({ total, limit: parseInt(limit), offset: parseInt(offset), artists: rows.map(r => ({...toFront(r), avg_rating: r.avg_rating || 0, nb_reviews: r.nb_reviews || 0})) });
   } catch(e) {
     console.error('GET /api/annuaire error:', e);
     res.status(500).json({ error: e.message });
   }
+});
+
+// ─── POST /api/annuaire/:id/review ────────────────────────────
+router.post('/:id/review', (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const { author_name, rating, comment } = req.body;
+    if (!rating || rating < 1 || rating > 5) return res.status(400).json({ error: 'Note 1-5 requise' });
+    const t = db.prepare("SELECT id FROM tatoueurs WHERE id=? AND statut='active'").get(id);
+    if (!t) return res.status(404).json({ error: 'Tatoueur introuvable' });
+    db.prepare("INSERT INTO tatoueur_reviews (tatoueur_id, author_name, rating, comment) VALUES (?,?,?,?)")
+      .run(id, (author_name||'Anonyme').slice(0,60), parseInt(rating), (comment||'').slice(0,500));
+    const avg = db.prepare("SELECT ROUND(AVG(rating),1) as avg, COUNT(*) as n FROM tatoueur_reviews WHERE tatoueur_id=?").get(id);
+    res.json({ success: true, avg_rating: avg.avg, nb_reviews: avg.n });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ─── GET /api/annuaire/:id/reviews ────────────────────────────
+router.get('/:id/reviews', (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    const reviews = db.prepare("SELECT * FROM tatoueur_reviews WHERE tatoueur_id=? ORDER BY created_at DESC LIMIT 20").all(id);
+    const avg = db.prepare("SELECT ROUND(AVG(rating),1) as avg, COUNT(*) as n FROM tatoueur_reviews WHERE tatoueur_id=?").get(id);
+    res.json({ reviews, avg_rating: avg.avg || 0, nb_reviews: avg.n || 0 });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
 // ─── GET /api/annuaire/stats ────────────────────────────────────

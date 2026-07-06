@@ -2019,11 +2019,18 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
             <option value="10k">+10k followers</option>
             <option value="50k">+50k followers</option>
           </select>
+          <!-- Filtre note minimale -->
+          <select id="af-rating-sel" onchange="applyAdvFilters()" style="min-width:130px;">
+            <option value="">⭐ Note min.</option>
+            <option value="3">⭐⭐⭐ +3 étoiles</option>
+            <option value="4">⭐⭐⭐⭐ +4 étoiles</option>
+            <option value="4.5">⭐⭐⭐⭐⭐ +4.5 étoiles</option>
+          </select>
           <!-- Filtre vérifié -->
           <select id="af-verified-sel" onchange="applyAdvFilters()" style="min-width:130px;">
             <option value="">✅ Tous</option>
-            <option value="verified">Vérifiés inkr</option>
-            <option value="unverified">Non réclamés</option>
+            <option value="1">Vérifiés inkr</option>
+            <option value="0">Non réclamés</option>
           </select>
           <label class="sb-dispo-toggle" title="Voir uniquement les tatoueurs disponibles aujourd'hui" style="white-space:nowrap;">
             <input type="checkbox" id="hero-dispo-toggle" onchange="applyDispoFilter()"/>
@@ -3124,11 +3131,13 @@ function resetSplitFilters() {
   const afSel   = document.getElementById('af-style-sel');
   const afDept  = document.getElementById('af-dept-sel');
   const afFollowers = document.getElementById('af-followers-sel');
+  const afRating    = document.getElementById('af-rating-sel');
   const afVerified  = document.getElementById('af-verified-sel');
   if (afVille)     afVille.value     = '';
   if (afSel)       afSel.value       = '';
   if (afDept)      afDept.value      = '';
   if (afFollowers) afFollowers.value = '';
+  if (afRating)    afRating.value    = '';
   if (afVerified)  afVerified.value  = '';
   activeStyles   = [];
   window._filteredArtists = null;
@@ -3935,9 +3944,14 @@ function renderArtists(){
       </div>
       <div class="ac-body">
         <div class="ac-name">${a.name}</div>
-        <div class="ac-city">${a.city}</div>
+        <div class="ac-city">${a.city||'France'}</div>
         <div class="ac-tags">${a.style.length?a.style.map(s=>`<span class="ac-tag">${s}</span>`).join(''):'<span class="ac-tag" style="opacity:.5;">Tous styles</span>'}</div>
-        <div class="ac-meta"><span class="ac-rating">${a.instagram?`📸 ${a.instagram.replace('@','')}`:''}</span><span class="ac-price" style="font-size:11px;color:var(--g3);">${a.telephone||a.email?'✓ Contact':''}  </span></div>
+        <div class="ac-meta">
+          ${a.nb_reviews>0
+            ? `<span style="color:#f59e0b;font-size:12px;font-weight:700;">${'★'.repeat(Math.round(a.avg_rating))}${'☆'.repeat(5-Math.round(a.avg_rating))} <span style="color:var(--g3)">${a.avg_rating} (${a.nb_reviews})</span></span>`
+            : `<span class="ac-rating" style="color:var(--g3);font-size:11px;">${a.instagram_handle?'📸 @'+a.instagram_handle:''}</span>`}
+          <span class="ac-price" style="font-size:11px;color:var(--g3);">${a.telephone?'📞':''}</span>
+        </div>
       </div>
     </div>`).join('');
   observe();
@@ -4814,29 +4828,28 @@ document.querySelectorAll('.fp').forEach(btn=>{
 // ═══ FILTRES AVANCÉS ═══
 // applyAdvFilters — appelé à chaque frappe dans le champ ville (split-left)
 function applyAdvFilters(){
-  const ville    = document.getElementById('af-ville')?.value.trim() || '';
-  const dept     = document.getElementById('af-dept-sel')?.value || '';
-  const followers= document.getElementById('af-followers-sel')?.value || '';
-  const verified = document.getElementById('af-verified-sel')?.value || '';
-  annuaireFilter.ville = ville;
-  annuaireFilter._dept     = dept;
-  annuaireFilter._followers= followers;
-  annuaireFilter._verified = verified;
+  const ville     = document.getElementById('af-ville')?.value.trim() || '';
+  const dept      = document.getElementById('af-dept-sel')?.value || '';
+  const followers = document.getElementById('af-followers-sel')?.value || '';
+  const rating    = document.getElementById('af-rating-sel')?.value || '';
+  const verified  = document.getElementById('af-verified-sel')?.value || '';
+  // Filtres API (côté serveur)
+  annuaireFilter.ville      = ville;
+  annuaireFilter.dept       = dept;
+  annuaireFilter.min_rating = rating;
+  annuaireFilter.claimed    = verified;
+  annuaireFilter.has_ig     = (followers && followers!=='any') ? '1' : '';
   loadArtists(true).then(()=>{
-    // Filtres locaux (dept, followers, verified) appliqués après chargement
+    // Filtre local followers (mock basé sur nom)
     let list = ARTISTS;
-    if(dept)     list = list.filter(a => (a.dept||'') === dept || (a.cp||'').startsWith(dept));
-    if(followers && followers !== 'any'){
-      const minK = parseInt(followers) || 0;
-      list = list.filter(a => {
-        const h = (a.name||'A').split('').reduce((acc,c)=>acc+c.charCodeAt(0),0);
+    if(followers && followers!=='any'){
+      const minK = parseInt(followers)||0;
+      list = list.filter(a=>{
+        const h=(a.name||'A').split('').reduce((acc,c)=>acc+c.charCodeAt(0),0);
         const buckets=[1.2,2.4,3.1,4.7,5.8,7.2,8.9,10.5,12.3,15.6,18.9,22.4];
-        const val = buckets[h%buckets.length];
-        return val*1000 >= minK;
+        return (buckets[h%buckets.length]*1000) >= minK;
       });
     }
-    if(verified==='verified')   list = list.filter(a => a.claimed || a.user_id);
-    if(verified==='unverified') list = list.filter(a => !a.claimed && !a.user_id);
     window._filteredArtists = list.length < ARTISTS.length ? list : null;
     renderArtists(); updateSplitCount(); updateLoadMoreBtn(); rebuildHomeMapMarkers();
   });
