@@ -396,7 +396,7 @@ function runMigrations() {
     'ALTER TABLE tatoueurs ADD COLUMN claimed INTEGER DEFAULT 0',
 
     // ── v6 : CRM outreach — suivi des contacts Instagram
-    'ALTER TABLE tatoueurs ADD COLUMN outreach_status TEXT DEFAULT "non_contacte"',
+    "ALTER TABLE tatoueurs ADD COLUMN outreach_status TEXT DEFAULT 'non_contacte'",
     'ALTER TABLE tatoueurs ADD COLUMN outreach_date TEXT DEFAULT NULL',
     'ALTER TABLE tatoueurs ADD COLUMN outreach_notes TEXT DEFAULT NULL',
   ];
