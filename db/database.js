@@ -387,6 +387,13 @@ function runMigrations() {
     'ALTER TABLE users ADD COLUMN meta_page_token TEXT DEFAULT NULL',
     // ── v4 : Stripe customer_id pour lier abonnements Pro
     'ALTER TABLE users ADD COLUMN stripe_customer_id TEXT DEFAULT NULL',
+
+    // ── v5 : import tatoueurs Google Maps — champs supplémentaires
+    'ALTER TABLE tatoueurs ADD COLUMN facebook TEXT DEFAULT NULL',
+    'ALTER TABLE tatoueurs ADD COLUMN instagram_handle TEXT DEFAULT NULL',
+    'ALTER TABLE tatoueurs ADD COLUMN categorie TEXT DEFAULT NULL',
+    // claimed = 0 → fiche importée non réclamée | 1 → artiste a créé son compte
+    'ALTER TABLE tatoueurs ADD COLUMN claimed INTEGER DEFAULT 0',
   ];
 
   let applied = 0;

@@ -79,12 +79,30 @@ router.post('/register', async (req, res) => {
 
     initDefaultAutomations(result.lastInsertRowid);
 
-    // Créer la fiche tatoueur publique dès l'inscription → visible dans l'annuaire immédiatement
+    // Créer ou réclamer la fiche tatoueur publique
     try {
-      db.prepare(`
-        INSERT INTO tatoueurs (user_id, nom, nom_commercial, ville, source, statut)
-        VALUES (?, ?, ?, ?, 'inkr_pro', 'active')
-      `).run(result.lastInsertRowid, name, name, city || '');
+      const userId = result.lastInsertRowid;
+      const igHandle = (req.body.instagram || '').replace(/.*instagram\.com\//i, '').replace(/\/$/, '').trim();
+
+      // Chercher une fiche importée qui correspond (par Instagram handle ou nom+ville)
+      let existingFiche = null;
+      if (igHandle) {
+        existingFiche = db.prepare(`SELECT id FROM tatoueurs WHERE instagram_handle = ? AND claimed = 0 LIMIT 1`).get(igHandle);
+      }
+      if (!existingFiche) {
+        existingFiche = db.prepare(`SELECT id FROM tatoueurs WHERE nom = ? AND ville = ? AND claimed = 0 LIMIT 1`).get(name, city || '');
+      }
+
+      if (existingFiche) {
+        // Réclamer la fiche existante → l'artiste reprend sa fiche importée
+        db.prepare(`UPDATE tatoueurs SET user_id=?, source='inkr_pro', claimed=1 WHERE id=?`)
+          .run(userId, existingFiche.id);
+        console.log(`[Register] Fiche importée réclamée → tatoueur.id=${existingFiche.id} par user.id=${userId}`);
+      } else {
+        // Aucune fiche correspondante → créer une nouvelle fiche vierge
+        db.prepare(`INSERT INTO tatoueurs (user_id, nom, nom_commercial, ville, source, statut, claimed) VALUES (?, ?, ?, ?, 'inkr_pro', 'active', 1)`)
+          .run(userId, name, name, city || '');
+      }
     } catch(ficheErr) {
       console.warn('[Register] Fiche tatoueur non créée (non bloquant):', ficheErr.message);
     }
