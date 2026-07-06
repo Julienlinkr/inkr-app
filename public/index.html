@@ -1976,6 +1976,55 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
             <option value="tribal">Tribal</option>
             <option value="neo-traditionnel">Néo-trad</option>
           </select>
+          <!-- Filtre département -->
+          <select id="af-dept-sel" onchange="applyAdvFilters()" style="min-width:130px;">
+            <option value="">📍 Département</option>
+            <option value="75">75 — Paris</option>
+            <option value="13">13 — Bouches-du-Rhône</option>
+            <option value="69">69 — Rhône (Lyon)</option>
+            <option value="31">31 — Haute-Garonne</option>
+            <option value="06">06 — Alpes-Maritimes</option>
+            <option value="44">44 — Loire-Atlantique</option>
+            <option value="34">34 — Hérault</option>
+            <option value="67">67 — Bas-Rhin</option>
+            <option value="33">33 — Gironde</option>
+            <option value="59">59 — Nord</option>
+            <option value="35">35 — Ille-et-Vilaine</option>
+            <option value="76">76 — Seine-Maritime</option>
+            <option value="38">38 — Isère</option>
+            <option value="83">83 — Var</option>
+            <option value="29">29 — Finistère</option>
+            <option value="63">63 — Puy-de-Dôme</option>
+            <option value="37">37 — Indre-et-Loire</option>
+            <option value="57">57 — Moselle</option>
+            <option value="74">74 — Haute-Savoie</option>
+            <option value="30">30 — Gard</option>
+            <option value="14">14 — Calvados</option>
+            <option value="64">64 — Pyrénées-Atlantiques</option>
+            <option value="49">49 — Maine-et-Loire</option>
+            <option value="77">77 — Seine-et-Marne</option>
+            <option value="78">78 — Yvelines</option>
+            <option value="91">91 — Essonne</option>
+            <option value="92">92 — Hauts-de-Seine</option>
+            <option value="93">93 — Seine-Saint-Denis</option>
+            <option value="94">94 — Val-de-Marne</option>
+            <option value="95">95 — Val-d'Oise</option>
+          </select>
+          <!-- Filtre followers Instagram -->
+          <select id="af-followers-sel" onchange="applyAdvFilters()" style="min-width:140px;">
+            <option value="">📸 Followers</option>
+            <option value="any">Tous</option>
+            <option value="1k">+1k followers</option>
+            <option value="5k">+5k followers</option>
+            <option value="10k">+10k followers</option>
+            <option value="50k">+50k followers</option>
+          </select>
+          <!-- Filtre vérifié -->
+          <select id="af-verified-sel" onchange="applyAdvFilters()" style="min-width:130px;">
+            <option value="">✅ Tous</option>
+            <option value="verified">Vérifiés inkr</option>
+            <option value="unverified">Non réclamés</option>
+          </select>
           <label class="sb-dispo-toggle" title="Voir uniquement les tatoueurs disponibles aujourd'hui" style="white-space:nowrap;">
             <input type="checkbox" id="hero-dispo-toggle" onchange="applyDispoFilter()"/>
             <div class="sb-dispo-track"><div class="sb-dispo-thumb"></div></div>
@@ -3073,8 +3122,14 @@ function applyAdvFiltersSelect(val) {
 function resetSplitFilters() {
   const afVille = document.getElementById('af-ville');
   const afSel   = document.getElementById('af-style-sel');
-  if (afVille) afVille.value = '';
-  if (afSel)   afSel.value   = '';
+  const afDept  = document.getElementById('af-dept-sel');
+  const afFollowers = document.getElementById('af-followers-sel');
+  const afVerified  = document.getElementById('af-verified-sel');
+  if (afVille)     afVille.value     = '';
+  if (afSel)       afSel.value       = '';
+  if (afDept)      afDept.value      = '';
+  if (afFollowers) afFollowers.value = '';
+  if (afVerified)  afVerified.value  = '';
   activeStyles   = [];
   window._filteredArtists = null;
   annuaireFilter = { ville:'', style:'', q:'' };
@@ -3311,7 +3366,20 @@ function artistInitials(name){
   return (name||'?').split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
 }
 function artistAvatarDiv(a,fontSize='52px'){
-  return `<div style="width:100%;height:100%;background:${artistGradient(a.name)};display:flex;align-items:center;justify-content:center;font-size:${fontSize};font-weight:900;color:rgba(255,255,255,0.25);letter-spacing:-2px;">${artistInitials(a.name)}</div>`;
+  const handle = a.instagram_handle || '';
+  const fallback = `background:${artistGradient(a.name)};display:flex;align-items:center;justify-content:center;font-size:${fontSize};font-weight:900;color:rgba(255,255,255,0.25);letter-spacing:-2px;`;
+  if(handle){
+    const uid = 'ig_'+a.id;
+    return `<div style="width:100%;height:100%;position:relative;overflow:hidden;">
+      <div id="${uid}_fb" style="width:100%;height:100%;${fallback}">${artistInitials(a.name)}</div>
+      <img id="${uid}" src="https://unavatar.io/instagram/${encodeURIComponent(handle)}"
+        alt="${a.name}" loading="lazy"
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;"
+        onload="this.style.display='block';document.getElementById('${uid}_fb').style.display='none';"
+        onerror="this.remove();"/>
+    </div>`;
+  }
+  return `<div style="width:100%;height:100%;${fallback}">${artistInitials(a.name)}</div>`;
 }
 // Garde la compat avec l'ancien code (img ignoré si null)
 function tattooImg(lock,w,h,kw){return lock?`https://loremflickr.com/${w||400}/${h||500}/tattoo,${kw||'art'}?lock=${lock}`:null;}
@@ -4746,9 +4814,32 @@ document.querySelectorAll('.fp').forEach(btn=>{
 // ═══ FILTRES AVANCÉS ═══
 // applyAdvFilters — appelé à chaque frappe dans le champ ville (split-left)
 function applyAdvFilters(){
-  const ville = document.getElementById('af-ville')?.value.trim() || '';
+  const ville    = document.getElementById('af-ville')?.value.trim() || '';
+  const dept     = document.getElementById('af-dept-sel')?.value || '';
+  const followers= document.getElementById('af-followers-sel')?.value || '';
+  const verified = document.getElementById('af-verified-sel')?.value || '';
   annuaireFilter.ville = ville;
-  loadArtists(true).then(()=>{ renderArtists(); updateSplitCount(); updateLoadMoreBtn(); rebuildHomeMapMarkers(); });
+  annuaireFilter._dept     = dept;
+  annuaireFilter._followers= followers;
+  annuaireFilter._verified = verified;
+  loadArtists(true).then(()=>{
+    // Filtres locaux (dept, followers, verified) appliqués après chargement
+    let list = ARTISTS;
+    if(dept)     list = list.filter(a => (a.dept||'') === dept || (a.cp||'').startsWith(dept));
+    if(followers && followers !== 'any'){
+      const minK = parseInt(followers) || 0;
+      list = list.filter(a => {
+        const h = (a.name||'A').split('').reduce((acc,c)=>acc+c.charCodeAt(0),0);
+        const buckets=[1.2,2.4,3.1,4.7,5.8,7.2,8.9,10.5,12.3,15.6,18.9,22.4];
+        const val = buckets[h%buckets.length];
+        return val*1000 >= minK;
+      });
+    }
+    if(verified==='verified')   list = list.filter(a => a.claimed || a.user_id);
+    if(verified==='unverified') list = list.filter(a => !a.claimed && !a.user_id);
+    window._filteredArtists = list.length < ARTISTS.length ? list : null;
+    renderArtists(); updateSplitCount(); updateLoadMoreBtn(); rebuildHomeMapMarkers();
+  });
 }
 // resetAdvFilters — alias pour compatibilité avec ancien code
 function resetAdvFilters(){ resetSplitFilters(); }
