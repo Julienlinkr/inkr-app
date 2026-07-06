@@ -44,7 +44,7 @@ const migrations = [
 migrations.forEach(sql => { try { db.exec(sql); } catch (_) {} });
 
 // ── Préparer les requêtes ──────────────────────────────────────────────────────
-const checkByIg   = db.prepare('SELECT id FROM tatoueurs WHERE instagram_handle = ? AND instagram_handle != "" LIMIT 1');
+const checkByIg   = db.prepare("SELECT id FROM tatoueurs WHERE instagram_handle = ? AND instagram_handle != '' LIMIT 1");
 const checkByNom  = db.prepare('SELECT id FROM tatoueurs WHERE nom = ? AND ville = ? LIMIT 1');
 const insert      = db.prepare(`
   INSERT INTO tatoueurs
