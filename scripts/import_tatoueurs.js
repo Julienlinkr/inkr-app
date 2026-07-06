@@ -20,7 +20,7 @@ const path = require('path');
 const fs = require('fs');
 
 const DB_PATH = process.env.DB_PATH || path.join(__dirname, '..', 'db', 'inkr.db');
-const DATA_PATH = path.join(__dirname, '..', 'data', 'tatoueurs_import.json');
+const DATA_PATH = path.join(__dirname, 'tatoueurs_import.json');
 
 if (!fs.existsSync(DATA_PATH)) {
   console.error('❌ Fichier data/tatoueurs_import.json introuvable.');
