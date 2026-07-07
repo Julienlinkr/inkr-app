@@ -154,7 +154,7 @@ app.get('/t/:id', (req, res) => {
   try { styles = JSON.parse(t.styles || '[]'); } catch(e) {}
   const nom = t.nom_commercial || t.nom;
   const initials = nom.split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
-  const igHandle = t.instagram_handle || (t.instagram || '').replace(/.*instagram\.com\//i,'').replace(/[/?#].*/,'').trim();
+  const igHandle = ((t.instagram_handle || t.instagram || '').replace(/^@/,'').replace(/.*instagram\.com\//i,'').replace(/[/?#].*/,'').trim());
   const claimed = t.claimed === 1 || !!t.user_id;
   const appUrl = process.env.APP_URL || 'https://inkr.club';
 

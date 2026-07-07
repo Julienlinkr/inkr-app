@@ -65,7 +65,7 @@ function toFront(t){
     img:        null,
     initials,
     instagram:        t.instagram || '',
-    instagram_handle: t.instagram_handle || (t.instagram || '').replace(/.*instagram\.com\//i,'').replace(/[/?#].*/,'').trim(),
+    instagram_handle: ((t.instagram_handle || t.instagram || '').replace(/^@/,'').replace(/.*instagram\.com\//i,'').replace(/[/?#].*/,'').trim()),
     facebook:         t.facebook || '',
     telephone:        t.telephone || '',
     email:            t.email || '',

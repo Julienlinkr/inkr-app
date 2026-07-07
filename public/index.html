@@ -2796,7 +2796,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
           <div class="file-list" id="fileList"></div>
         </div>
       </div>
-      <button class="fsub" onclick="submitBooking()">Envoyer ma demande → inkr messagerie</button>
+      <button class="fsub" onclick="submitBooking()">Envoyer ma demande</button>
     </div>
   </div>
 </div>
@@ -4542,7 +4542,10 @@ async function openProfile(id){
   const grad=artistGradient(a.name);
   const inits=artistInitials(a.name);
   const stylesHtml=a.style?.length?a.style.map(s=>`<span class="pm-tag">${s}</span>`).join(''):'';
-  const igLink=a.instagram?`<a href="https://instagram.com/${a.instagram.replace('@','')}" target="_blank" style="color:#a78bfa;text-decoration:none;">📸 ${a.instagram}</a>`:'';
+  const igRaw=a.instagram_handle||a.instagram||'';
+  const igClean=igRaw.replace(/^@/,'').replace(/.*instagram\.com\//i,'').replace(/[/?#].*/,'').trim();
+  const igLink=igClean?`<a href="https://instagram.com/${igClean}" target="_blank" style="color:#a78bfa;text-decoration:none;display:inline-flex;align-items:center;gap:5px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path fill="#0d0d1a" d="M12 7a5 5 0 100 10A5 5 0 0012 7zm0 8a3 3 0 110-6 3 3 0 010 6zm4.5-9a1 1 0 100 2 1 1 0 000-2z"/></svg> @${igClean}</a>`:'';
+
   const siteLink=a.site_web?`<a href="${a.site_web}" target="_blank" style="color:#a78bfa;text-decoration:none;font-size:12px;">🌐 Site web</a>`:'';
   const telLine=a.telephone?`<span style="font-size:12px;color:var(--g3);">📞 ${a.telephone}</span>`:'';
   const dispoFlashBadge=a.dispo_flash?`<span style="display:inline-flex;align-items:center;gap:4px;background:#f59e0b;color:#000;font-size:10px;font-weight:800;padding:3px 8px;border-radius:20px;margin-left:6px;">⚡ Dispo aujourd'hui</span>`:'';
