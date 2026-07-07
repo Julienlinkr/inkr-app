@@ -152,9 +152,27 @@ router.get('/me', requireArtistAuth, (req, res) => {
 });
 
 // ── POST /api/artist-photos/upload ───────────────────────────────────────────
+// Limite : 10 photos max pour les comptes gratuits (is_pro=0)
+//          Illimité pour les comptes inkr Pro (is_pro=1)
+const FREE_PHOTO_LIMIT = 10;
 router.post('/upload', requireArtistAuth, upload.single('photo'), (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'Aucun fichier reçu' });
+
+    // Vérifier la limite pour les comptes gratuits
+    const user = db.prepare('SELECT is_pro FROM users WHERE id=?').get(req.userId);
+    if (!user?.is_pro) {
+      const count = db.prepare('SELECT COUNT(*) as n FROM artist_photos WHERE user_id=?').get(req.userId)?.n || 0;
+      if (count >= FREE_PHOTO_LIMIT) {
+        // Supprimer le fichier uploadé (on a quand même laissé multer le stocker)
+        try { require('fs').unlinkSync(require('path').join(UPLOAD_DIR, req.file.filename)); } catch(_) {}
+        return res.status(403).json({
+          error: `Limite de ${FREE_PHOTO_LIMIT} photos atteinte. Passe en inkr Pro pour en ajouter plus !`,
+          limit_reached: true,
+        });
+      }
+    }
+
     const caption = (req.body.caption || '').trim();
     const result = db.prepare(
       'INSERT INTO artist_photos (user_id, filename, caption) VALUES (?,?,?)'

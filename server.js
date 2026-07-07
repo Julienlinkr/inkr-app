@@ -348,22 +348,373 @@ app.get('/t/:id', (req, res) => {
   <!-- CLAIM BANNER -->
   ${!claimed ? `
   <div class="claim-box">
-    <h3>📋 C'est votre salon ?</h3>
-    <p>Cette fiche a été créée automatiquement depuis des données publiques Google Maps.<br>
-    Réclamez-la <strong>gratuitement</strong> pour ajouter vos photos, gérer vos RDV et booster votre visibilité.</p>
-    <a href="${appUrl}/?claim=${t.id}&ig=${encodeURIComponent(igHandle)}" class="claim-btn">
-      ✨ Réclamer ma fiche — c'est gratuit
+    <h3>🎨 C'est votre fiche ?</h3>
+    <p>Inscrivez-vous gratuitement pour la personnaliser : ajoutez vos photos, vos horaires, vos disponibilités et gérez vos rendez-vous directement depuis inkr.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:18px;">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#9ca3af;"><span style="color:#4ade80;font-size:14px;">✓</span> Profil personnalisé</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#9ca3af;"><span style="color:#4ade80;font-size:14px;">✓</span> 10 photos gratuites</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#9ca3af;"><span style="color:#4ade80;font-size:14px;">✓</span> Prise de RDV en ligne</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#9ca3af;"><span style="color:#4ade80;font-size:14px;">✓</span> 100% gratuit</div>
+    </div>
+    <a href="${appUrl}/claim/${t.id}" class="claim-btn">
+      ✨ Personnaliser ma fiche — c'est gratuit
     </a>
+    <p style="font-size:11px;color:#6b7280;margin-top:10px;">Aucune CB requise · Inscription en 2 minutes</p>
   </div>` : ''}
 
 </div>
 
 <footer class="footer">
   <p>Fiche référencée sur <a href="${appUrl}">inkr.club</a> — l'annuaire N°1 des tatoueurs professionnels</p>
-  ${!claimed ? `<p style="margin-top:6px"><a href="${appUrl}/?claim=${t.id}">Réclamer ou corriger cette fiche</a></p>` : ''}
+  ${!claimed ? `<p style="margin-top:6px"><a href="${appUrl}/claim/${t.id}">Réclamer ou corriger cette fiche</a></p>` : ''}
 </footer>
 </body>
 </html>`);
+});
+
+// ============ CLAIM — Page d'inscription tatoueur depuis sa fiche ============
+// GET /claim/:id  → formulaire d'inscription pré-rempli avec les infos de la fiche
+// POST /api/claim/:id → crée le compte + lie la fiche + set cookie JWT
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/claim/:id', (req, res) => {
+  const { db } = require('./db/database');
+  const t = db.prepare("SELECT * FROM tatoueurs WHERE id=? AND statut='active'").get(parseInt(req.params.id));
+  if (!t) return res.status(404).redirect('/');
+  if (t.claimed === 1 || t.user_id) return res.redirect('/dashboard'); // déjà réclamée
+
+  const nom = t.nom_commercial || t.nom || '';
+  const appUrl = process.env.APP_URL || 'https://inkr.club';
+
+  res.set('Cache-Control', 'no-store');
+  res.send(`<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Personnaliser ma fiche — inkr</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#0d0d1a;color:#e5e7eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
+    .header{padding:14px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #1f2937}
+    .logo{font-size:22px;font-weight:800;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none}
+    .wrap{max-width:560px;margin:0 auto;padding:36px 20px 60px}
+    /* Badge fiche */
+    .fiche-badge{background:#111827;border:1px solid #1f2937;border-radius:14px;padding:16px 20px;margin-bottom:32px;display:flex;align-items:center;gap:14px}
+    .fiche-avatar{width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,#667eea,#a855f7);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;flex-shrink:0}
+    .fiche-info-name{font-size:16px;font-weight:700;color:#fff}
+    .fiche-info-sub{font-size:13px;color:#6b7280;margin-top:2px}
+    /* Titre */
+    h1{font-size:26px;font-weight:800;color:#fff;margin-bottom:6px;line-height:1.2}
+    .subtitle{color:#9ca3af;font-size:14px;margin-bottom:32px;line-height:1.6}
+    /* Form */
+    .form-section{margin-bottom:28px}
+    .form-section-title{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+    .form-row{display:flex;gap:12px;margin-bottom:14px}
+    .form-group{flex:1;display:flex;flex-direction:column;gap:6px}
+    label{font-size:12px;font-weight:600;color:#9ca3af}
+    input[type=text],input[type=email],input[type=tel],input[type=password]{width:100%;padding:12px 14px;background:#111827;border:1px solid #374151;border-radius:10px;color:#e5e7eb;font-size:14px;outline:none;transition:.15s}
+    input:focus{border-color:#a855f7;box-shadow:0 0 0 2px rgba(168,85,247,.15)}
+    /* Toggle dispo */
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;background:#111827;border:1px solid #374151;border-radius:10px;padding:14px 16px;cursor:pointer;margin-bottom:14px}
+    .toggle-label{font-size:14px;color:#e5e7eb}
+    .toggle-sub{font-size:12px;color:#6b7280;margin-top:2px}
+    .toggle-switch{width:44px;height:24px;background:#374151;border-radius:12px;position:relative;transition:.2s;flex-shrink:0}
+    .toggle-switch.on{background:#a855f7}
+    .toggle-switch::after{content:'';position:absolute;width:18px;height:18px;background:#fff;border-radius:9px;top:3px;left:3px;transition:.2s}
+    .toggle-switch.on::after{transform:translateX(20px)}
+    /* Horaires */
+    .horaires-grid{display:flex;flex-direction:column;gap:8px}
+    .h-row{display:flex;align-items:center;gap:10px;background:#111827;border:1px solid #374151;border-radius:10px;padding:10px 14px}
+    .h-day{width:32px;font-size:13px;font-weight:700;color:#9ca3af;flex-shrink:0}
+    .h-toggle{width:36px;height:20px;background:#374151;border-radius:10px;position:relative;cursor:pointer;transition:.2s;flex-shrink:0}
+    .h-toggle.on{background:#a855f7}
+    .h-toggle::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:7px;top:3px;left:3px;transition:.2s}
+    .h-toggle.on::after{transform:translateX(16px)}
+    .h-times{display:flex;align-items:center;gap:6px;margin-left:6px}
+    .h-times input{width:78px;padding:5px 8px;background:#0d0d1a;border:1px solid #374151;border-radius:7px;color:#e5e7eb;font-size:12px}
+    .h-times span{color:#6b7280;font-size:12px}
+    .h-closed{font-size:12px;color:#4b5563;margin-left:6px}
+    /* CTA */
+    .submit-btn{width:100%;padding:16px;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899);border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:800;cursor:pointer;margin-top:8px;transition:.15s;letter-spacing:-.2px}
+    .submit-btn:hover{opacity:.9;transform:translateY(-1px)}
+    .submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .error-msg{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:12px 16px;color:#f87171;font-size:13px;margin-bottom:16px;display:none}
+    .already{font-size:13px;color:#6b7280;text-align:center;margin-top:16px}
+    .already a{color:#a855f7}
+    /* Avantages */
+    .avantages{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:32px}
+    .av{background:#111827;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db}
+    .av-icon{font-size:18px;flex-shrink:0}
+  </style>
+</head>
+<body>
+<header class="header">
+  <a href="/" class="logo">inkr</a>
+</header>
+
+<div class="wrap">
+
+  <!-- Fiche associée -->
+  <div class="fiche-badge">
+    <div class="fiche-avatar">${nom.slice(0,1).toUpperCase()}</div>
+    <div>
+      <div class="fiche-info-name">${nom}</div>
+      <div class="fiche-info-sub">📍 ${t.ville || 'France'}${t.cp ? ' · ' + t.cp : ''}</div>
+    </div>
+  </div>
+
+  <h1>Personnalisez<br>votre fiche inkr</h1>
+  <p class="subtitle">Créez votre compte gratuit et prenez le contrôle de votre fiche en 2 minutes.</p>
+
+  <div class="avantages">
+    <div class="av"><span class="av-icon">📸</span> 10 photos offertes</div>
+    <div class="av"><span class="av-icon">📅</span> RDV en ligne</div>
+    <div class="av"><span class="av-icon">🕐</span> Vos horaires</div>
+    <div class="av"><span class="av-icon">⚡</span> Dispo flash</div>
+  </div>
+
+  <div id="errMsg" class="error-msg"></div>
+
+  <form id="claimForm" onsubmit="submitClaim(event)">
+
+    <!-- IDENTITÉ -->
+    <div class="form-section">
+      <div class="form-section-title">Votre identité</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom d'artiste / Studio *</label>
+          <input type="text" id="f_nom" value="${nom.replace(/"/g,'&quot;')}" placeholder="ex: Julien Tattoo Studio" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" id="f_email" value="${(t.email||'').replace(/"/g,'&quot;')}" placeholder="vous@votremail.fr" required>
+        </div>
+        <div class="form-group">
+          <label>Téléphone</label>
+          <input type="tel" id="f_tel" value="${(t.telephone||'').replace(/"/g,'&quot;')}" placeholder="06 12 34 56 78">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mot de passe * (6 car. min.)</label>
+          <input type="password" id="f_pwd" placeholder="••••••••" required minlength="6">
+        </div>
+      </div>
+    </div>
+
+    <!-- DISPONIBILITÉ FLASH -->
+    <div class="form-section">
+      <div class="form-section-title">Disponibilité</div>
+      <div class="toggle-row" onclick="toggleDispo()">
+        <div>
+          <div class="toggle-label">⚡ Disponible pour tatouer aujourd'hui</div>
+          <div class="toggle-sub">Votre fiche sera mise en avant dans les résultats "Dispo aujourd'hui"</div>
+        </div>
+        <div class="toggle-switch" id="dispoSwitch"></div>
+      </div>
+      <input type="hidden" id="f_dispo" value="0">
+    </div>
+
+    <!-- HORAIRES -->
+    <div class="form-section">
+      <div class="form-section-title">Horaires d'ouverture</div>
+      <div class="horaires-grid" id="horairesGrid"></div>
+    </div>
+
+    <button type="submit" class="submit-btn" id="submitBtn">
+      ✨ Créer mon compte gratuit →
+    </button>
+
+    <p class="already">Déjà inscrit ? <a href="/dashboard">Accéder à mon dashboard</a></p>
+  </form>
+
+</div>
+
+<script>
+const TATOUEUR_ID = ${t.id};
+const DAYS = [
+  {key:'lun',label:'Lun'},{key:'mar',label:'Mar'},{key:'mer',label:'Mer'},
+  {key:'jeu',label:'Jeu'},{key:'ven',label:'Ven'},{key:'sam',label:'Sam'},{key:'dim',label:'Dim'}
+];
+const defaults = {lun:true,mar:true,mer:true,jeu:true,ven:true,sam:false,dim:false};
+
+// Build horaires grid
+const grid = document.getElementById('horairesGrid');
+DAYS.forEach(d => {
+  const isOpen = defaults[d.key];
+  const row = document.createElement('div');
+  row.className = 'h-row';
+  row.id = 'row_'+d.key;
+  row.innerHTML = \`
+    <div class="h-day">\${d.label}</div>
+    <div class="h-toggle \${isOpen?'on':''}" id="ht_\${d.key}" onclick="toggleDay('\${d.key}')"></div>
+    <div class="h-times" id="ht_times_\${d.key}" style="\${isOpen?'':'display:none'}">
+      <input type="time" id="ht_from_\${d.key}" value="10:00">
+      <span>→</span>
+      <input type="time" id="ht_to_\${d.key}" value="19:00">
+    </div>
+    <div class="h-closed" id="ht_closed_\${d.key}" style="\${isOpen?'display:none':''}">Fermé</div>
+  \`;
+  grid.appendChild(row);
+});
+
+function toggleDay(key) {
+  const t = document.getElementById('ht_'+key);
+  const times = document.getElementById('ht_times_'+key);
+  const closed = document.getElementById('ht_closed_'+key);
+  t.classList.toggle('on');
+  const isOn = t.classList.contains('on');
+  times.style.display = isOn ? '' : 'none';
+  closed.style.display = isOn ? 'none' : '';
+}
+
+function toggleDispo() {
+  const sw = document.getElementById('dispoSwitch');
+  sw.classList.toggle('on');
+  document.getElementById('f_dispo').value = sw.classList.contains('on') ? '1' : '0';
+}
+
+function getHoraires() {
+  const h = {};
+  DAYS.forEach(d => {
+    const open = document.getElementById('ht_'+d.key).classList.contains('on');
+    h[d.key] = {
+      open,
+      from: document.getElementById('ht_from_'+d.key)?.value || '10:00',
+      to: document.getElementById('ht_to_'+d.key)?.value || '19:00'
+    };
+  });
+  return JSON.stringify(h);
+}
+
+async function submitClaim(e) {
+  e.preventDefault();
+  const err = document.getElementById('errMsg');
+  const btn = document.getElementById('submitBtn');
+  err.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Création en cours…';
+
+  const body = {
+    nom: document.getElementById('f_nom').value.trim(),
+    email: document.getElementById('f_email').value.trim(),
+    telephone: document.getElementById('f_tel').value.trim(),
+    password: document.getElementById('f_pwd').value,
+    dispo_flash: document.getElementById('f_dispo').value === '1',
+    horaires: getHoraires(),
+  };
+
+  try {
+    const r = await fetch('/api/claim/' + TATOUEUR_ID, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body),
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      err.textContent = data.error || 'Une erreur est survenue.';
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '✨ Créer mon compte gratuit →';
+      return;
+    }
+    // Succès → dashboard
+    window.location.href = '/dashboard?welcome=1';
+  } catch(_) {
+    err.textContent = 'Erreur réseau, réessayez.';
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '✨ Créer mon compte gratuit →';
+  }
+}
+</script>
+</body>
+</html>`);
+});
+
+// POST /api/claim/:id — crée le compte artiste + lie la fiche tatoueur
+app.post('/api/claim/:id', async (req, res) => {
+  try {
+    const { db } = require('./db/database');
+    const bcrypt = require('bcryptjs');
+    const jwt = require('jsonwebtoken');
+    const JWT_SECRET = process.env.JWT_SECRET || 'inkr_secret_dev';
+
+    const ficheId = parseInt(req.params.id);
+    const { nom, email, telephone, password, dispo_flash, horaires } = req.body;
+
+    if (!nom || !email || !password) return res.status(400).json({ error: 'Nom, email et mot de passe requis.' });
+    if (password.length < 6) return res.status(400).json({ error: 'Mot de passe trop court (6 caractères min.).' });
+
+    // Vérifier que la fiche existe et n'est pas encore réclamée
+    const fiche = db.prepare("SELECT * FROM tatoueurs WHERE id=? AND statut='active'").get(ficheId);
+    if (!fiche) return res.status(404).json({ error: 'Fiche introuvable.' });
+    if (fiche.claimed === 1 || fiche.user_id) return res.status(409).json({ error: 'Cette fiche est déjà réclamée.' });
+
+    // Vérifier que l'email n'est pas déjà utilisé
+    const existing = db.prepare('SELECT id FROM users WHERE email=?').get(email);
+    if (existing) return res.status(409).json({ error: 'Cet email est déjà utilisé. Connectez-vous.' });
+
+    const hash = await bcrypt.hash(password, 10);
+    const igHandle = (fiche.instagram_handle || '').replace(/^@/,'').replace(/.*instagram\.com\//i,'').replace(/[/?#].*/,'').trim();
+
+    // Créer le compte artiste
+    const userResult = db.prepare(`
+      INSERT INTO users (email, password_hash, name, studio_name, city, phone, instagram, avatar_seed, is_pro, role)
+      VALUES (?,?,?,?,?,?,?,?,0,'artist')
+    `).run(
+      email.toLowerCase().trim(),
+      hash,
+      nom.trim(),
+      nom.trim(),
+      fiche.ville || '',
+      (telephone || '').trim(),
+      igHandle ? '@' + igHandle : (fiche.instagram || ''),
+      nom.toLowerCase().replace(/\s/g, '')
+    );
+    const userId = userResult.lastInsertRowid;
+
+    // Lier la fiche tatoueur au nouveau compte + enrichir avec les données du formulaire
+    db.prepare(`
+      UPDATE tatoueurs SET
+        user_id     = ?,
+        claimed     = 1,
+        nom_commercial = ?,
+        telephone   = COALESCE(NULLIF(?,  ''), telephone),
+        horaires    = ?,
+        dispo_flash = ?
+      WHERE id=?
+    `).run(
+      userId,
+      nom.trim(),
+      (telephone || '').trim(),
+      horaires || '',
+      dispo_flash ? 1 : 0,
+      ficheId
+    );
+
+    // Initialiser les automations par défaut si dispo
+    try {
+      const { initDefaultAutomations } = require('./db/database');
+      if (typeof initDefaultAutomations === 'function') initDefaultAutomations(userId);
+    } catch(_) {}
+
+    // Émettre le cookie JWT (90 jours)
+    const token = jwt.sign({ userId, email: email.toLowerCase().trim() }, JWT_SECRET, { expiresIn: '90d' });
+    res.cookie('inkr_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 90 * 24 * 3600 * 1000,
+    });
+
+    res.json({ ok: true, userId, ficheId });
+  } catch(e) {
+    console.error('[claim]', e.message);
+    res.status(500).json({ error: 'Erreur serveur : ' + e.message });
+  }
 });
 
 // /pricing → SPA index.html (la vue "pricing" est affichée via showView côté client)
