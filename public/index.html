@@ -4675,15 +4675,15 @@ async function openProfile(id){
     </div>
     ${a.horaires ? renderHorairesPublic(a.horaires) : ''}
     ${!a.claimed ? `
-    <div style="background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(102,126,234,.06));border:1px solid rgba(168,85,247,.2);border-radius:14px;padding:18px 20px;margin:16px 0 8px;">
-      <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:6px;">🎨 C'est votre fiche ?</div>
-      <p style="font-size:13px;color:#9ca3af;line-height:1.6;margin-bottom:14px;">Inscrivez-vous gratuitement pour la personnaliser — ajoutez vos photos, horaires et gérez vos rendez-vous.</p>
+    <div style="background:linear-gradient(135deg,rgba(168,85,247,.07),rgba(102,126,234,.05));border:1px solid rgba(168,85,247,.2);border-radius:14px;padding:18px 20px;margin:16px 0 8px;">
+      <div style="font-size:15px;font-weight:800;color:#111827;margin-bottom:6px;">✒️ C'est votre fiche ?</div>
+      <p style="font-size:13px;color:#6b7280;line-height:1.6;margin-bottom:14px;">Inscrivez-vous gratuitement pour la personnaliser — ajoutez vos photos, horaires et gérez vos rendez-vous.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
-        <span style="font-size:11px;color:#9ca3af;display:flex;align-items:center;gap:4px;"><span style="color:#4ade80;">✓</span> 10 photos gratuites</span>
-        <span style="font-size:11px;color:#9ca3af;display:flex;align-items:center;gap:4px;"><span style="color:#4ade80;">✓</span> RDV en ligne</span>
-        <span style="font-size:11px;color:#9ca3af;display:flex;align-items:center;gap:4px;"><span style="color:#4ade80;">✓</span> 100% gratuit</span>
+        <span style="font-size:11px;color:#6b7280;display:flex;align-items:center;gap:4px;"><span style="color:#a855f7;">✓</span> 10 photos gratuites</span>
+        <span style="font-size:11px;color:#6b7280;display:flex;align-items:center;gap:4px;"><span style="color:#a855f7;">✓</span> RDV en ligne</span>
+        <span style="font-size:11px;color:#6b7280;display:flex;align-items:center;gap:4px;"><span style="color:#a855f7;">✓</span> 100% Gratuit ♥</span>
       </div>
-      <a href="/claim/${a.id}" target="_blank" style="display:block;width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#a855f7);border-radius:10px;color:#fff;font-size:14px;font-weight:800;text-align:center;text-decoration:none;">✨ Personnaliser ma fiche — gratuit</a>
+      <a href="/claim/${a.id}" target="_blank" style="display:block;width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#a855f7);border-radius:10px;color:#fff;font-size:14px;font-weight:800;text-align:center;text-decoration:none;">✨ Personnaliser ma fiche — Gratuit ♥</a>
     </div>` : ''}
     `;
   openMo('profile');
