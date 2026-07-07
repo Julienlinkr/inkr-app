@@ -154,9 +154,20 @@ app.get('/t/:id', (req, res) => {
   try { styles = JSON.parse(t.styles || '[]'); } catch(e) {}
   const nom = t.nom_commercial || t.nom;
   const initials = nom.split(/\s+/).map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
-  const igHandle = t.instagram_handle || (t.instagram || '').replace(/.*instagram\.com\//i,'').replace(/\/$/,'');
-  const claimed = t.claimed === 1 || t.user_id;
+  const igHandle = t.instagram_handle || (t.instagram || '').replace(/.*instagram\.com\//i,'').replace(/[/?#].*/,'').trim();
+  const claimed = t.claimed === 1 || !!t.user_id;
   const appUrl = process.env.APP_URL || 'https://inkr.club';
+
+  // Photo de profil : Instagram via unavatar, sinon gradient
+  const avatarUrl = igHandle ? `https://unavatar.io/instagram/${igHandle}` : null;
+
+  // Adresse formatée
+  const adresseFull = [t.adresse, t.cp, t.ville].filter(Boolean).join(', ');
+
+  // Google Maps embed
+  const mapsQuery = encodeURIComponent(adresseFull || nom + ' tatoueur ' + (t.ville||'France'));
+  const mapsEmbedUrl = `https://maps.google.com/maps?q=${mapsQuery}&output=embed`;
+  const mapsLink = `https://maps.google.com/maps?q=${mapsQuery}`;
 
   res.set('Cache-Control', 'no-store');
   res.send(`<!DOCTYPE html>
@@ -165,110 +176,192 @@ app.get('/t/:id', (req, res) => {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>${nom} — Tatoueur${t.ville ? ' à ' + t.ville : ''} | inkr</title>
-  <meta name="description" content="${t.bio ? t.bio.slice(0,155) : `${nom}, tatoueur${t.ville ? ' à ' + t.ville : ''}. Retrouvez ses coordonnées et prenez rendez-vous sur inkr.`}">
+  <meta name="description" content="${(t.bio||'').slice(0,155) || `${nom}, tatoueur${t.ville?' à '+t.ville:''}. Coordonnées, portfolio et prise de RDV sur inkr.`}">
   <meta property="og:title" content="${nom} | inkr">
-  <meta property="og:description" content="${t.bio ? t.bio.slice(0,155) : `Tatoueur${t.ville ? ' à ' + t.ville : ''}`}">
+  <meta property="og:description" content="${(t.bio||'').slice(0,155) || `Tatoueur${t.ville?' à '+t.ville:''}`}">
+  ${t.photo_salon ? `<meta property="og:image" content="${t.photo_salon}">` : ''}
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{background:#0d0d1a;color:#e5e7eb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh}
-    .header{padding:16px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #1f2937}
+    .header{padding:14px 24px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #1f2937;position:sticky;top:0;background:#0d0d1a;z-index:10}
     .logo{font-size:22px;font-weight:800;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-decoration:none}
-    .back{color:#6b7280;font-size:14px;text-decoration:none;margin-left:auto}
+    .back{color:#6b7280;font-size:13px;text-decoration:none;margin-left:auto;display:flex;align-items:center;gap:4px}
     .back:hover{color:#a855f7}
-    .hero{padding:40px 24px 32px;max-width:700px;margin:0 auto}
-    .avatar{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#667eea,#a855f7);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#fff;margin-bottom:20px;flex-shrink:0}
-    .hero-top{display:flex;gap:20px;align-items:flex-start;margin-bottom:24px}
-    .hero-info h1{font-size:28px;font-weight:800;color:#fff;margin-bottom:4px}
-    .hero-info .ville{color:#9ca3af;font-size:15px;margin-bottom:10px}
-    .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}
+    .wrap{max-width:740px;margin:0 auto;padding:32px 20px 60px}
+    /* Hero */
+    .hero-top{display:flex;gap:20px;align-items:flex-start;margin-bottom:28px}
+    .avatar-wrap{flex-shrink:0}
+    .avatar{width:100px;height:100px;border-radius:16px;object-fit:cover;background:linear-gradient(135deg,#667eea,#a855f7);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#fff}
+    .hero-info h1{font-size:26px;font-weight:800;color:#fff;margin-bottom:6px;line-height:1.2}
+    .hero-loc{color:#9ca3af;font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+    .badges{display:flex;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600}
     .badge-pro{background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.3);color:#a855f7}
     .badge-import{background:rgba(107,114,128,.1);border:1px solid #374151;color:#9ca3af}
-    .bio{color:#d1d5db;line-height:1.6;font-size:15px;margin-bottom:24px}
-    .styles{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
-    .style-tag{background:#1f2937;border:1px solid #374151;border-radius:20px;padding:4px 14px;font-size:13px;color:#d1d5db}
-    .contacts{display:flex;flex-direction:column;gap:10px;margin-bottom:32px}
-    .contact-row{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#111827;border-radius:10px;text-decoration:none;color:#e5e7eb;transition:.15s}
-    .contact-row:hover{background:#1f2937}
-    .contact-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-    .contact-label{font-size:14px;color:#9ca3af;font-size:12px}
-    .contact-value{font-size:15px;font-weight:500}
-    .cta-booking{display:block;width:100%;padding:16px;background:linear-gradient(135deg,#667eea,#a855f7);border:none;border-radius:12px;color:#fff;font-size:16px;font-weight:700;text-align:center;text-decoration:none;cursor:pointer;margin-bottom:16px;transition:.15s}
-    .cta-booking:hover{opacity:.9;transform:translateY(-1px)}
-    .claim-banner{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.2);border-radius:12px;padding:20px;text-align:center;margin-top:32px}
-    .claim-banner h3{color:#f59e0b;font-size:16px;font-weight:700;margin-bottom:6px}
-    .claim-banner p{color:#9ca3af;font-size:13px;line-height:1.5;margin-bottom:16px}
-    .claim-btn{display:inline-block;padding:10px 24px;background:#f59e0b;border-radius:8px;color:#000;font-size:14px;font-weight:700;text-decoration:none;transition:.15s}
-    .claim-btn:hover{background:#fbbf24}
-    .footer{text-align:center;padding:32px 24px;color:#4b5563;font-size:13px;border-top:1px solid #1f2937;margin-top:40px}
+    /* Section titre */
+    .sec-title{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+    /* Bio */
+    .bio-box{background:#111827;border-radius:12px;padding:16px 20px;margin-bottom:24px;color:#d1d5db;line-height:1.7;font-size:14px}
+    /* Styles tags */
+    .tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+    .tag{background:#1f2937;border:1px solid #374151;border-radius:20px;padding:5px 14px;font-size:13px;color:#d1d5db}
+    /* Portfolio Instagram */
+    .ig-portfolio{margin-bottom:28px}
+    .ig-preview-card{background:#111827;border-radius:14px;overflow:hidden;text-decoration:none;display:block;transition:.15s;border:1px solid #1f2937}
+    .ig-preview-card:hover{border-color:#a855f7}
+    .ig-header{display:flex;align-items:center;gap:12px;padding:14px 16px}
+    .ig-avatar{width:44px;height:44px;border-radius:50%;object-fit:cover;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)}
+    .ig-info-name{font-size:14px;font-weight:700;color:#fff}
+    .ig-info-sub{font-size:12px;color:#9ca3af}
+    .ig-cta{background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);color:#fff;font-size:13px;font-weight:700;padding:10px 20px;display:flex;align-items:center;justify-content:space-between}
+    /* Photo du salon (og:image) */
+    .salon-photo{width:100%;height:220px;object-fit:cover;border-radius:14px;margin-bottom:24px}
+    /* Contacts */
+    .contacts{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+    .contact-row{display:flex;align-items:center;gap:12px;padding:13px 16px;background:#111827;border-radius:12px;text-decoration:none;color:#e5e7eb;transition:.15s;border:1px solid transparent}
+    .contact-row:hover{background:#1f2937;border-color:#374151}
+    .cicon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .clabel{font-size:11px;color:#6b7280;margin-bottom:1px}
+    .cval{font-size:14px;font-weight:600;color:#e5e7eb}
+    /* CTA RDV */
+    .cta-rdv{display:block;width:100%;padding:16px;background:linear-gradient(135deg,#667eea,#a855f7,#ec4899);border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:800;text-align:center;text-decoration:none;cursor:pointer;margin-bottom:12px;transition:.15s;letter-spacing:-.2px}
+    .cta-rdv:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 8px 32px rgba(168,85,247,.4)}
+    /* Map */
+    .map-wrap{border-radius:14px;overflow:hidden;margin-bottom:28px;border:1px solid #1f2937}
+    .map-wrap iframe{display:block;width:100%;height:200px;border:none}
+    /* Claim */
+    .claim-box{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.03));border:1px solid rgba(245,158,11,.25);border-radius:16px;padding:24px;text-align:center;margin-top:8px}
+    .claim-box h3{color:#f59e0b;font-size:17px;font-weight:800;margin-bottom:8px}
+    .claim-box p{color:#9ca3af;font-size:13px;line-height:1.6;margin-bottom:18px}
+    .claim-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#f59e0b;border-radius:10px;color:#000;font-size:14px;font-weight:800;text-decoration:none;transition:.15s}
+    .claim-btn:hover{background:#fbbf24;transform:translateY(-1px)}
+    .footer{text-align:center;padding:28px 24px;color:#4b5563;font-size:12px;border-top:1px solid #1f2937;margin-top:20px}
     .footer a{color:#a855f7;text-decoration:none}
-    @media(max-width:480px){.hero-top{flex-direction:column}.avatar{width:70px;height:70px;font-size:24px}}
+    @media(max-width:500px){.hero-top{flex-direction:column}.avatar{width:80px;height:80px;font-size:28px}.hero-info h1{font-size:22px}}
   </style>
 </head>
 <body>
-  <header class="header">
-    <a href="/" class="logo">inkr</a>
-    <a href="/" class="back">← Tous les tatoueurs</a>
-  </header>
+<header class="header">
+  <a href="/" class="logo">inkr</a>
+  <a href="/" class="back">← Tous les tatoueurs</a>
+</header>
 
-  <div class="hero">
-    <div class="hero-top">
-      <div class="avatar">${initials}</div>
-      <div class="hero-info">
-        <h1>${nom}</h1>
-        <div class="ville">📍 ${[t.adresse, t.ville].filter(Boolean).join(', ') || 'France'}</div>
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero-top">
+    <div class="avatar-wrap">
+      ${avatarUrl
+        ? `<img src="${avatarUrl}" alt="${nom}" class="avatar" onerror="this.outerHTML='<div class=\\'avatar\\'>${initials}</div>'">`
+        : `<div class="avatar">${initials}</div>`}
+    </div>
+    <div class="hero-info">
+      <h1>${nom}</h1>
+      <div class="hero-loc">📍 ${adresseFull || t.ville || 'France'}</div>
+      <div class="badges">
         <span class="badge ${claimed ? 'badge-pro' : 'badge-import'}">
-          ${claimed ? '✅ Artiste vérifié inkr' : '🗂 Fiche non réclamée'}
+          ${claimed ? '✅ Vérifié inkr' : '🗂 Fiche non réclamée'}
         </span>
+        ${t.telephone ? `<span class="badge" style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#4ade80">📞 Disponible</span>` : ''}
+        ${igHandle ? `<span class="badge" style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);color:#c084fc">📸 Instagram</span>` : ''}
       </div>
     </div>
-
-    ${t.bio ? `<p class="bio">${t.bio.replace(/</g,'&lt;')}</p>` : ''}
-
-    ${styles.length ? `
-    <div class="styles">
-      ${styles.map(s=>`<span class="style-tag">${s}</span>`).join('')}
-    </div>` : ''}
-
-    <a href="/book/${t.id}" class="cta-booking">📅 Prendre rendez-vous</a>
-
-    <div class="contacts">
-      ${t.telephone ? `<a href="tel:${t.telephone}" class="contact-row">
-        <div class="contact-icon" style="background:#1f2937">📞</div>
-        <div><div class="contact-label">Téléphone</div><div class="contact-value">${t.telephone}</div></div>
-      </a>` : ''}
-      ${igHandle ? `<a href="https://instagram.com/${igHandle}" target="_blank" rel="noopener" class="contact-row">
-        <div class="contact-icon" style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)">📸</div>
-        <div><div class="contact-label">Instagram</div><div class="contact-value">@${igHandle}</div></div>
-      </a>` : ''}
-      ${t.site_web ? `<a href="${t.site_web}" target="_blank" rel="noopener" class="contact-row">
-        <div class="contact-icon" style="background:#1f2937">🌐</div>
-        <div><div class="contact-label">Site web</div><div class="contact-value">${t.site_web.replace(/^https?:\/\//,'').split('/')[0]}</div></div>
-      </a>` : ''}
-      ${t.facebook ? `<a href="${t.facebook}" target="_blank" rel="noopener" class="contact-row">
-        <div class="contact-icon" style="background:#1877f2">📘</div>
-        <div><div class="contact-label">Facebook</div><div class="contact-value">Page Facebook</div></div>
-      </a>` : ''}
-      ${t.email ? `<a href="mailto:${t.email}" class="contact-row">
-        <div class="contact-icon" style="background:#1f2937">✉️</div>
-        <div><div class="contact-label">Email</div><div class="contact-value">${t.email}</div></div>
-      </a>` : ''}
-    </div>
-
-    ${!claimed ? `
-    <div class="claim-banner">
-      <h3>📋 C'est votre salon ?</h3>
-      <p>Cette fiche a été créée automatiquement depuis des données publiques.<br>
-      Réclamez-la gratuitement pour la personnaliser et gérer vos rendez-vous.</p>
-      <a href="${appUrl}/?claim=${t.id}&ig=${encodeURIComponent(igHandle)}" class="claim-btn">
-        ✨ Réclamer ma fiche — c'est gratuit
-      </a>
-    </div>` : ''}
   </div>
 
-  <footer class="footer">
-    <p>Fiche référencée sur <a href="${appUrl}">inkr.club</a> — l'annuaire des tatoueurs professionnels</p>
-    ${!claimed ? `<p style="margin-top:8px"><a href="${appUrl}/?claim=${t.id}">Réclamer ou corriger cette fiche</a></p>` : ''}
-  </footer>
+  <!-- CTA RDV -->
+  <a href="${igHandle ? 'https://instagram.com/'+igHandle : (t.telephone ? 'tel:'+t.telephone : '#')}"
+     ${igHandle || t.telephone ? 'target="_blank" rel="noopener"' : ''}
+     class="cta-rdv">
+    📅 Prendre rendez-vous
+  </a>
+
+  <!-- PHOTO DU SALON (si scrappée depuis site web) -->
+  ${t.photo_salon ? `<img src="${t.photo_salon}" alt="Photo ${nom}" class="salon-photo" onerror="this.style.display='none'">` : ''}
+
+  <!-- BIO -->
+  ${t.bio ? `
+  <div class="sec-title">À propos</div>
+  <div class="bio-box">${t.bio.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>
+  ` : ''}
+
+  <!-- STYLES -->
+  ${styles.length ? `
+  <div class="sec-title">Styles</div>
+  <div class="tags" style="margin-bottom:28px">
+    ${styles.map(s=>`<span class="tag">${s}</span>`).join('')}
+  </div>` : ''}
+
+  <!-- PORTFOLIO INSTAGRAM -->
+  ${igHandle ? `
+  <div class="sec-title ig-portfolio">Portfolio</div>
+  <a href="https://instagram.com/${igHandle}" target="_blank" rel="noopener" class="ig-preview-card" style="margin-bottom:28px">
+    <div class="ig-header">
+      <img src="https://unavatar.io/instagram/${igHandle}" alt="${nom}" class="ig-avatar" onerror="this.style.background='linear-gradient(135deg,#833ab4,#fd1d1d)'">
+      <div>
+        <div class="ig-info-name">@${igHandle}</div>
+        <div class="ig-info-sub">Voir les tatouages sur Instagram</div>
+      </div>
+      <div style="margin-left:auto;font-size:20px">→</div>
+    </div>
+    <div class="ig-cta">
+      <span>📸 Voir le portfolio complet</span>
+      <span style="opacity:.8;font-size:11px">instagram.com/${igHandle}</span>
+    </div>
+  </a>` : ''}
+
+  <!-- CONTACTS -->
+  <div class="sec-title">Contacts</div>
+  <div class="contacts">
+    ${t.telephone ? `<a href="tel:${t.telephone}" class="contact-row">
+      <div class="cicon" style="background:#1f2937">📞</div>
+      <div><div class="clabel">Téléphone</div><div class="cval">${t.telephone}</div></div>
+    </a>` : ''}
+    ${igHandle ? `<a href="https://instagram.com/${igHandle}" target="_blank" rel="noopener" class="contact-row">
+      <div class="cicon" style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)">📸</div>
+      <div><div class="clabel">Instagram</div><div class="cval">@${igHandle}</div></div>
+    </a>` : ''}
+    ${t.site_web ? `<a href="${t.site_web}" target="_blank" rel="noopener" class="contact-row">
+      <div class="cicon" style="background:#1f2937">🌐</div>
+      <div><div class="clabel">Site web</div><div class="cval">${t.site_web.replace(/^https?:\/\//,'').split('/')[0]}</div></div>
+    </a>` : ''}
+    ${t.facebook ? `<a href="${t.facebook}" target="_blank" rel="noopener" class="contact-row">
+      <div class="cicon" style="background:#1877f2">📘</div>
+      <div><div class="clabel">Facebook</div><div class="cval">Page Facebook</div></div>
+    </a>` : ''}
+    ${t.email ? `<a href="mailto:${t.email}" class="contact-row">
+      <div class="cicon" style="background:#1f2937">✉️</div>
+      <div><div class="clabel">Email</div><div class="cval">${t.email}</div></div>
+    </a>` : ''}
+    ${adresseFull ? `<a href="${mapsLink}" target="_blank" rel="noopener" class="contact-row">
+      <div class="cicon" style="background:#1f2937">📍</div>
+      <div><div class="clabel">Adresse</div><div class="cval">${adresseFull}</div></div>
+    </a>` : ''}
+  </div>
+
+  <!-- MAP GOOGLE -->
+  ${adresseFull ? `
+  <div class="sec-title">Localisation</div>
+  <div class="map-wrap">
+    <iframe src="${mapsEmbedUrl}" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+  </div>` : ''}
+
+  <!-- CLAIM BANNER -->
+  ${!claimed ? `
+  <div class="claim-box">
+    <h3>📋 C'est votre salon ?</h3>
+    <p>Cette fiche a été créée automatiquement depuis des données publiques Google Maps.<br>
+    Réclamez-la <strong>gratuitement</strong> pour ajouter vos photos, gérer vos RDV et booster votre visibilité.</p>
+    <a href="${appUrl}/?claim=${t.id}&ig=${encodeURIComponent(igHandle)}" class="claim-btn">
+      ✨ Réclamer ma fiche — c'est gratuit
+    </a>
+  </div>` : ''}
+
+</div>
+
+<footer class="footer">
+  <p>Fiche référencée sur <a href="${appUrl}">inkr.club</a> — l'annuaire N°1 des tatoueurs professionnels</p>
+  ${!claimed ? `<p style="margin-top:6px"><a href="${appUrl}/?claim=${t.id}">Réclamer ou corriger cette fiche</a></p>` : ''}
+</footer>
 </body>
 </html>`);
 });
