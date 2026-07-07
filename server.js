@@ -441,10 +441,22 @@ app.get('/claim/:id', (req, res) => {
     .error-msg{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:12px 16px;color:#f87171;font-size:13px;margin-bottom:16px;display:none}
     .already{font-size:13px;color:#6b7280;text-align:center;margin-top:16px}
     .already a{color:#a855f7}
-    /* Avantages */
-    .avantages{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:32px}
-    .av{background:#111827;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:8px;font-size:13px;color:#d1d5db}
-    .av-icon{font-size:18px;flex-shrink:0}
+    .avantages{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:32px}
+    .av{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px}
+    .av-num{font-size:20px;font-weight:900;background:linear-gradient(135deg,#667eea,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0;min-width:28px;line-height:1}
+    .av-text{font-size:13px;color:#d1d5db;line-height:1.4}
+    .welcome{margin-bottom:32px}
+    .welcome h1{font-size:28px;font-weight:900;color:#fff;line-height:1.15;margin-bottom:10px}
+    .welcome h1 .grad{background:linear-gradient(135deg,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+    .welcome p{color:#9ca3af;font-size:14px;line-height:1.7}
+    .fiche-badge{background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.18);border-radius:14px;padding:14px 18px;margin-bottom:28px;display:flex;align-items:center;gap:14px}
+    .fiche-badge-tag{margin-left:auto;background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.3);border-radius:6px;padding:4px 10px;font-size:11px;color:#a855f7;font-weight:700;white-space:nowrap;flex-shrink:0}
+    .styles-grid{display:flex;flex-wrap:wrap;gap:8px}
+    .style-pill{background:#111827;border:1px solid #374151;border-radius:20px;padding:7px 14px;font-size:13px;color:#9ca3af;cursor:pointer;transition:.15s;font-family:inherit;outline:none}
+    .style-pill:hover{border-color:#a855f7;color:#d1d5db}
+    .style-pill.active{background:rgba(168,85,247,.15);border-color:#a855f7;color:#c084fc;font-weight:600}
+    .divider{border:none;border-top:1px solid #1f2937;margin:24px 0}
+    .req{color:#ef4444}
   </style>
 </head>
 <body>
@@ -454,23 +466,27 @@ app.get('/claim/:id', (req, res) => {
 
 <div class="wrap">
 
-  <!-- Fiche associée -->
+  <!-- Welcome -->
+  <div class="welcome">
+    <h1>Bienvenue, <span class="grad">${nom}</span> 👋</h1>
+    <p>Nous sommes ravis de t'accueillir dans la communauté inkr.<br>Crée ton compte gratuit et prends le contrôle de ta fiche en 2 minutes.</p>
+  </div>
+
+  <!-- Fiche -->
   <div class="fiche-badge">
     <div class="fiche-avatar">${nom.slice(0,1).toUpperCase()}</div>
     <div>
       <div class="fiche-info-name">${nom}</div>
       <div class="fiche-info-sub">📍 ${t.ville || 'France'}${t.cp ? ' · ' + t.cp : ''}</div>
     </div>
+    <div class="fiche-badge-tag">Ta fiche</div>
   </div>
 
-  <h1>Personnalisez<br>votre fiche inkr</h1>
-  <p class="subtitle">Créez votre compte gratuit et prenez le contrôle de votre fiche en 2 minutes.</p>
-
   <div class="avantages">
-    <div class="av"><span class="av-icon">📸</span> 10 photos offertes</div>
-    <div class="av"><span class="av-icon">📅</span> RDV en ligne</div>
-    <div class="av"><span class="av-icon">🕐</span> Vos horaires</div>
-    <div class="av"><span class="av-icon">⚡</span> Dispo flash</div>
+    <div class="av"><div class="av-num">10</div><div class="av-text">photos portfolio gratuites</div></div>
+    <div class="av"><div class="av-num">RDV</div><div class="av-text">en ligne intégrés</div></div>
+    <div class="av"><div class="av-num">★</div><div class="av-text">Horaires & dispo flash</div></div>
+    <div class="av"><div class="av-num">♥</div><div class="av-text">100% Gratuit à vie</div></div>
   </div>
 
   <div id="errMsg" class="error-msg"></div>
@@ -479,7 +495,7 @@ app.get('/claim/:id', (req, res) => {
 
     <!-- IDENTITÉ -->
     <div class="form-section">
-      <div class="form-section-title">Votre identité</div>
+      <div class="form-section-title">Ton identité</div>
       <div class="form-row">
         <div class="form-group">
           <label>Nom d'artiste / Studio *</label>
@@ -489,7 +505,7 @@ app.get('/claim/:id', (req, res) => {
       <div class="form-row">
         <div class="form-group">
           <label>Email *</label>
-          <input type="email" id="f_email" value="${(t.email||'').replace(/"/g,'&quot;')}" placeholder="vous@votremail.fr" required>
+          <input type="email" id="f_email" value="${(t.email||'').replace(/"/g,'&quot;')}" placeholder="toi@monmail.fr" required>
         </div>
         <div class="form-group">
           <label>Téléphone</label>
@@ -503,6 +519,18 @@ app.get('/claim/:id', (req, res) => {
         </div>
       </div>
     </div>
+
+    <hr class="divider">
+
+    <!-- SPÉCIALITÉS -->
+    <div class="form-section">
+      <div class="form-section-title">Tes spécialités <span class="req">*</span></div>
+      <p style="font-size:12px;color:#6b7280;margin-bottom:14px">Sélectionne tes styles de tatouage — plusieurs choix possibles</p>
+      <div class="styles-grid" id="stylesGrid"></div>
+      <input type="hidden" id="f_styles" value="[]">
+    </div>
+
+    <hr class="divider">
 
     <!-- DISPONIBILITÉ FLASH -->
     <div class="form-section">
@@ -524,10 +552,10 @@ app.get('/claim/:id', (req, res) => {
     </div>
 
     <button type="submit" class="submit-btn" id="submitBtn">
-      ✨ Créer mon compte gratuit →
+      Créer mon compte — c'est gratuit ♥
     </button>
 
-    <p class="already">Déjà inscrit ? <a href="/dashboard">Accéder à mon dashboard</a></p>
+    <p class="already">Déjà inscrit ? <a href="/dashboard">Accéder à mon espace</a></p>
   </form>
 
 </div>
@@ -558,6 +586,23 @@ DAYS.forEach(d => {
     <div class="h-closed" id="ht_closed_\${d.key}" style="\${isOpen?'display:none':''}">Fermé</div>
   \`;
   grid.appendChild(row);
+});
+
+// Build styles pills
+const TATTOO_STYLES = ['Fine Line','Japonais','Réalisme','Géométrique','Tribal','Old School','Aquarelle','Blackwork','Minimaliste','Lettering','Chicano','Dotwork','Néo-traditionnel','Animaux','Flash','Sur-mesure'];
+const selectedStyles = new Set();
+const stylesGrid = document.getElementById('stylesGrid');
+TATTOO_STYLES.forEach(s => {
+  const pill = document.createElement('button');
+  pill.type = 'button';
+  pill.className = 'style-pill';
+  pill.textContent = s;
+  pill.onclick = () => {
+    if (selectedStyles.has(s)) { selectedStyles.delete(s); pill.classList.remove('active'); }
+    else { selectedStyles.add(s); pill.classList.add('active'); }
+    document.getElementById('f_styles').value = JSON.stringify([...selectedStyles]);
+  };
+  stylesGrid.appendChild(pill);
 });
 
 function toggleDay(key) {
@@ -594,6 +639,14 @@ async function submitClaim(e) {
   const err = document.getElementById('errMsg');
   const btn = document.getElementById('submitBtn');
   err.style.display = 'none';
+
+  if (selectedStyles.size === 0) {
+    err.textContent = 'Sélectionne au moins une spécialité pour continuer.';
+    err.style.display = 'block';
+    document.getElementById('stylesGrid').scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+
   btn.disabled = true;
   btn.textContent = 'Création en cours…';
 
@@ -604,6 +657,7 @@ async function submitClaim(e) {
     password: document.getElementById('f_pwd').value,
     dispo_flash: document.getElementById('f_dispo').value === '1',
     horaires: getHoraires(),
+    styles: [...selectedStyles],
   };
 
   try {
@@ -617,7 +671,7 @@ async function submitClaim(e) {
       err.textContent = data.error || 'Une erreur est survenue.';
       err.style.display = 'block';
       btn.disabled = false;
-      btn.textContent = '✨ Créer mon compte gratuit →';
+      btn.textContent = "Créer mon compte — c'est gratuit ♥";
       return;
     }
     // Succès → dashboard
@@ -643,7 +697,7 @@ app.post('/api/claim/:id', async (req, res) => {
     const JWT_SECRET = process.env.JWT_SECRET || 'inkr_secret_dev';
 
     const ficheId = parseInt(req.params.id);
-    const { nom, email, telephone, password, dispo_flash, horaires } = req.body;
+    const { nom, email, telephone, password, dispo_flash, horaires, styles } = req.body;
 
     if (!nom || !email || !password) return res.status(400).json({ error: 'Nom, email et mot de passe requis.' });
     if (password.length < 6) return res.status(400).json({ error: 'Mot de passe trop court (6 caractères min.).' });
@@ -679,12 +733,13 @@ app.post('/api/claim/:id', async (req, res) => {
     // Lier la fiche tatoueur au nouveau compte + enrichir avec les données du formulaire
     db.prepare(`
       UPDATE tatoueurs SET
-        user_id     = ?,
-        claimed     = 1,
+        user_id        = ?,
+        claimed        = 1,
         nom_commercial = ?,
-        telephone   = COALESCE(NULLIF(?,  ''), telephone),
-        horaires    = ?,
-        dispo_flash = ?
+        telephone      = COALESCE(NULLIF(?, ''), telephone),
+        horaires       = ?,
+        dispo_flash    = ?,
+        styles         = ?
       WHERE id=?
     `).run(
       userId,
@@ -692,6 +747,7 @@ app.post('/api/claim/:id', async (req, res) => {
       (telephone || '').trim(),
       horaires || '',
       dispo_flash ? 1 : 0,
+      JSON.stringify(Array.isArray(styles) ? styles : []),
       ficheId
     );
 
