@@ -120,8 +120,9 @@ router.get('/', (req, res) => {
     }
     if (q) {
       const lq = `%${norm(q)}%`;
-      sql += " AND (LOWER(t.nom) LIKE ? OR LOWER(t.nom_commercial) LIKE ? OR LOWER(t.ville) LIKE ? OR LOWER(t.instagram) LIKE ? OR LOWER(t.instagram_handle) LIKE ?)";
-      params.push(lq, lq, lq, lq, lq);
+      // Recherche élargie : nom, ville, adresse (contient souvent la ville), instagram
+      sql += " AND (LOWER(t.nom) LIKE ? OR LOWER(t.nom_commercial) LIKE ? OR LOWER(t.ville) LIKE ? OR LOWER(t.adresse) LIKE ? OR LOWER(t.instagram) LIKE ? OR LOWER(t.instagram_handle) LIKE ?)";
+      params.push(lq, lq, lq, lq, lq, lq);
     }
     if (has_ig === '1') {
       sql += " AND t.instagram_handle != '' AND t.instagram_handle IS NOT NULL";

@@ -1951,6 +1951,13 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
           <span class="split-count" id="splitCount"></span>
         </div>
 
+        <!-- Bannière tatoueur : "Trouvez votre fiche" -->
+        <div style="background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(102,126,234,.06));border:1px solid rgba(168,85,247,.18);border-radius:12px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <span style="font-size:13px;font-weight:700;color:#e5e7eb;white-space:nowrap;">🎨 Vous êtes tatoueur ?</span>
+          <input type="text" id="tatoueur-search-self" placeholder="Cherchez votre nom ou salon..." oninput="searchSelfFiche(this.value)" autocomplete="off"
+            style="flex:1;min-width:160px;padding:7px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(168,85,247,.3);border-radius:8px;color:#e5e7eb;font-size:13px;outline:none;">
+        </div>
+
         <!-- Filtres compacts ville + style -->
         <div class="split-filters">
           <!-- Champ ville avec autocomplete Nominatim (même logique que le hero) -->
@@ -1978,55 +1985,120 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
             <option value="tribal">Tribal</option>
             <option value="neo-traditionnel">Néo-trad</option>
           </select>
-          <!-- Filtre département -->
+          <!-- Filtre département — 01 à 95 dans l'ordre -->
           <select id="af-dept-sel" onchange="applyAdvFilters()" style="min-width:130px;">
             <option value="">📍 Département</option>
-            <option value="75">75 — Paris</option>
-            <option value="13">13 — Bouches-du-Rhône</option>
-            <option value="69">69 — Rhône (Lyon)</option>
-            <option value="31">31 — Haute-Garonne</option>
+            <option value="01">01 — Ain</option>
+            <option value="02">02 — Aisne</option>
+            <option value="03">03 — Allier</option>
+            <option value="04">04 — Alpes-de-Haute-Provence</option>
+            <option value="05">05 — Hautes-Alpes</option>
             <option value="06">06 — Alpes-Maritimes</option>
-            <option value="44">44 — Loire-Atlantique</option>
-            <option value="34">34 — Hérault</option>
-            <option value="67">67 — Bas-Rhin</option>
-            <option value="33">33 — Gironde</option>
-            <option value="59">59 — Nord</option>
-            <option value="35">35 — Ille-et-Vilaine</option>
-            <option value="76">76 — Seine-Maritime</option>
-            <option value="38">38 — Isère</option>
-            <option value="83">83 — Var</option>
-            <option value="29">29 — Finistère</option>
-            <option value="63">63 — Puy-de-Dôme</option>
-            <option value="37">37 — Indre-et-Loire</option>
-            <option value="57">57 — Moselle</option>
-            <option value="74">74 — Haute-Savoie</option>
-            <option value="30">30 — Gard</option>
+            <option value="07">07 — Ardèche</option>
+            <option value="08">08 — Ardennes</option>
+            <option value="09">09 — Ariège</option>
+            <option value="10">10 — Aube</option>
+            <option value="11">11 — Aude</option>
+            <option value="12">12 — Aveyron</option>
+            <option value="13">13 — Bouches-du-Rhône</option>
             <option value="14">14 — Calvados</option>
-            <option value="64">64 — Pyrénées-Atlantiques</option>
+            <option value="15">15 — Cantal</option>
+            <option value="16">16 — Charente</option>
+            <option value="17">17 — Charente-Maritime</option>
+            <option value="18">18 — Cher</option>
+            <option value="19">19 — Corrèze</option>
+            <option value="21">21 — Côte-d'Or</option>
+            <option value="22">22 — Côtes-d'Armor</option>
+            <option value="23">23 — Creuse</option>
+            <option value="24">24 — Dordogne</option>
+            <option value="25">25 — Doubs</option>
+            <option value="26">26 — Drôme</option>
+            <option value="27">27 — Eure</option>
+            <option value="28">28 — Eure-et-Loir</option>
+            <option value="29">29 — Finistère</option>
+            <option value="30">30 — Gard</option>
+            <option value="31">31 — Haute-Garonne</option>
+            <option value="32">32 — Gers</option>
+            <option value="33">33 — Gironde</option>
+            <option value="34">34 — Hérault</option>
+            <option value="35">35 — Ille-et-Vilaine</option>
+            <option value="36">36 — Indre</option>
+            <option value="37">37 — Indre-et-Loire</option>
+            <option value="38">38 — Isère</option>
+            <option value="39">39 — Jura</option>
+            <option value="40">40 — Landes</option>
+            <option value="41">41 — Loir-et-Cher</option>
+            <option value="42">42 — Loire</option>
+            <option value="43">43 — Haute-Loire</option>
+            <option value="44">44 — Loire-Atlantique</option>
+            <option value="45">45 — Loiret</option>
+            <option value="46">46 — Lot</option>
+            <option value="47">47 — Lot-et-Garonne</option>
+            <option value="48">48 — Lozère</option>
             <option value="49">49 — Maine-et-Loire</option>
+            <option value="50">50 — Manche</option>
+            <option value="51">51 — Marne</option>
+            <option value="52">52 — Haute-Marne</option>
+            <option value="53">53 — Mayenne</option>
+            <option value="54">54 — Meurthe-et-Moselle</option>
+            <option value="55">55 — Meuse</option>
+            <option value="56">56 — Morbihan</option>
+            <option value="57">57 — Moselle</option>
+            <option value="58">58 — Nièvre</option>
+            <option value="59">59 — Nord</option>
+            <option value="60">60 — Oise</option>
+            <option value="61">61 — Orne</option>
+            <option value="62">62 — Pas-de-Calais</option>
+            <option value="63">63 — Puy-de-Dôme</option>
+            <option value="64">64 — Pyrénées-Atlantiques</option>
+            <option value="65">65 — Hautes-Pyrénées</option>
+            <option value="66">66 — Pyrénées-Orientales</option>
+            <option value="67">67 — Bas-Rhin</option>
+            <option value="68">68 — Haut-Rhin</option>
+            <option value="69">69 — Rhône</option>
+            <option value="70">70 — Haute-Saône</option>
+            <option value="71">71 — Saône-et-Loire</option>
+            <option value="72">72 — Sarthe</option>
+            <option value="73">73 — Savoie</option>
+            <option value="74">74 — Haute-Savoie</option>
+            <option value="75">75 — Paris</option>
+            <option value="76">76 — Seine-Maritime</option>
             <option value="77">77 — Seine-et-Marne</option>
             <option value="78">78 — Yvelines</option>
+            <option value="79">79 — Deux-Sèvres</option>
+            <option value="80">80 — Somme</option>
+            <option value="81">81 — Tarn</option>
+            <option value="82">82 — Tarn-et-Garonne</option>
+            <option value="83">83 — Var</option>
+            <option value="84">84 — Vaucluse</option>
+            <option value="85">85 — Vendée</option>
+            <option value="86">86 — Vienne</option>
+            <option value="87">87 — Haute-Vienne</option>
+            <option value="88">88 — Vosges</option>
+            <option value="89">89 — Yonne</option>
+            <option value="90">90 — Territoire de Belfort</option>
             <option value="91">91 — Essonne</option>
             <option value="92">92 — Hauts-de-Seine</option>
             <option value="93">93 — Seine-Saint-Denis</option>
             <option value="94">94 — Val-de-Marne</option>
             <option value="95">95 — Val-d'Oise</option>
+            <option value="971">971 — Guadeloupe</option>
+            <option value="972">972 — Martinique</option>
+            <option value="973">973 — Guyane</option>
+            <option value="974">974 — La Réunion</option>
+            <option value="976">976 — Mayotte</option>
           </select>
-          <!-- Filtre followers Instagram -->
-          <select id="af-followers-sel" onchange="applyAdvFilters()" style="min-width:140px;">
-            <option value="">📸 Followers</option>
-            <option value="any">Tous</option>
-            <option value="1k">+1k followers</option>
-            <option value="5k">+5k followers</option>
-            <option value="10k">+10k followers</option>
-            <option value="50k">+50k followers</option>
+          <!-- Filtre Instagram -->
+          <select id="af-followers-sel" onchange="applyAdvFilters()" style="min-width:130px;">
+            <option value="">📸 Instagram</option>
+            <option value="any">Avec Instagram</option>
           </select>
           <!-- Filtre note minimale -->
           <select id="af-rating-sel" onchange="applyAdvFilters()" style="min-width:130px;">
-            <option value="">⭐ Note min.</option>
-            <option value="3">⭐⭐⭐ +3 étoiles</option>
-            <option value="4">⭐⭐⭐⭐ +4 étoiles</option>
-            <option value="4.5">⭐⭐⭐⭐⭐ +4.5 étoiles</option>
+            <option value="">★ Note min.</option>
+            <option value="3">★★★ +3 étoiles</option>
+            <option value="4">★★★★ +4 étoiles</option>
+            <option value="4.5">★★★★★ +4.5 étoiles</option>
           </select>
           <!-- Filtre vérifié -->
           <select id="af-verified-sel" onchange="applyAdvFilters()" style="min-width:130px;">
@@ -3956,7 +4028,7 @@ function renderArtists(){
         ${artistAvatarDiv(a)}
         ${a.flash?'<div class="fl-badge">⚡ Flash</div>':''}
         ${a.dispo_flash?'<div style="position:absolute;bottom:10px;left:10px;background:#f59e0b;color:#000;font-size:9px;font-weight:800;padding:3px 7px;border-radius:20px;letter-spacing:.3px;">⚡ Dispo aujourd\'hui</div>':''}
-        ${a.instagram?`<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);border-radius:6px;padding:3px 7px;font-size:10px;font-weight:700;color:rgba(255,255,255,.7);">📸 ${mockIgFollowers(a.name)}</div>`:''}
+        ${a.instagram_handle?`<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);border-radius:6px;padding:3px 7px;font-size:10px;font-weight:700;color:rgba(255,255,255,.7);">📸 IG</div>`:''}
         <button class="ac-shortlist ${isShortlisted(a.id)?'saved':''}" onclick="toggleShortlist(${a.id},'${a.name.replace(/'/g,"\\'")}',event)" title="Ajouter à ma shortlist">${isShortlisted(a.id)?'♥':'♡'}</button>
       </div>
       <div class="ac-body">
@@ -4602,6 +4674,17 @@ async function openProfile(id){
       </div>
     </div>
     ${a.horaires ? renderHorairesPublic(a.horaires) : ''}
+    ${!a.claimed ? `
+    <div style="background:linear-gradient(135deg,rgba(168,85,247,.08),rgba(102,126,234,.06));border:1px solid rgba(168,85,247,.2);border-radius:14px;padding:18px 20px;margin:16px 0 8px;">
+      <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:6px;">🎨 C'est votre fiche ?</div>
+      <p style="font-size:13px;color:#9ca3af;line-height:1.6;margin-bottom:14px;">Inscrivez-vous gratuitement pour la personnaliser — ajoutez vos photos, horaires et gérez vos rendez-vous.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+        <span style="font-size:11px;color:#9ca3af;display:flex;align-items:center;gap:4px;"><span style="color:#4ade80;">✓</span> 10 photos gratuites</span>
+        <span style="font-size:11px;color:#9ca3af;display:flex;align-items:center;gap:4px;"><span style="color:#4ade80;">✓</span> RDV en ligne</span>
+        <span style="font-size:11px;color:#9ca3af;display:flex;align-items:center;gap:4px;"><span style="color:#4ade80;">✓</span> 100% gratuit</span>
+      </div>
+      <a href="/claim/${a.id}" target="_blank" style="display:block;width:100%;padding:12px;background:linear-gradient(135deg,#667eea,#a855f7);border-radius:10px;color:#fff;font-size:14px;font-weight:800;text-align:center;text-decoration:none;">✨ Personnaliser ma fiche — gratuit</a>
+    </div>` : ''}
     `;
   openMo('profile');
   // Chargement portfolio : inkr Pro photos en priorité, IG en fallback
@@ -4877,6 +4960,15 @@ document.querySelectorAll('.fp').forEach(btn=>{
 
 // ═══ FILTRES AVANCÉS ═══
 // applyAdvFilters — appelé à chaque frappe dans le champ ville (split-left)
+// ─── Recherche "Trouvez votre fiche" pour les tatoueurs ───────────────────────
+function searchSelfFiche(q) {
+  // Vide les autres filtres + lance la recherche par nom
+  const afVille = document.getElementById('af-ville');
+  if(afVille) afVille.value = '';
+  annuaireFilter.q     = q.trim();
+  annuaireFilter.ville = '';
+  loadArtists(true).then(() => { renderArtists(); updateSplitCount(); updateLoadMoreBtn(); });
+}
 function applyAdvFilters(){
   const ville     = document.getElementById('af-ville')?.value.trim() || '';
   const dept      = document.getElementById('af-dept-sel')?.value || '';
