@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0a14">
+  <meta name="description" content="Trouve ton tatoueur parfait — inkr, l'annuaire N°1 des tatoueurs en France">
+  <title>inkr — Trouve ton tatoueur</title>
+  <link rel="icon" href="/favicon.ico">
+  <style>
+    /* ═══════════════════════════════════════
+       RESET & BASE
+    ═══════════════════════════════════════ */
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html { height: -webkit-fill-available; }
+    body {
+      background: #0a0a14;
+      color: #e5e7eb;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      overscroll-behavior: none;
+      padding-bottom: calc(70px + env(safe-area-inset-bottom));
+    }
+
+    /* ═══════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════ */
+    .app-header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,20,0.97);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      padding: 0 16px 12px;
+      padding-top: calc(env(safe-area-inset-top) + 10px);
+    }
+    .header-row {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .logo {
+      font-size: 28px; font-weight: 900; letter-spacing: -1.5px;
+      background: linear-gradient(135deg,#667eea,#a855f7,#ec4899);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .header-icon {
+      width: 38px; height: 38px; border-radius: 11px;
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none; color: #9ca3af;
+    }
+
+    /* ═══════════════════════════════════════
+       SEARCH BAR
+    ═══════════════════════════════════════ */
+    .search-wrap { position: relative; }
+    .search-input {
+      width: 100%; padding: 13px 44px;
+      background: rgba(255,255,255,.07);
+      border: 1.5px solid rgba(255,255,255,.1);
+      border-radius: 14px; color: #e5e7eb;
+      font-size: 16px;      /* ≥ 16px → évite le zoom automatique iOS */
+      outline: none; transition: .2s;
+      -webkit-appearance: none;
+    }
+    .search-input:focus {
+      border-color: rgba(168,85,247,.5);
+      background: rgba(255,255,255,.09);
+    }
+    .search-input::placeholder { color: #6b7280; }
+    .search-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      pointer-events: none;
+    }
+    .search-clear {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(255,255,255,.15); border: none; cursor: pointer;
+      color: #9ca3af; font-size: 12px; font-family: inherit;
+      display: none; align-items: center; justify-content: center;
+    }
+    .search-clear.visible { display: flex; }
+
+    /* ═══════════════════════════════════════
+       FILTER PILLS
+    ═══════════════════════════════════════ */
+    .filter-wrap {
+      display: flex; gap: 8px; overflow-x: auto;
+      padding: 12px 16px 0;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .filter-wrap::-webkit-scrollbar { display: none; }
+    .pill {
+      flex-shrink: 0; padding: 8px 16px; border-radius: 22px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.05);
+      color: #9ca3af; font-size: 14px; font-weight: 500;
+      cursor: pointer; white-space: nowrap; transition: .15s;
+      -webkit-appearance: none; font-family: inherit;
+    }
+    .pill.active {
+      background: rgba(168,85,247,.18);
+      border-color: #a855f7; color: #c084fc; font-weight: 600;
+    }
+
+    /* ═══════════════════════════════════════
+       STATS BAR
+    ═══════════════════════════════════════ */
+    .stats-bar {
+      padding: 10px 16px 0;
+      font-size: 12px; color: #4b5563; letter-spacing: .2px;
+    }
+
+    /* ═══════════════════════════════════════
+       TATOUEUR CARDS
+    ═══════════════════════════════════════ */
+    .cards {
+      padding: 10px 16px 0;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .card {
+      background: #111827; border: 1px solid #1f2937;
+      border-radius: 16px; overflow: hidden;
+      display: flex; align-items: stretch;
+      cursor: pointer; min-height: 88px;
+      transition: transform .1s, background .1s;
+      -webkit-user-select: none;
+    }
+    .card:active { transform: scale(0.975); background: #1a2233; }
+
+    .card-thumb {
+      width: 88px; min-width: 88px; flex-shrink: 0;
+      background: linear-gradient(135deg,#1f2937,#374151);
+      overflow: hidden; position: relative;
+    }
+    .card-thumb img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .card-thumb-init {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; font-weight: 900;
+      color: rgba(168,85,247,.35);
+      background: linear-gradient(135deg,rgba(102,126,234,.08),rgba(168,85,247,.08));
+    }
+    .card-body {
+      flex: 1; padding: 12px 10px 12px 14px;
+      display: flex; flex-direction: column; justify-content: center; gap: 3px;
+      min-width: 0;
+    }
+    .card-name {
+      font-size: 15px; font-weight: 700; color: #f9fafb;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .card-meta {
+      font-size: 12px; color: #6b7280;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .card-tags {
+      display: flex; gap: 5px; flex-wrap: nowrap; overflow: hidden; margin-top: 5px;
+    }
+    .card-tag {
+      font-size: 10px; color: #a855f7;
+      background: rgba(168,85,247,.1); border: 1px solid rgba(168,85,247,.15);
+      border-radius: 4px; padding: 2px 6px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .card-tag-flash {
+      font-size: 10px; color: #f59e0b;
+      background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.2);
+      border-radius: 4px; padding: 2px 6px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .card-chevron {
+      display: flex; align-items: center;
+      padding-right: 12px; flex-shrink: 0; color: #374151;
+    }
+
+    /* ═══════════════════════════════════════
+       LOADING SPINNER
+    ═══════════════════════════════════════ */
+    .spinner { text-align: center; padding: 40px; }
+    .dot {
+      display: inline-block; width: 8px; height: 8px;
+      border-radius: 50%; background: #a855f7; margin: 0 3px;
+      animation: dotBounce .8s ease-in-out infinite alternate;
+    }
+    .dot:nth-child(2) { animation-delay: .15s; }
+    .dot:nth-child(3) { animation-delay: .3s; }
+    @keyframes dotBounce {
+      from { opacity: .3; transform: translateY(0); }
+      to   { opacity: 1;  transform: translateY(-7px); }
+    }
+
+    /* ═══════════════════════════════════════
+       LOAD MORE
+    ═══════════════════════════════════════ */
+    .load-more-wrap { padding: 16px; }
+    .load-more-btn {
+      width: 100%; padding: 14px; border-radius: 12px;
+      border: 1px solid rgba(168,85,247,.25);
+      background: rgba(168,85,247,.07);
+      color: #a855f7; font-size: 14px; font-weight: 700;
+      cursor: pointer; display: none; font-family: inherit;
+    }
+
+    /* ═══════════════════════════════════════
+       EMPTY STATE
+    ═══════════════════════════════════════ */
+    .empty { text-align: center; padding: 60px 24px; }
+    .empty-icon { font-size: 44px; margin-bottom: 14px; }
+    .empty-title { font-size: 18px; font-weight: 700; color: #e5e7eb; margin-bottom: 8px; }
+    .empty-sub { font-size: 14px; color: #6b7280; line-height: 1.6; }
+
+    /* ═══════════════════════════════════════
+       BOTTOM NAVIGATION
+    ═══════════════════════════════════════ */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(10,10,20,.97);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid rgba(255,255,255,.07);
+      display: flex;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 10px 4px; gap: 3px;
+      cursor: pointer; color: #4b5563;
+      font-size: 10px; font-weight: 600; letter-spacing: .3px;
+      text-decoration: none; transition: color .15s; min-height: 56px;
+    }
+    .nav-item.active { color: #a855f7; }
+    .nav-icon { line-height: 1; height: 24px; display: flex; align-items: center; }
+
+    /* ═══════════════════════════════════════
+       BOTTOM SHEET (profil rapide)
+    ═══════════════════════════════════════ */
+    .sheet-overlay {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(0,0,0,.65);
+      opacity: 0; pointer-events: none; transition: opacity .22s;
+    }
+    .sheet-overlay.open { opacity: 1; pointer-events: all; }
+
+    .sheet {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 400;
+      background: #0f172a; border-radius: 22px 22px 0 0;
+      border-top: 1px solid #1e293b;
+      max-height: 90vh; overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+      transform: translateY(100%);
+      transition: transform .32s cubic-bezier(.32,.72,0,1);
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    }
+    .sheet.open { transform: translateY(0); }
+
+    .sheet-handle-wrap { display: flex; justify-content: center; padding: 14px 0 10px; }
+    .sheet-handle { width: 40px; height: 4px; background: #334155; border-radius: 2px; }
+
+    .sheet-hero { padding: 0 20px 16px; display: flex; align-items: center; gap: 14px; }
+    .sheet-av {
+      width: 60px; height: 60px; border-radius: 14px; flex-shrink: 0;
+      overflow: hidden; position: relative;
+      background: linear-gradient(135deg,#667eea,#a855f7);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; font-weight: 900; color: #fff;
+    }
+    .sheet-av img {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+    }
+    .sheet-name { font-size: 19px; font-weight: 800; color: #f1f5f9; }
+    .sheet-city { font-size: 13px; color: #64748b; margin-top: 3px; }
+
+    .sheet-styles {
+      display: flex; flex-wrap: wrap; gap: 6px; padding: 0 20px 16px;
+    }
+    .sheet-style-pill {
+      font-size: 12px; color: #a855f7;
+      background: rgba(168,85,247,.1); border: 1px solid rgba(168,85,247,.2);
+      border-radius: 20px; padding: 4px 12px;
+    }
+
+    .sheet-photos {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 2px;
+      margin: 0 0 16px;
+    }
+    .sheet-photo {
+      aspect-ratio: 1; object-fit: cover; width: 100%;
+      background: #1e293b; display: block;
+    }
+
+    .sheet-sep { border: none; border-top: 1px solid #1e293b; margin: 0 0 16px; }
+
+    .sheet-actions { padding: 0 20px; display: flex; flex-direction: column; gap: 10px; }
+    .sheet-cta {
+      display: block; width: 100%; padding: 16px;
+      background: linear-gradient(135deg,#667eea,#a855f7,#ec4899);
+      border: none; border-radius: 14px; color: #fff;
+      font-size: 15px; font-weight: 800;
+      text-align: center; text-decoration: none; cursor: pointer;
+      font-family: inherit;
+    }
+    .sheet-ig {
+      display: block; width: 100%; padding: 14px;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 14px; color: #cbd5e1;
+      font-size: 14px; font-weight: 600;
+      text-align: center; text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════ -->
+<header class="app-header">
+  <div class="header-row">
+    <a href="/" class="logo">inkr</a>
+    <a href="/dashboard" class="header-icon" aria-label="Mon compte">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+    </a>
+  </div>
+  <div class="search-wrap">
+    <span class="search-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+    </span>
+    <input
+      type="search" id="searchInput" class="search-input"
+      placeholder="Tatoueur, salon, ville, style…"
+      autocomplete="off" autocorrect="off" spellcheck="false"
+    >
+    <button class="search-clear" id="searchClear" aria-label="Effacer">✕</button>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════
+     STYLE FILTER PILLS
+════════════════════════════════════════════════ -->
+<div class="filter-wrap" id="filterWrap">
+  <button class="pill active" data-style="" onclick="setStyle(this,'')">Tous</button>
+  <button class="pill" data-style="fineline"     onclick="setStyle(this,'fineline')">Fine Line</button>
+  <button class="pill" data-style="realisme"     onclick="setStyle(this,'realisme')">Réalisme</button>
+  <button class="pill" data-style="blackwork"    onclick="setStyle(this,'blackwork')">Blackwork</button>
+  <button class="pill" data-style="japonais"     onclick="setStyle(this,'japonais')">Japonais</button>
+  <button class="pill" data-style="geometrique"  onclick="setStyle(this,'geometrique')">Géométrique</button>
+  <button class="pill" data-style="old-school"   onclick="setStyle(this,'old-school')">Old School</button>
+  <button class="pill" data-style="aquarelle"    onclick="setStyle(this,'aquarelle')">Aquarelle</button>
+  <button class="pill" data-style="tribal"       onclick="setStyle(this,'tribal')">Tribal</button>
+  <button class="pill" data-style="dotwork"      onclick="setStyle(this,'dotwork')">Dotwork</button>
+  <button class="pill" data-style="minimaliste"  onclick="setStyle(this,'minimaliste')">Minimaliste</button>
+  <button class="pill" data-style="lettering"    onclick="setStyle(this,'lettering')">Lettering</button>
+  <button class="pill" data-style="chicano"      onclick="setStyle(this,'chicano')">Chicano</button>
+</div>
+
+<!-- Stats -->
+<p class="stats-bar" id="statsBar"></p>
+
+<!-- ══════════════════════════════════════════════
+     CARD LIST
+════════════════════════════════════════════════ -->
+<div class="cards" id="cardsContainer"></div>
+
+<!-- Spinner -->
+<div class="spinner" id="spinner" style="display:none">
+  <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+</div>
+
+<!-- Load more -->
+<div class="load-more-wrap">
+  <button class="load-more-btn" id="loadMoreBtn" onclick="loadMore()">Voir plus de tatoueurs</button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BOTTOM NAVIGATION
+════════════════════════════════════════════════ -->
+<nav class="bottom-nav">
+  <div class="nav-item active" id="nav-accueil" onclick="setTab('accueil')">
+    <span class="nav-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </span>
+    Accueil
+  </div>
+  <div class="nav-item" id="nav-flash" onclick="setTab('flash')">
+    <span class="nav-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+      </svg>
+    </span>
+    Flash
+  </div>
+  <a class="nav-item" href="/dashboard">
+    <span class="nav-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+    </span>
+    Mon compte
+  </a>
+</nav>
+
+<!-- ══════════════════════════════════════════════
+     BOTTOM SHEET — profil rapide
+════════════════════════════════════════════════ -->
+<div class="sheet-overlay" id="sheetOverlay" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle-wrap"><div class="sheet-handle"></div></div>
+  <div id="sheetContent"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════ -->
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+const LIMIT = 20;
+let offset    = 0;
+let total     = 0;
+let loading   = false;
+let styleFilter = '';
+let query       = '';
+let tab         = 'accueil';
+let debTimer    = null;
+let sheetOpen   = false;
+
+// ─── DOM ─────────────────────────────────────────────────────────────────────
+const $search  = document.getElementById('searchInput');
+const $clear   = document.getElementById('searchClear');
+const $cards   = document.getElementById('cardsContainer');
+const $spinner = document.getElementById('spinner');
+const $stats   = document.getElementById('statsBar');
+const $loadBtn = document.getElementById('loadMoreBtn');
+
+// ─── Bootstrap ───────────────────────────────────────────────────────────────
+load(true);
+
+// ─── Search ──────────────────────────────────────────────────────────────────
+$search.addEventListener('input', e => {
+  const v = e.target.value;
+  query = v.trim();
+  $clear.classList.toggle('visible', v.length > 0);
+  clearTimeout(debTimer);
+  debTimer = setTimeout(() => load(true), 420);
+});
+
+$clear.addEventListener('click', () => {
+  $search.value = ''; query = '';
+  $clear.classList.remove('visible');
+  $search.blur(); load(true);
+});
+
+// ─── Infinite scroll ─────────────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  if (loading || offset >= total) return;
+  if (window.scrollY + window.innerHeight >= document.body.offsetHeight - 300) load(false);
+}, { passive: true });
+
+// ─── Fetch ───────────────────────────────────────────────────────────────────
+async function load(reset) {
+  if (loading) return;
+  if (reset) offset = 0;
+  loading = true;
+
+  if (reset) {
+    $cards.innerHTML = '';
+    $stats.textContent = '';
+    $loadBtn.style.display = 'none';
+  }
+  $spinner.style.display = 'block';
+
+  try {
+    const p = new URLSearchParams({ limit: LIMIT, offset });
+    if (query)           p.set('q', query);
+    if (styleFilter)     p.set('style', styleFilter);
+    if (tab === 'flash') p.set('dispo_flash', '1');
+
+    const data = await fetch('/api/annuaire?' + p).then(r => r.json());
+    total = data.total || 0;
+    const artists = data.artists || [];
+
+    $spinner.style.display = 'none';
+
+    if (artists.length) {
+      artists.forEach(renderCard);
+      offset += artists.length;
+      if (reset) {
+        const t = tab === 'flash' ? 'dispo flash aujourd\'hui' : 'tatoueur' + (total > 1 ? 's' : '');
+        $stats.textContent = total.toLocaleString('fr-FR') + ' ' + t;
+      }
+    } else if (reset) {
+      $cards.innerHTML =
+        '<div class="empty">' +
+          '<div class="empty-icon">✒️</div>' +
+          '<div class="empty-title">Aucun résultat</div>' +
+          '<div class="empty-sub">Essaie une autre recherche ou élargis tes filtres.</div>' +
+        '</div>';
+    }
+
+    $loadBtn.style.display = offset < total ? 'block' : 'none';
+  } catch(e) {
+    $spinner.style.display = 'none';
+    console.error('[inkr:mobile]', e);
+  }
+  loading = false;
+}
+
+function loadMore() { load(false); }
+
+// ─── Render card ─────────────────────────────────────────────────────────────
+function renderCard(a) {
+  const ig      = a.instagram_handle || '';
+  const styles  = (a.style || []).slice(0, 3);
+  const initial = (a.name || '?')[0].toUpperCase();
+
+  const tags = styles.map(s => `<span class="card-tag">${x(s)}</span>`).join('')
+    + (a.dispo_flash ? '<span class="card-tag-flash">⚡ Dispo</span>' : '');
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.setAttribute('role', 'button');
+  card.onclick = () => openSheet(a);
+  card.innerHTML =
+    `<div class="card-thumb">
+      <div class="card-thumb-init">${initial}</div>
+      ${ig ? `<img src="https://unavatar.io/instagram/${x(ig)}" loading="lazy" alt="" onerror="this.remove()">` : ''}
+    </div>
+    <div class="card-body">
+      <div class="card-name">${x(a.name)}</div>
+      <div class="card-meta">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2.5" stroke-linecap="round">
+          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+          <circle cx="12" cy="9" r="2.5"/>
+        </svg>
+        ${x(a.city || 'France')}
+      </div>
+      <div class="card-tags">${tags}</div>
+    </div>
+    <div class="card-chevron">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+    </div>`;
+
+  $cards.appendChild(card);
+}
+
+// ─── Filter / tabs ───────────────────────────────────────────────────────────
+function setStyle(el, style) {
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  styleFilter = style;
+  load(true);
+}
+
+function setTab(t) {
+  tab = t;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navEl = document.getElementById('nav-' + t);
+  if (navEl) navEl.classList.add('active');
+  load(true);
+}
+
+// ─── Bottom sheet ────────────────────────────────────────────────────────────
+async function openSheet(a) {
+  const ig      = a.instagram_handle || '';
+  const styles  = a.style || [];
+  const initial = (a.name || '?')[0].toUpperCase();
+
+  document.getElementById('sheetContent').innerHTML =
+    `<div class="sheet-hero">
+      <div class="sheet-av">
+        ${initial}
+        ${ig ? `<img src="https://unavatar.io/instagram/${x(ig)}" onerror="this.remove()" alt="">` : ''}
+      </div>
+      <div>
+        <div class="sheet-name">${x(a.name)}</div>
+        <div class="sheet-city">📍 ${x(a.city || 'France')}${a.cp ? ' · ' + x(a.cp.slice(0,2)) : ''}</div>
+      </div>
+    </div>
+    ${styles.length ? `<div class="sheet-styles">${styles.map(s => `<span class="sheet-style-pill">${x(s)}</span>`).join('')}</div>` : ''}
+    <div id="sheetPhotosZone"></div>
+    <hr class="sheet-sep">
+    <div class="sheet-actions">
+      <a href="/t/${a.id}" class="sheet-cta">Voir la fiche complète →</a>
+      ${ig ? `<a href="https://instagram.com/${x(ig)}" target="_blank" rel="noopener" class="sheet-ig">📸 @${x(ig)} sur Instagram</a>` : ''}
+    </div>`;
+
+  document.getElementById('sheetOverlay').classList.add('open');
+  document.getElementById('sheet').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  sheetOpen = true;
+
+  // Photos inkr en arrière-plan (si compte lié)
+  if (a.user_id) {
+    try {
+      const photos = await fetch('/api/artist-photos/user/' + a.user_id).then(r => r.json());
+      if (photos.length >= 3) {
+        const zone = document.getElementById('sheetPhotosZone');
+        if (zone) zone.innerHTML =
+          `<div class="sheet-photos">` +
+          photos.slice(0, 3).map(p => `<img class="sheet-photo" src="${x(p.url)}" loading="lazy" alt="">`).join('') +
+          `</div>`;
+      }
+    } catch(_) {}
+  }
+}
+
+function closeSheet() {
+  document.getElementById('sheetOverlay').classList.remove('open');
+  document.getElementById('sheet').classList.remove('open');
+  document.body.style.overflow = '';
+  sheetOpen = false;
+}
+
+// Swipe vers le bas pour fermer
+let swipeY = 0;
+const sheetEl = document.getElementById('sheet');
+sheetEl.addEventListener('touchstart', e => { swipeY = e.touches[0].clientY; }, { passive: true });
+sheetEl.addEventListener('touchmove', e => {
+  if (sheetEl.scrollTop === 0 && e.touches[0].clientY - swipeY > 70) closeSheet();
+}, { passive: true });
+
+// Bouton retour navigateur
+window.addEventListener('popstate', () => { if (sheetOpen) closeSheet(); });
+
+// ─── Util ────────────────────────────────────────────────────────────────────
+function x(s) {
+  return (s||'').toString()
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

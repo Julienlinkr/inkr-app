@@ -46,12 +46,21 @@ app.use('/api/email/inbound', require('./routes/email_inbound')); // Adresses @i
 app.use('/api/quotes',    require('./routes/quotes'));           // Devis artiste → client
 app.use('/api/analytics', require('./routes/analytics'));        // Trafic site inkr.club (RGPD-safe)
 
+// ============ DÉTECTION MOBILE ============
+// Sert mobile.html pour iPhone/Android, index.html pour desktop.
+// La version desktop n'est JAMAIS modifiée par ce code.
+function isMobile(req) {
+  const ua = req.headers['user-agent'] || '';
+  return /iPhone|Android.*Mobile|iPod|BlackBerry|Windows Phone|Opera Mini|IEMobile/i.test(ua);
+}
+
 // ============ PAGES (no-cache pour forcer le rechargement) ============
 app.get('/', (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.set('Pragma', 'no-cache');
   res.set('Expires', '0');
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  const file = isMobile(req) ? 'mobile.html' : 'index.html';
+  res.sendFile(path.join(__dirname, 'public', file));
 });
 app.get('/dashboard', (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
@@ -237,7 +246,31 @@ app.get('/t/:id', (req, res) => {
     .claim-btn:hover{background:#fbbf24;transform:translateY(-1px)}
     .footer{text-align:center;padding:28px 24px;color:#4b5563;font-size:12px;border-top:1px solid #1f2937;margin-top:20px}
     .footer a{color:#a855f7;text-decoration:none}
-    @media(max-width:500px){.hero-top{flex-direction:column}.avatar{width:80px;height:80px;font-size:28px}.hero-info h1{font-size:22px}}
+    /* ── Mobile fiche (/t/:id) ── */
+    @media(max-width:768px){
+      body { padding-bottom: 0; }
+      .header { padding: 10px 14px; padding-top: calc(env(safe-area-inset-top) + 10px); }
+      .logo { font-size: 20px; }
+      .back { font-size: 13px; }
+      .wrap { padding: 20px 14px 48px; }
+      .hero-top { flex-direction: column; gap: 14px; margin-bottom: 20px; }
+      .avatar { width: 80px; height: 80px; border-radius: 14px; font-size: 30px; }
+      .hero-info h1 { font-size: 22px; }
+      .cta-rdv {
+        position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+        border-radius: 0; margin-bottom: 0;
+        padding: 18px 20px; padding-bottom: calc(18px + env(safe-area-inset-bottom));
+        font-size: 16px;
+      }
+      /* push content so it's not hidden under fixed CTA */
+      .wrap { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
+      .map-wrap iframe { height: 160px; }
+      .contacts { gap: 8px; }
+      .contact-row { padding: 11px 14px; }
+      .cicon { width: 34px; height: 34px; font-size: 16px; }
+      .badges { flex-wrap: wrap; gap: 6px; }
+      .footer { padding: 20px 16px; font-size: 11px; }
+    }
   </style>
 </head>
 <body>

@@ -127,6 +127,9 @@ router.get('/', (req, res) => {
     if (has_ig === '1') {
       sql += " AND t.instagram_handle != '' AND t.instagram_handle IS NOT NULL";
     }
+    if (req.query.dispo_flash === '1') {
+      sql += " AND t.dispo_flash = 1";
+    }
     if (min_rating) {
       sql += " AND COALESCE(r.avg_rating,0) >= ?";
       params.push(parseFloat(min_rating));
