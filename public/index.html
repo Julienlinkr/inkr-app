@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>inkr — L'annuaire des tatoueurs en France</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 :root{--black:#0A0A0A;--white:#fff;--off:#F5F5F7;--g1:#1D1D1F;--g2:#424245;--g3:#6E6E73;--g4:#AEAEB2;--g5:#D1D1D6;--g6:#E5E5EA;--nav:64px;--grad:linear-gradient(135deg,#667eea,#a855f7,#ec4899,#f97316);}
@@ -2946,6 +2948,7 @@ select.fi{appearance:none;background-image:url("data:image/svg+xml,%3csvg xmlns=
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script>
 // ════════════════════════════════════════════════════════════════
 // PARTIE 2 — Style cards + Split liste/carte
@@ -3238,33 +3241,38 @@ function initHomeMap() {
     .catch(() => addHomeMapMarkers(ARTISTS));
 }
 
+let homeClusterGroup = null;
 function addHomeMapMarkers(artists) {
   if (!homeMap) return;
+  if (homeClusterGroup) { homeMap.removeLayer(homeClusterGroup); }
+  homeMapMarkers = [];
+  homeClusterGroup = L.markerClusterGroup({
+    maxClusterRadius: 50,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    iconCreateFunction: function(cluster){
+      const n = cluster.getChildCount();
+      const size = n > 100 ? 46 : n > 20 ? 40 : 34;
+      return L.divIcon({
+        className:'',
+        html:`<div style="width:${size}px;height:${size}px;border-radius:50%;background:#0A0A0A;border:2.5px solid #fff;box-shadow:0 2px 12px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;">${n}</div>`,
+        iconSize:[size,size],iconAnchor:[size/2,size/2]
+      });
+    }
+  });
   artists.forEach(a => {
     if (!a.lat || !a.lng) return;
     const inits = artistInitials(a.name);
-    // Marker : cercle noir encre avec initiales blanches — minimaliste sur fond clair
     const icon = L.divIcon({
       className: '',
-      html: `<div style="
-        width:36px;height:36px;border-radius:50%;
-        background:#0A0A0A;
-        border:2.5px solid #fff;
-        box-shadow:0 2px 10px rgba(0,0,0,.22), 0 0 0 1px rgba(0,0,0,.08);
-        display:flex;align-items:center;justify-content:center;
-        font-size:11px;font-weight:900;color:#fff;
-        font-family:-apple-system,sans-serif;
-        letter-spacing:.5px;
-        cursor:pointer;
-      ">${inits}</div>`,
-      iconSize: [36, 36],
-      iconAnchor: [18, 18]
+      html: `<div style="width:32px;height:32px;border-radius:50%;background:#0A0A0A;border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;cursor:pointer;">${inits}</div>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 16]
     });
-    const marker = L.marker([a.lat, a.lng], { icon }).addTo(homeMap);
+    const marker = L.marker([a.lat, a.lng], { icon });
     const styles = a.style?.length
       ? a.style.map(s => `<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:#F5F5F7;color:#555;font-weight:500;">${s}</span>`).join(' ')
       : '';
-    // Popup thème light
     marker.bindPopup(`
       <div style="font-family:-apple-system,sans-serif;width:190px;">
         <div style="padding:14px 14px 12px;">
@@ -3281,8 +3289,10 @@ function addHomeMapMarkers(artists) {
       </div>`,
       { maxWidth: 210 }
     );
+    homeClusterGroup.addLayer(marker);
     homeMapMarkers.push({ marker, a });
   });
+  homeMap.addLayer(homeClusterGroup);
 }
 
 function rebuildHomeMapMarkers() {
@@ -4451,33 +4461,51 @@ function renderBlogFull(){
 }
 
 // ═══════════════════ MAP ═══════════════════
-let leafletMap,mapMarkers=[];
+let leafletMap, mapClusterGroup = null, mapMarkersData = [];
 function initMap(){
   leafletMap=L.map('leaflet-map').setView([46.5,2.5],6);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:19}).addTo(leafletMap);
-  // Charge TOUS les tatoueurs géocodés depuis l'endpoint dédié (pas limité à 48)
   fetch('/api/annuaire/map')
     .then(r=>r.json())
     .then(d=>{ addMapMarkers(d.artists||[]); })
     .catch(()=>addMapMarkers(ARTISTS));
 }
 function addMapMarkers(artists){
+  if(mapClusterGroup){ leafletMap.removeLayer(mapClusterGroup); }
+  mapMarkersData = [];
+  mapClusterGroup = L.markerClusterGroup({
+    maxClusterRadius: 50,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    iconCreateFunction: function(cluster){
+      const n = cluster.getChildCount();
+      const size = n > 100 ? 48 : n > 20 ? 42 : 36;
+      return L.divIcon({
+        className:'',
+        html:`<div style="width:${size}px;height:${size}px;border-radius:50%;background:linear-gradient(135deg,#667eea,#a855f7);border:2.5px solid #fff;box-shadow:0 2px 14px rgba(168,85,247,.5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff;">${n}</div>`,
+        iconSize:[size,size],iconAnchor:[size/2,size/2]
+      });
+    }
+  });
   artists.forEach(a=>{
     if(!a.lat||!a.lng)return;
     const grad=artistGradient(a.name);
     const inits=artistInitials(a.name);
-    const icon=L.divIcon({className:'',html:`<div style="width:40px;height:40px;border-radius:50%;background:${grad};border:2.5px solid white;box-shadow:0 2px 12px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:rgba(255,255,255,.8);">${inits}</div>`,iconSize:[40,40],iconAnchor:[20,20]});
-    const marker=L.marker([a.lat,a.lng],{icon}).addTo(leafletMap);
+    const icon=L.divIcon({className:'',html:`<div style="width:34px;height:34px;border-radius:50%;background:${grad};border:2px solid rgba(255,255,255,.8);box-shadow:0 2px 8px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;">${inits}</div>`,iconSize:[34,34],iconAnchor:[17,17]});
+    const marker=L.marker([a.lat,a.lng],{icon});
     const styles=a.style?.length?a.style.map(s=>`<span class="map-popup-tag">${s}</span>`).join(''):'';
-    const igLine=a.instagram?`<div style="font-size:11px;color:#a78bfa;margin-top:2px;">📸 ${a.instagram}</div>`:'';
-    marker.bindPopup(`<div><div style="width:100%;height:80px;background:${grad};display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:rgba(255,255,255,.25);border-radius:4px 4px 0 0;">${inits}</div><div class="map-popup-body"><div class="map-popup-name">${a.name}</div><div class="map-popup-city">📍 ${a.city}</div>${igLine}<div class="map-popup-tags" style="margin-top:6px;">${styles}</div><button class="map-popup-btn" onclick="openProfile(${a.id})">Voir le profil →</button></div></div>`,{maxWidth:210});
-    mapMarkers.push({marker,a});
+    const igLine=a.instagram_handle?`<div style="font-size:11px;color:#a78bfa;margin-top:2px;">📸 @${a.instagram_handle}</div>`:'';
+    marker.bindPopup(`<div><div style="width:100%;height:70px;background:${grad};display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:rgba(255,255,255,.25);border-radius:4px 4px 0 0;">${inits}</div><div class="map-popup-body"><div class="map-popup-name">${a.name}</div><div class="map-popup-city">📍 ${a.city}</div>${igLine}<div class="map-popup-tags" style="margin-top:6px;">${styles}</div><button class="map-popup-btn" onclick="openProfile(${a.id})">Voir le profil →</button></div></div>`,{maxWidth:210});
+    mapClusterGroup.addLayer(marker);
+    mapMarkersData.push({marker,a});
   });
+  leafletMap.addLayer(mapClusterGroup);
 }
 function rebuildMapMarkers(){
-  mapMarkers.forEach(({marker})=>marker.remove());
-  mapMarkers=[];
-  addMapMarkers(ARTISTS);
+  fetch('/api/annuaire/map')
+    .then(r=>r.json())
+    .then(d=>addMapMarkers(d.artists||[]))
+    .catch(()=>addMapMarkers(ARTISTS));
 }
 function filterMap(btn,filter){
   document.querySelectorAll('.mf').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
