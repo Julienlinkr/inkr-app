@@ -178,6 +178,46 @@ router.get('/:id/reviews', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+// ─── GET /api/annuaire/map ─────────────────────────────────────────────────
+// Endpoint léger pour la carte : uniquement les champs nécessaires aux marqueurs
+// Retourne TOUS les tatoueurs géocodés (lat != 0) en une seule requête
+router.get('/map', (req, res) => {
+  try {
+    const rows = db.prepare(`
+      SELECT id, nom, nom_commercial, ville, lat, lng, styles, instagram_handle, instagram, cp
+      FROM tatoueurs
+      WHERE statut='active'
+        AND lat IS NOT NULL AND lat != 0
+        AND lng IS NOT NULL AND lng != 0
+        AND LENGTH(TRIM(nom)) > 1 AND TRIM(nom) != '0'
+      ORDER BY id
+    `).all();
+
+    const artists = rows.map(t => {
+      let styles = [];
+      try { styles = JSON.parse(t.styles || '[]'); } catch(e) {}
+      const nom = t.nom_commercial || t.nom;
+      const igHandle = t.instagram_handle || (t.instagram || '').replace(/.*instagram\.com\//i,'').replace(/[/?#].*/,'').trim();
+      return {
+        id: t.id,
+        name: nom,
+        city: t.ville || '',
+        lat: t.lat,
+        lng: t.lng,
+        style: styles,
+        sk: styles.map(s => s.toLowerCase().replace(/[\s\-]+/g,'-').replace(/[^a-z0-9\-]/g,'')),
+        instagram_handle: igHandle,
+        cp: t.cp || '',
+      };
+    });
+
+    res.json({ total: artists.length, artists });
+  } catch(e) {
+    console.error('GET /api/annuaire/map error:', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─── GET /api/annuaire/stats ────────────────────────────────────
 router.get('/stats', (req, res) => {
   try {

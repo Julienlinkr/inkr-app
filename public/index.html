@@ -4448,7 +4448,11 @@ let leafletMap,mapMarkers=[];
 function initMap(){
   leafletMap=L.map('leaflet-map').setView([46.5,2.5],6);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:19}).addTo(leafletMap);
-  addMapMarkers(ARTISTS);
+  // Charge TOUS les tatoueurs géocodés depuis l'endpoint dédié (pas limité à 48)
+  fetch('/api/annuaire/map')
+    .then(r=>r.json())
+    .then(d=>{ addMapMarkers(d.artists||[]); })
+    .catch(()=>addMapMarkers(ARTISTS));
 }
 function addMapMarkers(artists){
   artists.forEach(a=>{
