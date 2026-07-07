@@ -4527,7 +4527,15 @@ function filterMapQ(q){
 let currentArtistId=null;
 async function openProfile(id){
   currentArtistId=id;
-  const a=ARTISTS.find(x=>String(x.id)===String(id));if(!a)return;
+  let a=ARTISTS.find(x=>String(x.id)===String(id));
+  // Fallback : l'artiste peut être sur la carte mais pas dans ARTISTS (paginé) → fetch API
+  if(!a){
+    try{
+      const r=await fetch(`/api/annuaire/${id}`);
+      if(r.ok) a=await r.json();
+    }catch(_){}
+  }
+  if(!a)return;
   // Statut "suivi" : serveur si connecté, localStorage sinon
   let following=false;
   if(_clientUser){
