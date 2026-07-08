@@ -400,10 +400,11 @@ function runMigrations() {
     'ALTER TABLE tatoueurs ADD COLUMN outreach_date TEXT DEFAULT NULL',
     'ALTER TABLE tatoueurs ADD COLUMN outreach_notes TEXT DEFAULT NULL',
 
-    // ── v7 : studio + followers Instagram (saisie manuelle artiste) ───────────
+    // ── v7 : studio + followers Instagram (scraping auto) ────────────────────
     'ALTER TABLE users ADD COLUMN ig_followers INTEGER DEFAULT NULL',
     "ALTER TABLE tatoueurs ADD COLUMN studio_nom TEXT DEFAULT ''",
     'ALTER TABLE tatoueurs ADD COLUMN ig_followers INTEGER DEFAULT NULL',
+    'ALTER TABLE tatoueurs ADD COLUMN ig_followers_scraped_at DATETIME DEFAULT NULL',
   ];
 
   let applied = 0;
