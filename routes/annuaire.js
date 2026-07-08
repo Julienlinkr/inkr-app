@@ -7,7 +7,8 @@ const { db }  = require('../db/database');
 ['auto_reply TEXT DEFAULT \'\'', 'bio TEXT DEFAULT \'\'', 'telephone TEXT DEFAULT \'\'',
  'email TEXT DEFAULT \'\'', 'site_web TEXT DEFAULT \'\'', 'adresse TEXT DEFAULT \'\'',
  'cp TEXT DEFAULT \'\'', 'horaires TEXT DEFAULT \'\'', 'dispo_flash INTEGER DEFAULT 0',
- 'user_id INTEGER DEFAULT NULL'].forEach(col => {
+ 'user_id INTEGER DEFAULT NULL', 'studio_nom TEXT DEFAULT \'\'',
+ 'ig_followers INTEGER DEFAULT NULL'].forEach(col => {
   try { db.exec(`ALTER TABLE tatoueurs ADD COLUMN ${col}`); } catch(_) {}
 });
 
@@ -79,6 +80,8 @@ function toFront(t){
     user_id:          t.user_id || null,
     claimed:          t.claimed === 1 || !!t.user_id,
     dept:             (t.cp || '').slice(0,2),
+    studio_nom:       t.studio_nom || '',
+    ig_followers:     t.ig_followers || null,
   };
 }
 
@@ -120,15 +123,20 @@ router.get('/', (req, res) => {
     }
     if (q) {
       const lq = `%${norm(q)}%`;
-      // Recherche élargie : nom, ville, adresse (contient souvent la ville), instagram
-      sql += " AND (LOWER(t.nom) LIKE ? OR LOWER(t.nom_commercial) LIKE ? OR LOWER(t.ville) LIKE ? OR LOWER(t.adresse) LIKE ? OR LOWER(t.instagram) LIKE ? OR LOWER(t.instagram_handle) LIKE ?)";
-      params.push(lq, lq, lq, lq, lq, lq);
+      // Recherche élargie : nom, ville, adresse, instagram, studio
+      sql += " AND (LOWER(t.nom) LIKE ? OR LOWER(t.nom_commercial) LIKE ? OR LOWER(t.ville) LIKE ? OR LOWER(t.adresse) LIKE ? OR LOWER(t.instagram) LIKE ? OR LOWER(t.instagram_handle) LIKE ? OR LOWER(t.studio_nom) LIKE ?)";
+      params.push(lq, lq, lq, lq, lq, lq, lq);
     }
     if (has_ig === '1') {
       sql += " AND t.instagram_handle != '' AND t.instagram_handle IS NOT NULL";
     }
     if (req.query.dispo_flash === '1') {
       sql += " AND t.dispo_flash = 1";
+    }
+    const { min_followers } = req.query;
+    if (min_followers) {
+      sql += " AND t.ig_followers >= ?";
+      params.push(parseInt(min_followers));
     }
     if (min_rating) {
       sql += " AND COALESCE(r.avg_rating,0) >= ?";

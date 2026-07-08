@@ -1444,6 +1444,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:99;background:var(--nav-bg);back
         </div>
         <div class="form-group"><label>Téléphone</label><input class="form-control" id="p-phone" type="tel"></div>
         <div class="form-group"><label>Instagram</label><input class="form-control" id="p-instagram" placeholder="@studio_inkr"></div>
+        <div class="form-group">
+          <label style="display:flex;align-items:center;gap:6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="#E1306C" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#E1306C" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="#E1306C"/></svg>
+            Abonnés Instagram
+          </label>
+          <input class="form-control" id="p-ig-followers" type="number" min="0" placeholder="ex: 12500">
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">Ton nombre d'abonnés — affiché sur ta fiche et utilisé pour les filtres de recherche</div>
+        </div>
 
         <!-- PAIEMENTS — reçu directement par l'artiste pour les acomptes clients -->
         <div style="margin:12px 0 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);">💳 Recevoir les acomptes clients</div>
@@ -3001,6 +3009,7 @@ function populateUser(){
   document.getElementById('p-phone').value=u.phone||'';
   document.getElementById('p-email').value=u.email||'';
   document.getElementById('p-instagram').value=u.instagram||'';
+  document.getElementById('p-ig-followers').value=u.ig_followers||'';
   document.getElementById('p-paypal-me').value=u.paypal_me_url||'';
   // Stripe Connect — charger le statut de connexion
   renderStripeConnectStatus(u.stripe_connect_id||null);
@@ -4887,6 +4896,7 @@ async function saveProfil(){
       adresse:g('p-adresse').trim(),
       phone:g('p-phone').trim(),
       instagram:g('p-instagram').trim(),
+      ig_followers:document.getElementById('p-ig-followers')?.value?.trim()||null,
       paypal_me_url:g('p-paypal-me').trim()||null,
       stripe_me_link:g('p-stripe-me').trim()||null,
       pinterest:g('p-pinterest').trim(),

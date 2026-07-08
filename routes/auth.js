@@ -238,7 +238,7 @@ router.put('/profile', (req, res) => {
     const decoded = jwt.verify(token, JWT_SECRET);
     const { name, prenom, nom_artiste, studio_name, city, cp, adresse, phone, instagram, pinterest,
             auto_reply, bio, styles, en_tournee, horaires, dispo_flash,
-            paypal_me_url, stripe_me_link } = req.body;
+            paypal_me_url, stripe_me_link, ig_followers } = req.body;
 
     // Mise à jour partielle : uniquement en_tournee (toggle tournée)
     if (en_tournee !== undefined && !name) {
@@ -257,12 +257,13 @@ router.put('/profile', (req, res) => {
     db.prepare(`
       UPDATE users SET name=?, prenom=?, nom_artiste=?, studio_name=?, city=?, cp=?, adresse=?,
         phone=?, instagram=?, pinterest=?, auto_reply=?, bio=?, styles=?, horaires=?, dispo_flash=?,
-        paypal_me_url=?, stripe_me_link=?
+        paypal_me_url=?, stripe_me_link=?, ig_followers=?
       WHERE id=?
     `).run(name, prenom||'', nom_artiste||'', studio_name||'', city||'', cp||'', adresse||'', phone||'',
            instagram||'', pinterest||'', auto_reply||'', bio||'', stylesJson,
            horairesJson, dispo_flash ? 1 : 0,
            paypal_me_url||null, stripe_me_link||null,
+           ig_followers !== undefined && ig_followers !== '' ? parseInt(ig_followers)||null : null,
            decoded.userId);
 
     // ── Sync vers la fiche tatoueur publique (UPSERT par user_id) ────────────
@@ -271,23 +272,27 @@ router.put('/profile', (req, res) => {
     // Sinon on crée une nouvelle entrée. Pas besoin d'un compte Instagram pour apparaître.
     try {
       const existingFiche = db.prepare('SELECT id FROM tatoueurs WHERE user_id = ?').get(decoded.userId);
+      const igFollowersVal = ig_followers !== undefined && ig_followers !== '' ? parseInt(ig_followers)||null : null;
       if (existingFiche) {
         db.prepare(`
           UPDATE tatoueurs SET nom=?, nom_commercial=?, ville=?, cp=?, adresse=?, telephone=?,
-            instagram=?, styles=?, bio=?, auto_reply=?, horaires=?, dispo_flash=?, statut='active'
+            instagram=?, styles=?, bio=?, auto_reply=?, horaires=?, dispo_flash=?,
+            studio_nom=?, ig_followers=?, statut='active'
           WHERE user_id=?
         `).run(name, nom_artiste||name, city||'', cp||'', adresse||'', phone||'',
                instagram||'', stylesJson, bio||'', auto_reply||'',
-               horairesJson, dispo_flash ? 1 : 0, decoded.userId);
+               horairesJson, dispo_flash ? 1 : 0,
+               studio_name||'', igFollowersVal,
+               decoded.userId);
       } else {
         db.prepare(`
           INSERT INTO tatoueurs
             (user_id, nom, nom_commercial, ville, cp, adresse, telephone, instagram,
-             styles, bio, auto_reply, horaires, dispo_flash, source, statut)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'inkr_pro', 'active')
+             styles, bio, auto_reply, horaires, dispo_flash, studio_nom, ig_followers, source, statut)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'inkr_pro', 'active')
         `).run(decoded.userId, name, nom_artiste||name, city||'', cp||'', adresse||'', phone||'',
                instagram||'', stylesJson, bio||'', auto_reply||'',
-               horairesJson, dispo_flash ? 1 : 0);
+               horairesJson, dispo_flash ? 1 : 0, studio_name||'', igFollowersVal);
       }
     } catch(syncErr) {
       // Ne bloque pas la réponse — la migration user_id est peut-être encore en cours

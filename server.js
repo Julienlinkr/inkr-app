@@ -178,6 +178,14 @@ app.get('/t/:id', (req, res) => {
   const mapsEmbedUrl = `https://maps.google.com/maps?q=${mapsQuery}&output=embed`;
   const mapsLink = `https://maps.google.com/maps?q=${mapsQuery}`;
 
+  // Formateur abonnés Instagram
+  const fmtFollowers = (n) => {
+    if (!n) return '';
+    if (n >= 1000000) return `${(n/1000000).toFixed(1).replace(/\.0$/,'')}M`;
+    if (n >= 1000)    return `${(n/1000).toFixed(1).replace(/\.0$/,'')}K`;
+    return `${n}`;
+  };
+
   res.set('Cache-Control', 'no-store');
   res.send(`<!DOCTYPE html>
 <html lang="fr">
@@ -201,7 +209,8 @@ app.get('/t/:id', (req, res) => {
     .hero-top{display:flex;gap:20px;align-items:flex-start;margin-bottom:28px}
     .avatar-wrap{flex-shrink:0}
     .avatar{width:100px;height:100px;border-radius:16px;object-fit:cover;background:linear-gradient(135deg,#667eea,#a855f7);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#fff}
-    .hero-info h1{font-size:26px;font-weight:800;color:#fff;margin-bottom:6px;line-height:1.2}
+    .hero-info h1{font-size:26px;font-weight:800;color:#fff;margin-bottom:4px;line-height:1.2}
+    .hero-studio{color:#a855f7;font-size:12px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:5px}
     .hero-loc{color:#9ca3af;font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
     .badges{display:flex;gap:8px;flex-wrap:wrap}
     .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600}
@@ -290,13 +299,14 @@ app.get('/t/:id', (req, res) => {
     </div>
     <div class="hero-info">
       <h1>${nom}</h1>
+      ${t.studio_nom ? `<div class="hero-studio"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="flex-shrink:0"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="#a855f7" stroke-width="2"/><polyline points="9 22 9 12 15 12 15 22" stroke="#a855f7" stroke-width="2"/></svg>${t.studio_nom}</div>` : ''}
       <div class="hero-loc">📍 ${adresseFull || t.ville || 'France'}</div>
       <div class="badges">
         <span class="badge ${claimed ? 'badge-pro' : 'badge-import'}">
           ${claimed ? '✅ Vérifié inkr' : '🗂 Fiche non réclamée'}
         </span>
         ${t.telephone ? `<span class="badge" style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#4ade80">📞 Disponible</span>` : ''}
-        ${igHandle ? `<span class="badge" style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);color:#c084fc">📸 Instagram</span>` : ''}
+        ${igHandle ? `<span class="badge" style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3);color:#c084fc"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" style="vertical-align:-1px;margin-right:2px"><rect x="2" y="2" width="20" height="20" rx="5" stroke="#c084fc" stroke-width="2.2"/><circle cx="12" cy="12" r="4" stroke="#c084fc" stroke-width="2.2"/><circle cx="17.5" cy="6.5" r="1.2" fill="#c084fc"/></svg>${t.ig_followers ? fmtFollowers(t.ig_followers)+' abonnés' : 'Instagram'}</span>` : ''}
       </div>
     </div>
   </div>
@@ -332,13 +342,13 @@ app.get('/t/:id', (req, res) => {
       <img src="https://unavatar.io/instagram/${igHandle}" alt="${nom}" class="ig-avatar" onerror="this.style.background='linear-gradient(135deg,#833ab4,#fd1d1d)'">
       <div>
         <div class="ig-info-name">@${igHandle}</div>
-        <div class="ig-info-sub">Voir les tatouages sur Instagram</div>
+        <div class="ig-info-sub">${t.ig_followers ? fmtFollowers(t.ig_followers)+' abonnés · ' : ''}Voir les tatouages sur Instagram</div>
       </div>
       <div style="margin-left:auto;font-size:20px">→</div>
     </div>
     <div class="ig-cta">
-      <span>📸 Voir le portfolio complet</span>
-      <span style="opacity:.8;font-size:11px">instagram.com/${igHandle}</span>
+      <span style="display:flex;align-items:center;gap:7px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg>Voir le portfolio complet</span>
+      <span style="opacity:.8;font-size:11px">instagram.com/${igHandle}${t.ig_followers ? ' · '+fmtFollowers(t.ig_followers)+' abonnés' : ''}</span>
     </div>
   </a>` : ''}
 
@@ -350,8 +360,8 @@ app.get('/t/:id', (req, res) => {
       <div><div class="clabel">Téléphone</div><div class="cval">${t.telephone}</div></div>
     </a>` : ''}
     ${igHandle ? `<a href="https://instagram.com/${igHandle}" target="_blank" rel="noopener" class="contact-row">
-      <div class="cicon" style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045)">📸</div>
-      <div><div class="clabel">Instagram</div><div class="cval">@${igHandle}</div></div>
+      <div class="cicon" style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="white"/></svg></div>
+      <div><div class="clabel">Instagram${t.ig_followers ? ' · '+fmtFollowers(t.ig_followers)+' abonnés' : ''}</div><div class="cval">@${igHandle}</div></div>
     </a>` : ''}
     ${t.site_web ? `<a href="${t.site_web}" target="_blank" rel="noopener" class="contact-row">
       <div class="cicon" style="background:#1f2937">🌐</div>
