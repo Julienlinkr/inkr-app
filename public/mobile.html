@@ -602,7 +602,7 @@ async function openSheet(a) {
     <hr class="sheet-sep">
     <div class="sheet-actions">
       <a href="/t/${a.id}" class="sheet-cta">Voir la fiche complète →</a>
-      ${ig ? `<a href="https://instagram.com/${x(ig)}" target="_blank" rel="noopener" class="sheet-ig">📸 @${x(ig)} sur Instagram</a>` : ''}
+      ${ig ? `<a href="https://instagram.com/${x(ig)}" target="_blank" rel="noopener" class="sheet-ig" style="display:flex;align-items:center;gap:7px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg>@${x(ig)} sur Instagram${a.ig_followers ? ' · '+(a.ig_followers>=1e6?(a.ig_followers/1e6).toFixed(1).replace(/\.0$/,'')+'M':a.ig_followers>=1e3?(a.ig_followers/1e3).toFixed(1).replace(/\.0$/,'')+'K':a.ig_followers)+' abonnés' : ''}</a>` : ''}
     </div>`;
 
   document.getElementById('sheetOverlay').classList.add('open');

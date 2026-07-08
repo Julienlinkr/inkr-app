@@ -4026,7 +4026,7 @@ function renderArtists(){
         ${artistAvatarDiv(a)}
         ${a.flash?'<div class="fl-badge">⚡ Flash</div>':''}
         ${a.dispo_flash?'<div style="position:absolute;bottom:10px;left:10px;background:#f59e0b;color:#000;font-size:9px;font-weight:800;padding:3px 7px;border-radius:20px;letter-spacing:.3px;">⚡ Dispo aujourd\'hui</div>':''}
-        ${a.instagram_handle?`<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);border-radius:6px;padding:3px 7px;font-size:10px;font-weight:700;color:rgba(255,255,255,.7);">📸 IG</div>`:''}
+        ${a.instagram_handle?`<div style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,.6);backdrop-filter:blur(6px);border-radius:6px;padding:3px 8px;font-size:10px;font-weight:700;color:#fff;display:flex;align-items:center;gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="white" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="white" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="white"/></svg>${a.ig_followers?(a.ig_followers>=1e6?(a.ig_followers/1e6).toFixed(1).replace(/\.0$/,'')+'M':a.ig_followers>=1e3?(a.ig_followers/1e3).toFixed(1).replace(/\.0$/,'')+'K':a.ig_followers):'IG'}</div>`:''}
         <button class="ac-shortlist ${isShortlisted(a.id)?'saved':''}" onclick="toggleShortlist(${a.id},'${a.name.replace(/'/g,"\\'")}',event)" title="Ajouter à ma shortlist">${isShortlisted(a.id)?'♥':'♡'}</button>
       </div>
       <div class="ac-body">
@@ -4036,7 +4036,7 @@ function renderArtists(){
         <div class="ac-meta">
           ${a.nb_reviews>0
             ? `<span style="color:#f59e0b;font-size:12px;font-weight:700;">${'★'.repeat(Math.round(a.avg_rating))}${'☆'.repeat(5-Math.round(a.avg_rating))} <span style="color:var(--g3)">${a.avg_rating} (${a.nb_reviews})</span></span>`
-            : `<span class="ac-rating" style="color:var(--g3);font-size:11px;">${a.instagram_handle?'📸 @'+a.instagram_handle:''}</span>`}
+            : `<span class="ac-rating" style="color:var(--g3);font-size:11px;display:flex;align-items:center;gap:3px;">${a.instagram_handle?`<svg width="10" height="10" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="#9ca3af" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#9ca3af" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="#9ca3af"/></svg> @${a.instagram_handle}${a.ig_followers?' · '+(a.ig_followers>=1e6?(a.ig_followers/1e6).toFixed(1).replace(/\.0$/,'')+'M':a.ig_followers>=1e3?(a.ig_followers/1e3).toFixed(1).replace(/\.0$/,'')+'K':a.ig_followers)+'abonnés':''}`:''}</span>`}
           <span class="ac-price" style="font-size:11px;color:var(--g3);">${a.telephone?'📞':''}</span>
         </div>
       </div>
@@ -4564,7 +4564,7 @@ function addMapMarkers(artists){
     const icon=L.divIcon({className:'',html:`<div style="width:34px;height:34px;border-radius:50%;background:${grad};border:2px solid rgba(255,255,255,.8);box-shadow:0 2px 8px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;">${inits}</div>`,iconSize:[34,34],iconAnchor:[17,17]});
     const marker=L.marker([a.lat,a.lng],{icon});
     const styles=a.style?.length?a.style.map(s=>`<span class="map-popup-tag">${s}</span>`).join(''):'';
-    const igLine=a.instagram_handle?`<div style="font-size:11px;color:#a78bfa;margin-top:2px;">📸 @${a.instagram_handle}</div>`:'';
+    const igLine=a.instagram_handle?`<div style="font-size:11px;color:#a78bfa;margin-top:2px;display:flex;align-items:center;gap:4px;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="#a78bfa" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#a78bfa" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="#a78bfa"/></svg> @${a.instagram_handle}</div>`:'';
     marker.bindPopup(`<div><div style="width:100%;height:70px;background:${grad};display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:rgba(255,255,255,.25);border-radius:4px 4px 0 0;">${inits}</div><div class="map-popup-body"><div class="map-popup-name">${a.name}</div><div class="map-popup-city">📍 ${a.city}</div>${igLine}<div class="map-popup-tags" style="margin-top:6px;">${styles}</div><button class="map-popup-btn" onclick="openProfile(${a.id})">Voir le profil →</button></div></div>`,{maxWidth:210});
     mapClusterGroup.addLayer(marker);
     mapMarkersData.push({marker,a});
@@ -4667,7 +4667,7 @@ async function openProfile(id){
         ${a.adresse?`<div>📍 ${a.adresse}${a.cp?' — '+a.cp:''}, ${a.city}</div>`:`<div>📍 ${a.city}</div>`}
         ${a.telephone?`<div>📞 <a href="tel:${a.telephone}" style="color:inherit;">${a.telephone}</a></div>`:''}
         ${a.email?`<div>✉️ <a href="mailto:${a.email}" style="color:#a78bfa;">${a.email}</a></div>`:''}
-        ${a.instagram?`<div>📸 <a href="https://instagram.com/${igHandle}" target="_blank" style="color:#a78bfa;">${a.instagram}</a></div>`:''}
+        ${a.instagram?`<div style="display:flex;align-items:center;gap:6px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="#a78bfa" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#a78bfa" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="#a78bfa"/></svg><a href="https://instagram.com/${igHandle}" target="_blank" style="color:#a78bfa;">${a.instagram}</a></div>`:''}
         ${a.site_web?`<div>🌐 <a href="${a.site_web}" target="_blank" style="color:#a78bfa;">${a.site_web}</a></div>`:''}
       </div>
     </div>
@@ -4764,11 +4764,12 @@ function renderPhotoGrid(container, photos, igHandle, isInkr) {
         </a>`).join('')}
     </div>
     ${isInkr
-      ? `<div style="text-align:center;margin-top:10px;font-size:12px;color:var(--g4);">📸 Photos uploadées sur inkr</div>`
+      ? `<div style="text-align:center;margin-top:10px;font-size:12px;color:var(--g4);">✓ Photos uploadées sur inkr</div>`
       : `<div style="text-align:center;margin-top:10px;">
            <a href="${igProfileUrl}" target="_blank" rel="noopener"
-              style="font-size:13px;color:#a78bfa;text-decoration:none;font-weight:600;">
-             📸 Voir tout le portfolio sur Instagram (@${igHandle})
+              style="font-size:13px;color:#a78bfa;text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:6px;">
+             <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="#a78bfa" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="#a78bfa" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="#a78bfa"/></svg>
+             Voir tout le portfolio sur Instagram (@${igHandle})
            </a>
          </div>`
     }`;
