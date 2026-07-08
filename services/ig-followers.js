@@ -78,12 +78,14 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 //  - ET (ig_followers IS NULL  OU  ig_followers_scraped_at < il y a REFRESH_DAYS jours)
 // Retourne le nombre de profils mis à jour.
 async function runBatch(db, { limit = 100, verbose = false } = {}) {
-  const cutoff = new Date(Date.now() - REFRESH_DAYS * 86_400_000)
+  const cutoff = new Date(Date.now() - REFRESH_DAYS * 86400000)
     .toISOString()
     .slice(0, 19)
     .replace('T', ' ');
 
-  const rows = db.prepare(`
+  let rows;
+  try {
+    rows = db.prepare(`
     SELECT id, instagram_handle
     FROM   tatoueurs
     WHERE  statut = 'active'
@@ -95,7 +97,11 @@ async function runBatch(db, { limit = 100, verbose = false } = {}) {
           OR ig_followers_scraped_at < ?
            )
     LIMIT ?
-  `).all(cutoff, limit);
+    `).all(cutoff, limit);
+  } catch (dbErr) {
+    console.warn('[IG] Erreur DB runBatch:', dbErr.message);
+    return 0;
+  }
 
   if (!rows.length) {
     if (verbose) console.log('[IG] Aucun profil à scraper pour l\'instant.');
@@ -143,14 +149,19 @@ function startAutoScraper(db) {
 
   async function cycle() {
     let total = 0;
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      const n = await runBatch(db, { limit: BATCH_SIZE, verbose: true });
-      total += n;
-      if (n === 0) break;           // plus rien à scraper dans ce cycle
-      await sleep(BETWEEN_BATCHES);
+    try {
+      let keepGoing = true;
+      while (keepGoing) {
+        const n = await runBatch(db, { limit: BATCH_SIZE, verbose: true });
+        total += n;
+        if (n === 0) { keepGoing = false; break; }
+        await sleep(BETWEEN_BATCHES);
+      }
+      console.log(`[IG] Cycle complet — ${total} profils mis à jour. Prochain cycle dans 6h.`);
+    } catch (err) {
+      console.warn('[IG] Erreur cycle scraper (non bloquant):', err.message);
     }
-    console.log(`[IG] Cycle complet — ${total} profils mis à jour. Prochain cycle dans 6h.`);
+    // Relance dans 6h quoi qu'il arrive
     setTimeout(cycle, FULL_CYCLE);
   }
 
