@@ -1183,36 +1183,32 @@ const { restoreActiveSessions } = require('./routes/whatsapp_personal');
 // ============ IG FOLLOWERS AUTO-SCRAPER ============
 const { startAutoScraper, runBatch } = require('./services/ig-followers');
 
-// Endpoint admin : déclencher manuellement un batch de scraping
-// GET /api/admin/scrape-ig?secret=inkr_admin&limit=500
-app.get('/api/admin/scrape-ig', async (req, res) => {
-  const secret = process.env.ADMIN_SECRET || 'inkr_admin_2025';
-  if (req.query.secret !== secret) return res.status(401).json({ error: 'Unauthorized' });
-  const limit = parseInt(req.query.limit) || 200;
+// GET /api/ig-status → statut public du scraping (pas de secret, lecture seule)
+app.get('/api/ig-status', (req, res) => {
   try {
     const { db } = require('./db/database');
-    res.json({ status: 'started', message: `Batch de ${limit} profils lancé en arrière-plan` });
-    // Lancer après la réponse pour ne pas bloquer
-    setImmediate(async () => {
-      const n = await runBatch(db, { limit, verbose: true });
-      console.log(`[IG] Batch manuel terminé : ${n} profils mis à jour.`);
-    });
+    const total   = db.prepare("SELECT COUNT(*) as n FROM tatoueurs WHERE statut='active' AND instagram_handle IS NOT NULL AND instagram_handle != ''").get()?.n || 0;
+    const scraped = db.prepare("SELECT COUNT(*) as n FROM tatoueurs WHERE ig_followers IS NOT NULL").get()?.n || 0;
+    const pending = total - scraped;
+    const top5    = db.prepare("SELECT COALESCE(nom_commercial,nom) as name, instagram_handle, ig_followers FROM tatoueurs WHERE ig_followers IS NOT NULL ORDER BY ig_followers DESC LIMIT 5").all();
+    res.json({ total_with_ig: total, scraped, pending, pct: total ? Math.round(scraped/total*100) : 0, top5 });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-// Endpoint admin : statut du scraping
-app.get('/api/admin/scrape-ig/status', (req, res) => {
-  const secret = process.env.ADMIN_SECRET || 'inkr_admin_2025';
-  if (req.query.secret !== secret) return res.status(401).json({ error: 'Unauthorized' });
+// GET /api/admin/scrape-ig?secret=XXX&limit=500 → déclenche un batch manuel
+app.get('/api/admin/scrape-ig', async (req, res) => {
+  const adminSecret = process.env.ADMIN_SECRET;
+  if (adminSecret && req.query.secret !== adminSecret) return res.status(401).json({ error: 'Non autorisé' });
+  const limit = parseInt(req.query.limit) || 200;
   try {
     const { db } = require('./db/database');
-    const total    = db.prepare("SELECT COUNT(*) as n FROM tatoueurs WHERE statut='active' AND instagram_handle != '' AND instagram_handle IS NOT NULL").get()?.n || 0;
-    const scraped  = db.prepare("SELECT COUNT(*) as n FROM tatoueurs WHERE ig_followers IS NOT NULL").get()?.n || 0;
-    const pending  = db.prepare("SELECT COUNT(*) as n FROM tatoueurs WHERE statut='active' AND instagram_handle != '' AND instagram_handle IS NOT NULL AND ig_followers IS NULL").get()?.n || 0;
-    const topFlw   = db.prepare("SELECT nom_commercial, nom, ig_followers FROM tatoueurs WHERE ig_followers IS NOT NULL ORDER BY ig_followers DESC LIMIT 5").all();
-    res.json({ total_with_ig: total, scraped, pending, top5: topFlw });
+    res.json({ status: 'started', message: `Batch de ${limit} profils lancé en arrière-plan` });
+    setImmediate(async () => {
+      const n = await runBatch(db, { limit, verbose: true });
+      console.log(`[IG] Batch manuel terminé : ${n} profils mis à jour.`);
+    });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
