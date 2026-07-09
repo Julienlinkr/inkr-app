@@ -1221,5 +1221,12 @@ app.listen(PORT, '0.0.0.0', () => {
   // Démarrage du scheduler d'automatisations (rappels, relances, anniversaires)
   const { startAutomations } = require('./services/automations');
   startAutomations();
-  // IG followers scraper — lancé séparément via /api/ig-status
+  // Démarrage du scraper Instagram followers (batch auto toutes les 6h)
+  try {
+    const { db: dbForIG } = require('./db/database');
+    const { startAutoScraper } = require('./services/ig-followers');
+    startAutoScraper(dbForIG);
+  } catch (igErr) {
+    console.warn('[IG] Scraper non démarré (non bloquant):', igErr.message);
+  }
 });
