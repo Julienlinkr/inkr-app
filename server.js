@@ -1180,35 +1180,13 @@ const { startEmailPolling } = require('./routes/email_oauth');
 // ============ WHATSAPP PERSO — Restauration des sessions ============
 const { restoreActiveSessions } = require('./routes/whatsapp_personal');
 
-// ============ IG FOLLOWERS AUTO-SCRAPER ============
-const { startAutoScraper, runBatch } = require('./services/ig-followers');
-
-// GET /api/ig-status → statut public du scraping (pas de secret, lecture seule)
+// ============ IG FOLLOWERS STATUS ============
 app.get('/api/ig-status', (req, res) => {
   try {
     const { db } = require('./db/database');
     const total   = db.prepare("SELECT COUNT(*) as n FROM tatoueurs WHERE statut='active' AND instagram_handle IS NOT NULL AND instagram_handle != ''").get()?.n || 0;
     const scraped = db.prepare("SELECT COUNT(*) as n FROM tatoueurs WHERE ig_followers IS NOT NULL").get()?.n || 0;
-    const pending = total - scraped;
-    const top5    = db.prepare("SELECT COALESCE(nom_commercial,nom) as name, instagram_handle, ig_followers FROM tatoueurs WHERE ig_followers IS NOT NULL ORDER BY ig_followers DESC LIMIT 5").all();
-    res.json({ total_with_ig: total, scraped, pending, pct: total ? Math.round(scraped/total*100) : 0, top5 });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
-
-// GET /api/admin/scrape-ig?secret=XXX&limit=500 → déclenche un batch manuel
-app.get('/api/admin/scrape-ig', async (req, res) => {
-  const adminSecret = process.env.ADMIN_SECRET;
-  if (adminSecret && req.query.secret !== adminSecret) return res.status(401).json({ error: 'Non autorisé' });
-  const limit = parseInt(req.query.limit) || 200;
-  try {
-    const { db } = require('./db/database');
-    res.json({ status: 'started', message: `Batch de ${limit} profils lancé en arrière-plan` });
-    setImmediate(async () => {
-      const n = await runBatch(db, { limit, verbose: true });
-      console.log(`[IG] Batch manuel terminé : ${n} profils mis à jour.`);
-    });
+    res.json({ total_with_ig: total, scraped, pending: total - scraped });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -1243,7 +1221,5 @@ app.listen(PORT, '0.0.0.0', () => {
   // Démarrage du scheduler d'automatisations (rappels, relances, anniversaires)
   const { startAutomations } = require('./services/automations');
   startAutomations();
-  // Démarrage du scraper Instagram followers (batch auto toutes les 6h)
-  const { db: dbRef } = require('./db/database');
-  startAutoScraper(dbRef);
+  // IG followers scraper — lancé séparément via /api/ig-status
 });
