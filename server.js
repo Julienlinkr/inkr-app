@@ -1171,15 +1171,6 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-// ============ BACKUP AUTOMATIQUE ============
-const { startAutoBackup } = require('./services/backup');
-
-// ============ EMAIL POLLING ============
-const { startEmailPolling } = require('./routes/email_oauth');
-
-// ============ WHATSAPP PERSO — Restauration des sessions ============
-const { restoreActiveSessions } = require('./routes/whatsapp_personal');
-
 // ============ IG FOLLOWERS STATUS ============
 app.get('/api/ig-status', (req, res) => {
   try {
@@ -1190,6 +1181,16 @@ app.get('/api/ig-status', (req, res) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+// ============ HANDLER GLOBAL — log les crashs non catchés dans Railway ============
+process.on('uncaughtException', (err) => {
+  console.error('[CRASH] uncaughtException:', err.message);
+  console.error(err.stack);
+  // On ne tue PAS le process — on laisse le serveur continuer
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('[CRASH] unhandledRejection:', reason);
 });
 
 app.listen(PORT, '0.0.0.0', () => {
@@ -1212,21 +1213,25 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`   DB     : ${process.env.DB_PATH || 'db/inkr.db (local)'}`);
   console.log('\n');
 
-  // Démarrage du backup automatique (après initialisation complète)
-  startAutoBackup();
-  // Démarrage du polling email (sync Gmail/Outlook toutes les 5 min)
-  startEmailPolling();
-  // Restauration des sessions WhatsApp perso (artistes déjà connectés)
-  setTimeout(() => restoreActiveSessions(), 5000); // délai pour laisser le serveur s'initialiser
-  // Démarrage du scheduler d'automatisations (rappels, relances, anniversaires)
-  const { startAutomations } = require('./services/automations');
-  startAutomations();
-  // Démarrage du scraper Instagram followers (batch auto toutes les 6h)
-  try {
-    const { db: dbForIG } = require('./db/database');
-    const { startAutoScraper } = require('./services/ig-followers');
-    startAutoScraper(dbForIG);
-  } catch (igErr) {
-    console.warn('[IG] Scraper non démarré (non bloquant):', igErr.message);
-  }
+  // ── Tous les services de fond en try-catch pour ne jamais crasher le serveur ──
+  try { require('./services/backup').startAutoBackup(); }
+  catch (e) { console.warn('[Backup] Non démarré:', e.message); }
+
+  try { require('./routes/email_oauth').startEmailPolling(); }
+  catch (e) { console.warn('[Email polling] Non démarré:', e.message); }
+
+  try { require('./services/automations').startAutomations(); }
+  catch (e) { console.warn('[Automations] Non démarré:', e.message); }
+
+  setTimeout(() => {
+    try { require('./routes/whatsapp_personal').restoreActiveSessions(); }
+    catch (e) { console.warn('[WhatsApp] Sessions non restaurées:', e.message); }
+  }, 5000);
+
+  setTimeout(() => {
+    try {
+      const { db: dbForIG } = require('./db/database');
+      require('./services/ig-followers').startAutoScraper(dbForIG);
+    } catch (e) { console.warn('[IG] Scraper non démarré:', e.message); }
+  }, 15000);
 });
