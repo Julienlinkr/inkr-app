@@ -13,9 +13,18 @@
 
 const https = require('https');
 
-const IG_APP_ID  = '936619743392459'; // App ID public de l'appli web Instagram
-const DELAY_MS   = 1200;              // 1.2 seconde entre chaque requête
-const REFRESH_DAYS = 7;               // Re-scrape toutes les 7 jours
+const DELAY_MS     = 1200; // 1.2 s entre chaque requête
+const REFRESH_DAYS = 7;    // Re-scrape toutes les 7 jours
+
+// User-agents reconnus par Instagram pour servir les meta OG
+// (Slack, Discord, Telegram utilisent exactement ces UAs pour leurs link previews)
+const CRAWLER_UAS = [
+  'Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)',
+  'TelegramBot (like TwitterBot)',
+  'Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)',
+  'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+  'Twitterbot/1.0',
+];
 
 // ── Formatte un nombre de followers pour l'affichage ──────────────────────────
 function fmtFollowers(n) {
@@ -25,48 +34,114 @@ function fmtFollowers(n) {
   return String(n);
 }
 
-// ── Scrape le nombre de followers d'un handle Instagram ───────────────────────
-function fetchFollowers(handle) {
+// ── Stratégie 1 : page publique Instagram via meta OG (crawlers reconnus) ────
+// Instagram sert toujours le og:description aux bots Slack/Discord/Telegram/FB.
+// Le format est : "1 234 Followers, 456 Following, 78 Posts – See Instagram..."
+function fetchViaOG(handle, ua) {
   return new Promise((resolve) => {
     const options = {
-      hostname: 'i.instagram.com',
-      path: `/api/v1/users/web_profile_info/?username=${encodeURIComponent(handle)}`,
+      hostname: 'www.instagram.com',
+      path: `/${encodeURIComponent(handle)}/`,
       method: 'GET',
       headers: {
-        'x-ig-app-id': IG_APP_ID,
-        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
-        'Accept': '*/*',
-        'Accept-Language': 'fr-FR,fr;q=0.9,en;q=0.8',
-        'Referer': 'https://www.instagram.com/',
-        'Origin': 'https://www.instagram.com',
-        'X-Requested-With': 'XMLHttpRequest',
+        'User-Agent': ua,
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Cache-Control': 'no-cache',
       },
-      timeout: 12000,
+      timeout: 14000,
     };
 
     const req = https.get(options, (res) => {
-      // 401 = compte privé ou IP bannie → on abandonne proprement
-      if (res.statusCode === 401 || res.statusCode === 403) {
+      if (res.statusCode === 301 || res.statusCode === 302) {
+        // Redirect → probablement une page de login, pas de données
+        res.resume();
         return resolve(null);
       }
+      if (res.statusCode >= 400) { res.resume(); return resolve(null); }
 
       let raw = '';
-      res.on('data', (chunk) => { raw += chunk; });
+      res.on('data', (chunk) => {
+        raw += chunk;
+        if (raw.length > 200_000) req.destroy(); // Stoppe dès qu'on a assez
+      });
       res.on('end', () => {
         try {
-          const json = JSON.parse(raw);
-          // Structure : { data: { user: { edge_followed_by: { count: N } } } }
-          const count = json?.data?.user?.edge_followed_by?.count;
-          resolve(count !== undefined ? parseInt(count, 10) : null);
-        } catch {
+          // Cherche le og:description dans le HTML
+          const ogMatch = raw.match(/property="og:description"\s+content="([^"]+)"/i)
+                       || raw.match(/content="([^"]+)"\s+property="og:description"/i);
+
+          if (ogMatch) {
+            const desc = ogMatch[1];
+            // Format : "1,234 Followers" ou "1 234 Followers" ou "12.5K Followers"
+            const m = desc.match(/([\d\s,]+)\s+Followers?/i);
+            if (m) {
+              const cleaned = m[1].replace(/[\s,]/g, '');
+              const count = parseInt(cleaned, 10);
+              if (!isNaN(count) && count > 0) return resolve(count);
+            }
+          }
+
+          // Fallback : cherche le JSON embarqué dans le HTML
+          const jsonMatch = raw.match(/"edge_followed_by":\{"count":(\d+)\}/);
+          if (jsonMatch) return resolve(parseInt(jsonMatch[1], 10));
+
           resolve(null);
-        }
+        } catch { resolve(null); }
       });
     });
 
     req.on('error',   () => resolve(null));
     req.on('timeout', () => { req.destroy(); resolve(null); });
   });
+}
+
+// ── Stratégie 2 : API interne Instagram (fonctionne depuis IPs résidentielles) ─
+function fetchViaInternalAPI(handle) {
+  return new Promise((resolve) => {
+    const options = {
+      hostname: 'i.instagram.com',
+      path: `/api/v1/users/web_profile_info/?username=${encodeURIComponent(handle)}`,
+      method: 'GET',
+      headers: {
+        'x-ig-app-id': '936619743392459',
+        'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.8',
+        'Referer': 'https://www.instagram.com/',
+        'Origin': 'https://www.instagram.com',
+      },
+      timeout: 12000,
+    };
+
+    const req = https.get(options, (res) => {
+      if (res.statusCode === 401 || res.statusCode === 403) { res.resume(); return resolve(null); }
+      let raw = '';
+      res.on('data', (chunk) => { raw += chunk; });
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(raw);
+          const count = json?.data?.user?.edge_followed_by?.count;
+          resolve(count !== undefined ? parseInt(count, 10) : null);
+        } catch { resolve(null); }
+      });
+    });
+
+    req.on('error',   () => resolve(null));
+    req.on('timeout', () => { req.destroy(); resolve(null); });
+  });
+}
+
+// ── Essaie toutes les stratégies dans l'ordre jusqu'à obtenir un résultat ────
+async function fetchFollowers(handle) {
+  // Essaie d'abord chaque UA crawler sur la page publique
+  for (const ua of CRAWLER_UAS) {
+    const count = await fetchViaOG(handle, ua);
+    if (count !== null) return count;
+    await new Promise(r => setTimeout(r, 300)); // Mini-pause entre tentatives
+  }
+  // Dernier recours : API interne
+  return fetchViaInternalAPI(handle);
 }
 
 // ── Pause ─────────────────────────────────────────────────────────────────────

@@ -1171,6 +1171,60 @@ app.get('/api/status', (req, res) => {
   });
 });
 
+// ============ IG DEBUG — test scraping en live depuis Railway ============
+app.get('/api/ig-debug', async (req, res) => {
+  const handle = (req.query.handle || 'instagram').replace(/^@/, '').trim();
+  const results = [];
+
+  const https = require('https');
+
+  function tryFetch(label, hostname, path, headers) {
+    return new Promise((resolve) => {
+      const req2 = https.get({ hostname, path, headers, timeout: 12000 }, (r) => {
+        let raw = '';
+        r.on('data', c => { raw += c; if (raw.length > 80000) r.destroy(); });
+        r.on('end', () => {
+          const ogMatch = raw.match(/property="og:description"\s+content="([^"]+)"/i)
+                       || raw.match(/content="([^"]+)"\s+property="og:description"/i);
+          const jsonFollow = raw.match(/"edge_followed_by":\{"count":(\d+)\}/);
+          let followers = null;
+          if (ogMatch) {
+            const m = ogMatch[1].match(/([\d,\s]+)\s+Followers?/i);
+            if (m) followers = parseInt(m[1].replace(/[,\s]/g, ''), 10);
+          }
+          if (!followers && jsonFollow) followers = parseInt(jsonFollow[1], 10);
+          resolve({ label, status: r.statusCode, followers, og: ogMatch?.[1]?.slice(0, 100) || null, rawLen: raw.length });
+        });
+      });
+      req2.on('error', e => resolve({ label, error: e.message }));
+      req2.on('timeout', () => { req2.destroy(); resolve({ label, error: 'timeout' }); });
+    });
+  }
+
+  // Stratégie 1 : page publique avec UA crawlers
+  const uas = [
+    ['Slackbot', 'www.instagram.com', `/${handle}/`, { 'User-Agent': 'Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)', 'Accept': 'text/html' }],
+    ['Discordbot', 'www.instagram.com', `/${handle}/`, { 'User-Agent': 'Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)', 'Accept': 'text/html' }],
+    ['Twitterbot', 'www.instagram.com', `/${handle}/`, { 'User-Agent': 'Twitterbot/1.0', 'Accept': 'text/html' }],
+    ['facebookexternalhit', 'www.instagram.com', `/${handle}/`, { 'User-Agent': 'facebookexternalhit/1.1', 'Accept': 'text/html' }],
+  ];
+  for (const [label, host, path, headers] of uas) {
+    const r = await tryFetch(label, host, path, headers);
+    results.push(r);
+    await new Promise(ok => setTimeout(ok, 300));
+  }
+
+  // Stratégie 2 : API interne Instagram
+  const apiR = await tryFetch('InternalAPI', 'i.instagram.com',
+    `/api/v1/users/web_profile_info/?username=${handle}`,
+    { 'x-ig-app-id': '936619743392459', 'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15' }
+  );
+  results.push(apiR);
+
+  const winner = results.find(r => r.followers);
+  res.json({ handle, winner: winner || null, details: results });
+});
+
 // ============ IG FOLLOWERS STATUS ============
 app.get('/api/ig-status', (req, res) => {
   try {
