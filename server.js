@@ -413,6 +413,29 @@ app.get('/t/:id', (req, res) => {
 </footer>
 </body>
 </html>`);
+
+  // ── Lazy-fetch followers IG (fire & forget, après envoi de la page) ─────────
+  // On tente de récupérer les followers SI : handle connu ET (pas encore scraped
+  // OU scraped il y a plus de 7 jours). Ne ralentit jamais la page.
+  if (igHandle) {
+    const stale = !t.ig_followers_scraped_at ||
+      (Date.now() - new Date(t.ig_followers_scraped_at).getTime()) > 7 * 86400000;
+    if (stale) {
+      setImmediate(() => {
+        (async () => {
+          try {
+            const { fetchFollowers } = require('./services/ig-followers');
+            const { db: igDb } = require('./db/database');
+            const count = await fetchFollowers(igHandle);
+            igDb.prepare(
+              'UPDATE tatoueurs SET ig_followers=?, ig_followers_scraped_at=CURRENT_TIMESTAMP WHERE id=?'
+            ).run(count !== null ? count : t.ig_followers, t.id);
+            if (count !== null) console.log(`[IG] @${igHandle} → ${count} abonnés`);
+          } catch (_) {}
+        })();
+      });
+    }
+  }
 });
 
 // ============ CLAIM — Page d'inscription tatoueur depuis sa fiche ============
@@ -1282,10 +1305,6 @@ app.listen(PORT, '0.0.0.0', () => {
     catch (e) { console.warn('[WhatsApp] Sessions non restaurées:', e.message); }
   }, 5000);
 
-  setTimeout(() => {
-    try {
-      const { db: dbForIG } = require('./db/database');
-      require('./services/ig-followers').startAutoScraper(dbForIG);
-    } catch (e) { console.warn('[IG] Scraper non démarré:', e.message); }
-  }, 15000);
+  // IG : PAS de batch au démarrage — scraping lazy sur visite de fiche (/t/:id)
+  console.log('[IG] Scraping lazy activé (déclenché à chaque visite de fiche artiste).');
 });
